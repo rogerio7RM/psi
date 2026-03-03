@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Indicadores & Recomendações</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="brand-bar">
+        <div class="brand-mark">PSI</div>
+        <div>
+          <h1 data-i18n="list_title">Lista de Indicadores & Recomendações</h1>
+          <p data-i18n="list_subtitle">Analise vários tickers e abra gráficos detalhados com um clique.</p>
+        </div>
+      </header>
+
+      <form id="indicator-form" class="card form-card">
+        <label data-i18n="language">Idioma</label>
+        <div class="lang-select">
+          <label class="lang-option">
+            <input type="radio" name="lang" value="pt" checked />
+            <span class="lang-flag pt" data-i18n="language_pt">PT</span>
+          </label>
+          <label class="lang-option">
+            <input type="radio" name="lang" value="en" />
+            <span class="lang-flag en" data-i18n="language_en">EN</span>
+          </label>
+          <label class="lang-option">
+            <input type="radio" name="lang" value="es" />
+            <span class="lang-flag es" data-i18n="language_es">ES</span>
+          </label>
+        </div>
+
+        <label for="tickers" data-i18n="list_form_label">Tickers (separados por vírgula)</label>
+        <input
+          id="tickers"
+          name="tickers"
+          type="text"
+          placeholder="ex.: QQQ, COWZ, IBIT"
+        />
+        <button type="submit" data-i18n="list_analyze">Analisar lista</button>
+        <p class="hint" data-i18n="list_hint">Clique no ticker para abrir o gráfico em nova aba.</p>
+      </form>
+
+      <div class="card info" id="api-status">
+        <strong data-i18n="info_title">Aviso:</strong>
+        <span data-i18n="info_body">
+          Esta página replica o layout do app de indicadores. Para resultados ao vivo, conecte um backend/API.
+        </span>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="list_results">Resultados</h2>
+        <div class="actions-bar" id="download-wrap" hidden>
+          <button type="button" data-i18n="download_report">Baixar relatório Word</button>
+        </div>
+        <div class="table-wrap" id="table-wrap" hidden>
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="list_table_ticker">Ticker</th>
+                <th data-i18n="list_table_price">Preço</th>
+                <th>RSI</th>
+                <th data-i18n="list_table_macd">MACD / Sinal</th>
+                <th>ADX</th>
+                <th>CMF</th>
+                <th data-i18n="list_table_recommendation">Recomendação</th>
+                <th data-i18n="list_table_summary">Resumo / Racional</th>
+              </tr>
+            </thead>
+            <tbody id="results-body"></tbody>
+          </table>
+        </div>
+        <p class="muted" id="empty-state" data-i18n="list_empty">
+          Digite um ou mais tickers acima e clique em "Analisar lista".
+        </p>
+      </div>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
