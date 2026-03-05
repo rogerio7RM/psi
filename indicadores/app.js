@@ -20,6 +20,10 @@ const I18N = {
     list_empty: "Digite um ou mais tickers acima e clique em \"Analisar lista\".",
     unavailable: "Indisponível",
     error: "Erro",
+    price_live: "ao vivo",
+    price_prev_close: "fechamento ant",
+    change_today: "Hoje",
+    change_prev_close: "Fech. ant",
     info_title: "Aviso:",
     info_body: "Esta página replica o layout do app de indicadores. Para resultados ao vivo, conecte um backend/API.",
   },
@@ -44,6 +48,10 @@ const I18N = {
     list_empty: "Enter one or more tickers above and click \"Analyze list\".",
     unavailable: "Unavailable",
     error: "Error",
+    price_live: "live",
+    price_prev_close: "prev close",
+    change_today: "Today",
+    change_prev_close: "Prev close",
     info_title: "Notice:",
     info_body: "This page mirrors the indicator app layout. For live results, connect a backend/API.",
   },
@@ -68,13 +76,17 @@ const I18N = {
     list_empty: "Ingresa uno o más tickers arriba y haz clic en \"Analizar lista\".",
     unavailable: "No disponible",
     error: "Error",
+    price_live: "en vivo",
+    price_prev_close: "cierre prev",
+    change_today: "Hoy",
+    change_prev_close: "Cierre prev",
     info_title: "Aviso:",
     info_body: "Esta página replica el diseño del app de indicadores. Para resultados en vivo, conecta un backend/API.",
   },
 };
 
 const DEFAULT_TICKERS = "QQQ,GLD, SLV, GOOGL, SPY,LLY, PLTR,AMD,BTC,AMZN,SOFI,TSLA,NVDA,NFLX";
-const API_ENDPOINT = "https://psi-indicadores-api.onrender.com/api/recommendations";
+const API_ENDPOINT = "https://psi-indicadores-api.onrender.com/api/indicadores";
 const GRAPH_BASE = "";
 
 const form = document.getElementById("indicator-form");
@@ -83,6 +95,7 @@ const tableWrap = document.getElementById("table-wrap");
 const tableBody = document.getElementById("results-body");
 const emptyState = document.getElementById("empty-state");
 const downloadWrap = document.getElementById("download-wrap");
+const apiStatus = document.getElementById("api-status");
 
 function getLang() {
   const params = new URLSearchParams(window.location.search);
@@ -122,8 +135,38 @@ function renderEmpty() {
   tableBody.innerHTML = "";
 }
 
+function showApiStatus() {
+  if (apiStatus) {
+    apiStatus.hidden = false;
+  }
+}
+
+function hideApiStatus() {
+  if (apiStatus) {
+    apiStatus.hidden = true;
+  }
+}
+
+function formatNumber(value, decimals) {
+  if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) {
+    return "--";
+  }
+  const num = Number(value);
+  return decimals !== undefined ? num.toFixed(decimals) : String(num);
+}
+
+function formatSignedPct(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return null;
+  }
+  const num = Number(value);
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(2)}%`;
+}
+
 function renderPlaceholders(lang, tickers) {
   const dict = I18N[lang] || I18N.pt;
+  showApiStatus();
   tableBody.innerHTML = "";
   tickers.forEach((ticker) => {
     const row = document.createElement("tr");
@@ -172,30 +215,72 @@ async function fetchResults(lang, tickers) {
 
 function renderFromApi(lang, tickers, payload) {
   const dict = I18N[lang] || I18N.pt;
+  hideApiStatus();
   tableBody.innerHTML = "";
+  const dataMap = payload && payload.data ? payload.data : {};
   tickers.forEach((ticker) => {
-    const data = payload && payload.data ? payload.data[ticker] : null;
-    const recommendation = data && data.recomendacao_label ? data.recomendacao_label : (data && data.recomendacao) || dict.unavailable;
+    const data = dataMap[ticker];
+    if (!data || data.erro) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><span class="muted">${ticker}</span></td>
+        <td><span class="muted">--</span></td>
+        <td><span class="muted">--</span></td>
+        <td><span class="muted">-- / --</span></td>
+        <td><span class="muted">--</span></td>
+        <td><span class="muted">--</span></td>
+        <td><span class="pill neutral">${dict.unavailable}</span></td>
+        <td><span class="muted">${data && data.erro ? data.erro : dict.unavailable}</span></td>
+      `;
+      tableBody.appendChild(row);
+      return;
+    }
+
+    const recommendation = data.recomendacao_label || data.recomendacao || dict.unavailable;
     const recClass = recommendation.includes("ENTRY") || recommendation.includes("ENTRAR") || recommendation.includes("ENTRADA")
       ? "buy"
       : recommendation.includes("EXIT") || recommendation.includes("SAIR") || recommendation.includes("SALIR")
       ? "sell"
       : "neutral";
+
+    const price = data.price ?? data.close;
+    const priceSource = data.price_source;
+    const priceChip = priceSource === "live"
+      ? `<span class="price-chip live">${dict.price_live || "live"}</span>`
+      : priceSource === "previous_close"
+      ? `<span class="price-chip prev">${dict.price_prev_close || "prev close"}</span>`
+      : "";
+
+    const changeToday = formatSignedPct(data.change_pct_today);
+    const changePrev = formatSignedPct(data.change_pct_prev_close);
+    const changeTodayHtml = changeToday
+      ? `<span class="ticker-change ${Number(data.change_pct_today) > 0 ? "up" : Number(data.change_pct_today) < 0 ? "down" : "flat"}">(${dict.change_today || "Hoje"} ${changeToday})</span>`
+      : "";
+    const changePrevHtml = changePrev
+      ? `<span class="ticker-change ${Number(data.change_pct_prev_close) > 0 ? "up" : Number(data.change_pct_prev_close) < 0 ? "down" : "flat"}">(${dict.change_prev_close || "Fech. ant"} ${changePrev})</span>`
+      : "";
+
+    const rationale = Array.isArray(data.rationale) && data.rationale.length
+      ? `<ul class="bullets">${data.rationale.map((item) => `<li>${item}</li>`).join("")}</ul>`
+      : `<span class="muted">${dict.unavailable}</span>`;
+
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>
         <span class="ticker-wrap">
           ${GRAPH_BASE ? `<a class="ticker-link" href="${GRAPH_BASE}/grafico/${ticker}" target="_blank" rel="noopener">${ticker}</a>` : `<span class="ticker-link disabled">${ticker}</span>`}
+          ${changeTodayHtml}
+          ${changePrevHtml}
           <span class="dcf-btn disabled">DCF</span>
         </span>
       </td>
-      <td><span class="muted">--</span></td>
-      <td><span class="muted">--</span></td>
-      <td><span class="muted">-- / --</span></td>
-      <td><span class="muted">--</span></td>
-      <td><span class="muted">--</span></td>
+      <td>${formatNumber(price, 2)} ${priceChip}</td>
+      <td>${formatNumber(data.RSI, 2)}</td>
+      <td>${formatNumber(data.MACD, 3)} / ${formatNumber(data.MACD_Signal, 3)}</td>
+      <td>${formatNumber(data.ADX, 2)}</td>
+      <td>${formatNumber(data.CMF, 3)}</td>
       <td><span class="pill ${recClass}">${recommendation}</span></td>
-      <td><span class="muted">${dict.unavailable}</span></td>
+      <td>${rationale}</td>
     `;
     tableBody.appendChild(row);
   });
@@ -222,6 +307,9 @@ function init() {
   const params = new URLSearchParams(window.location.search);
   const tickersParam = params.get("tickers");
   tickersInput.value = tickersParam || DEFAULT_TICKERS;
+  if (API_ENDPOINT) {
+    hideApiStatus();
+  }
   renderEmpty();
 }
 
