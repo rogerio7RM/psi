@@ -74,7 +74,7 @@ const I18N = {
 };
 
 const DEFAULT_TICKERS = "QQQ,GLD, SLV, GOOGL, SPY,LLY, PLTR,AMD,BTC,AMZN,SOFI,TSLA,NVDA,NFLX";
-const API_ENDPOINT = "";
+const API_ENDPOINT = "https://psi-indicadores-api.onrender.com/api/recommendations";
 const GRAPH_BASE = "";
 
 const form = document.getElementById("indicator-form");
