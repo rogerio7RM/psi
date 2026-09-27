@@ -77,6 +77,19 @@ jobs:
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' > /tmp/prime-mobile.html
           grep -q 'Abrir menu' /tmp/prime-mobile.html
           grep -q 'Wall Street, com contexto' /tmp/prime-mobile.html
+          echo 'Verificar segundo estudo: 12 paginas e PDF'
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4500 --dump-dom 'http://127.0.0.1:4173/educacional/analise-quantitativa-put-spreads-0-dte' > /tmp/educacional-study2.html
+          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/educacional-study2.html
+          grep -q 'PÁGINA 01 / 12' /tmp/educacional-study2.html
+          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/educacional.html
+          curl -fsSL 'http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf' -o /tmp/educacional-study2.pdf
+          test $(wc -c </tmp/educacional-study2.pdf) -gt 750000
+          test "$(head -c 5 /tmp/educacional-study2.pdf)" = '%PDF-'
+          for n in {01..12}; do
+            curl -fsSL "http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/slide-$n.webp" -o "/tmp/educacional-study2-$n.webp"
+            test $(wc -c <"/tmp/educacional-study2-$n.webp") -gt 25000
+            test "$(head -c 4 "/tmp/educacional-study2-$n.webp")" = 'RIFF'
+          done
           if grep -Eiq 'Instalar app|appdeploy' /tmp/prime-latest.html; then echo 'Banner/AppDeploy no site'; exit 1; fi
       - name: Persistir package-lock no branch de migração
         if: github.event_name == 'push' && github.ref == 'refs/heads/migration/primesphere-vite-wrangler'

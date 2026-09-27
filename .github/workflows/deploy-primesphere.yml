@@ -68,6 +68,18 @@ jobs:
             curl -fsSL "http://127.0.0.1:4173/estudos/matematica-zero-dte/slide-$n.webp" -o "/tmp/psi-slide-$n.webp"
             test $(wc -c <"/tmp/psi-slide-$n.webp") -gt 40000
           done
+          echo 'Verificar segundo estudo na build'
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/educacional/analise-quantitativa-put-spreads-0-dte' > /tmp/psi-study2.html
+          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/psi-study2.html
+          grep -q 'PÁGINA 01 / 12' /tmp/psi-study2.html
+          curl -fsSL 'http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf' -o /tmp/psi-study2.pdf
+          test $(wc -c </tmp/psi-study2.pdf) -gt 750000
+          test "$(head -c 5 /tmp/psi-study2.pdf)" = '%PDF-'
+          for n in {01..12}; do
+            curl -fsSL "http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/slide-$n.webp" -o "/tmp/psi-study2-$n.webp"
+            test $(wc -c <"/tmp/psi-study2-$n.webp") -gt 25000
+            test "$(head -c 4 "/tmp/psi-study2-$n.webp")" = 'RIFF'
+          done
           grep -q 'Conteúdo em preparação' /tmp/psi-_trades.html
       - name: Publicar no Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
@@ -101,6 +113,16 @@ jobs:
           for n in {01..10}; do
             curl -fsSL "https://primesphereintelligence.com/estudos/matematica-zero-dte/slide-$n.webp" -o "/tmp/live-slide-$n.webp"
             test $(wc -c <"/tmp/live-slide-$n.webp") -gt 40000
+          done
+          echo 'Verificar segundo estudo no site publico'
+          timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'https://primesphereintelligence.com/educacional/analise-quantitativa-put-spreads-0-dte' > /tmp/live-study2.html
+          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/live-study2.html
+          grep -q 'PÁGINA 01 / 12' /tmp/live-study2.html
+          curl -fsSL 'https://primesphereintelligence.com/estudos/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf' -o /tmp/live-study2.pdf
+          test "$(head -c 5 /tmp/live-study2.pdf)" = '%PDF-'
+          for n in {01..12}; do
+            curl -fsSL "https://primesphereintelligence.com/estudos/analise-quantitativa-put-spreads-0-dte/slide-$n.webp" -o "/tmp/live-study2-$n.webp"
+            test $(wc -c <"/tmp/live-study2-$n.webp") -gt 25000
           done
           grep -q 'Conteúdo em preparação' /tmp/live-_trades.html
           curl -fsSI 'https://www.primesphereintelligence.com/?260925' >/tmp/www.txt
