@@ -56,11 +56,23 @@ jobs:
           grep -q '/quem-somos' /tmp/prime-latest.html
           grep -q '/educacional' /tmp/prime-latest.html
           grep -q '/trades' /tmp/prime-latest.html
-          for page in quem-somos educacional trades; do
+          for page in quem-somos trades; do
             timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "http://127.0.0.1:4173/$page" >"/tmp/$page.html"
             grep -q 'Conteúdo em preparação' "/tmp/$page.html"
             grep -q 'Voltar ao Brief Atual' "/tmp/$page.html"
             test $(wc -c <"/tmp/$page.html") -gt 1000
+          done
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4500 --dump-dom 'http://127.0.0.1:4173/educacional' > /tmp/educacional.html
+          grep -q 'Biblioteca de estudos' /tmp/educacional.html
+          grep -q 'A Matemática do Zero DTE' /tmp/educacional.html
+          grep -q 'Índice de páginas' /tmp/educacional.html
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4500 --dump-dom 'http://127.0.0.1:4173/educacional/matematica-zero-dte' > /tmp/educacional-mobile.html
+          grep -q 'A Matemática do Zero DTE' /tmp/educacional-mobile.html
+          curl -fsSL 'http://127.0.0.1:4173/estudos/matematica-zero-dte/estudo-0-dte.pdf' -o /tmp/educacional-study.pdf
+          test "$(head -c 5 /tmp/educacional-study.pdf)" = '%PDF-'
+          for n in {01..10}; do
+            curl -fsSL "http://127.0.0.1:4173/estudos/matematica-zero-dte/slide-$n.webp" -o "/tmp/educacional-$n.webp"
+            test $(wc -c <"/tmp/educacional-$n.webp") -gt 40000
           done
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' > /tmp/prime-mobile.html
           grep -q 'Abrir menu' /tmp/prime-mobile.html

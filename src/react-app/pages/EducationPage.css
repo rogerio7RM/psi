@@ -1,0 +1,122 @@
+
+.edu-page{background:#f4f7f9;color:#0c243c}
+.edu-page .edu-overline{color:#c69e4d;letter-spacing:.18em;font-size:11px;font-weight:900}
+.edu-hero{background:linear-gradient(125deg,#06192b,#0d2d4c 72%,#123d58);color:white;overflow:hidden;position:relative}
+.edu-hero:after{content:'';position:absolute;right:-200px;top:-330px;width:660px;height:660px;border-radius:50%;border:1px solid rgba(230,196,120,.14);box-shadow:0 0 0 100px rgba(230,196,120,.025),0 0 0 200px rgba(230,196,120,.015)}
+.edu-hero-inner{max-width:1180px;margin:0 auto;padding:65px 30px 59px;position:relative;z-index:1}
+.edu-hero h1{font:700 clamp(34px,4.1vw,55px)/1.13 Georgia,serif;max-width:840px;margin:17px 0}
+.edu-hero p{color:#c5d6e2;font-size:16px;line-height:1.7;max-width:720px;margin-bottom:26px}
+.edu-hero-tags{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.edu-hero-tags span,.edu-hero-tags a{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 13px;color:#d7e2ec;text-decoration:none;font-size:12px;font-weight:700}
+.edu-hero-tags a{color:#f6d791}
+.edu-content{max-width:1180px;margin:0 auto;padding:28px 30px 95px}
+.edu-breadcrumb{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#77899b;font-size:12px;margin:0 0 34px}
+.edu-breadcrumb a{color:#476178;text-decoration:none}
+.edu-feature-header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:0 0 16px;font-size:11px;font-weight:800;color:#5c6e7e;letter-spacing:.12em}
+.edu-feature-header span:first-child{color:#967329}
+.edu-viewer{background:#fff;border:1px solid #e0e7ed;box-shadow:0 16px 54px rgba(3,24,44,.09);border-radius:21px;overflow:hidden}
+.edu-viewer-header{background:#fff;padding:29px 32px 24px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+.edu-viewer-header h2{font:700 clamp(25px,3vw,39px)/1.2 Georgia,serif;margin:9px 0 6px;color:#112c43}
+.edu-viewer-header p{color:#617488;margin:0;font-size:13px}
+.edu-viewer-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.edu-pdf-button,.edu-expand-button{appearance:none;border:1px solid #d9e2e9;background:white;color:#16364f;white-space:nowrap;text-decoration:none;border-radius:9px;padding:11px 15px;font:700 12px Arial,sans-serif;cursor:pointer}
+.edu-expand-button{background:#0e2c45;color:white;border-color:#0e2c45}
+.edu-slide-stage{position:relative;background:#e7edf1;display:flex;align-items:center;justify-content:center;min-height:340px;padding:26px 80px;touch-action:pan-y}
+.edu-slide-image{display:block;max-width:100%;width:auto;height:min(69vw,690px);object-fit:contain;background:white;box-shadow:0 9px 26px rgba(13,29,44,.16)}
+.edu-arrow{position:absolute;top:50%;transform:translateY(-50%);height:52px;width:52px;border-radius:50%;background:#ffffffee;border:1px solid #d9e3eb;box-shadow:0 6px 20px #1536512b;color:#18374f;font-size:35px;line-height:1;cursor:pointer}
+.edu-arrow-left{left:18px}.edu-arrow-right{right:18px}
+.edu-arrow:disabled,.edu-slide-buttons button:disabled{opacity:.28;cursor:not-allowed}
+.edu-slide-bottom{padding:23px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.edu-slide-bottom h3{font:700 22px/1.25 Georgia,serif;margin:7px 0}
+.edu-slide-bottom p{color:#6b7b8b;font-size:13px;line-height:1.6;margin:0}
+.edu-slide-buttons{display:flex;gap:7px}
+.edu-slide-buttons button{width:42px;height:42px;border:1px solid #d9e2e9;background:white;color:#112f49;border-radius:9px;font-size:20px;cursor:pointer}
+.edu-progress{height:4px;width:100%;background:#e8edf2}
+.edu-progress span{height:100%;display:block;background:linear-gradient(90deg,#b68b35,#e4c779);transition:width .2s}
+.edu-chapters{display:flex;gap:7px;overflow-x:auto;padding:20px 24px 12px;scrollbar-width:thin}
+.edu-chapters button{white-space:nowrap;border-radius:999px;background:#f1f5f8;border:1px solid #e4eaf0;color:#516577;font-size:12px;font-weight:800;padding:10px 13px;cursor:pointer}
+.edu-chapters button.is-current{background:#122e48;color:white;border-color:#122e48}
+.edu-thumbnails{display:flex;gap:11px;overflow-x:auto;padding:14px 25px 22px;scrollbar-width:thin}
+.edu-thumbnail{flex:0 0 80px;padding:4px 4px 7px;background:#f7f9fb;border:2px solid #e7ebee;border-radius:9px;color:#6f7e8c;cursor:pointer;transition:border .15s}
+.edu-thumbnail.is-current{border-color:#cda64f;background:#fff9ed;color:#7b5b1e}
+.edu-thumbnail img{display:block;width:100%;height:96px;object-fit:contain;object-position:center;background:#fff}
+.edu-thumbnail span{display:block;font-size:10px;font-weight:900;margin-top:6px}
+.edu-viewer-hint{margin:0;padding:0 28px 25px;color:#708195;font-size:12px}
+.edu-viewer-hint a{color:#164d73;font-weight:800}
+.edu-disclaimer{padding:21px 26px;margin:22px 0 60px;background:#eff3f5;border-left:4px solid #ba9651;border-radius:0 10px 10px 0}
+.edu-disclaimer strong{font-size:13px}
+.edu-disclaimer p{margin:6px 0 0;color:#647686;font-size:12px;line-height:1.6}
+.edu-library-title{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:24px}
+.edu-library-title h2{font:700 38px Georgia,serif;margin:9px 0;color:#112e47}
+.edu-library-title p{color:#6a7b8a;max-width:600px;font-size:14px}
+.edu-study-total{font-size:12px;color:#667786;border:1px solid #e0e8ef;background:white;border-radius:999px;padding:10px 14px;white-space:nowrap}
+.edu-library-controls{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;padding:20px 0;border-top:1px solid #e0e7ef}
+.edu-filters{display:flex;gap:7px;flex-wrap:wrap}
+.edu-filters button{background:#fff;border:1px solid #dce4eb;color:#536879;border-radius:100px;padding:10px 14px;font-weight:800;font-size:12px;cursor:pointer}
+.edu-filters button.is-selected{background:#0d2c46;border-color:#0d2c46;color:white}
+.edu-search{border:1px solid #dce4eb;border-radius:10px;padding:12px 15px;width:215px;max-width:100%;font-size:13px;background:#fff;color:#132f49}
+.edu-study-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px}
+.edu-study-card{text-decoration:none;background:#fff;border:1px solid #e1e8ee;border-radius:17px;overflow:hidden;box-shadow:0 9px 25px #0927430d;transition:transform .18s,border-color .18s}
+.edu-study-card:hover{transform:translateY(-3px);border-color:#caaa67}
+.edu-card-image{height:200px;background:#0c2540;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
+.edu-card-image img{height:100%;width:100%;object-fit:cover;object-position:top}
+.edu-card-image span{position:absolute;top:14px;left:14px;background:#fffefa;color:#2b4e67;font-size:11px;font-weight:900;border-radius:50px;padding:7px 11px}
+.edu-card-copy{padding:23px}
+.edu-card-copy small{font-size:10px;font-weight:900;color:#a28143;letter-spacing:.12em}
+.edu-card-copy h3{margin:10px 0;font:700 27px/1.2 Georgia,serif;color:#112f49}
+.edu-card-copy p{color:#6b7b8b;line-height:1.6;font-size:13px}
+.edu-card-copy b{display:block;padding-top:11px;color:#174563;font-size:13px}
+.edu-empty-results{border:1px dashed #cad6df;padding:36px;color:#677886;border-radius:12px}
+.edu-empty-results button{border:0;color:#0a486b;background:none;text-decoration:underline;cursor:pointer}
+.edu-next-study{display:flex;align-items:center;gap:16px;margin-top:20px;border:1px dashed #d4dfe7;background:#fafdff;border-radius:14px;padding:21px 24px}
+.edu-next-study>span{font-size:26px;background:#e9f0f4;width:52px;height:52px;display:grid;place-items:center;border-radius:10px;color:#668094}
+.edu-next-study strong{color:#1b354d;font-size:14px}
+.edu-next-study p{color:#6b7d8c;font-size:12px;margin:5px 0;line-height:1.6}
+.edu-not-found{min-height:65vh;max-width:850px;margin:auto;padding:90px 30px}
+.edu-not-found a{color:#0b4b71}
+.edu-fullscreen{position:fixed;inset:0;z-index:120;border-radius:0;display:flex;flex-direction:column;height:100dvh;overflow-y:auto}
+.edu-fullscreen .edu-viewer-header{padding:15px 24px}
+.edu-fullscreen .edu-viewer-header h2{font-size:20px;margin:4px 0}
+.edu-fullscreen .edu-viewer-header p,.edu-fullscreen .edu-viewer-hint{display:none}
+.edu-fullscreen .edu-slide-stage{flex:1;min-height:0;padding:14px 76px}
+.edu-fullscreen .edu-slide-image{height:100%;max-height:calc(100dvh - 280px)}
+.edu-fullscreen .edu-slide-bottom{padding:11px 24px}
+.edu-fullscreen .edu-slide-bottom h3{font-size:16px;margin:3px 0}
+.edu-fullscreen .edu-slide-bottom p{display:none}
+.edu-fullscreen .edu-chapters{padding:8px 24px}
+.edu-fullscreen .edu-thumbnails{padding:5px 20px 10px}
+.edu-fullscreen .edu-thumbnail{flex-basis:55px}
+.edu-fullscreen .edu-thumbnail img{height:55px}
+@media(max-width:760px){
+.edu-hero-inner{padding:43px 19px}
+.edu-hero h1{font-size:34px}
+.edu-content{padding:22px 14px 65px}
+.edu-feature-header{font-size:9px;letter-spacing:.07em}
+.edu-viewer-header{padding:21px;align-items:flex-start;flex-direction:column}
+.edu-viewer-header h2{font-size:29px}
+.edu-viewer-actions{justify-content:flex-start}
+.edu-slide-stage{padding:18px 39px;min-height:200px}
+.edu-slide-image{height:min(107vw,650px);max-width:100%}
+.edu-arrow{width:35px;height:43px;border-radius:9px;font-size:25px}
+.edu-arrow-left{left:2px}.edu-arrow-right{right:2px}
+.edu-slide-bottom{padding:21px;align-items:center}
+.edu-slide-bottom h3{font-size:19px}
+.edu-slide-bottom p{font-size:12px}
+.edu-slide-buttons button{width:36px;height:36px}
+.edu-chapters{padding:17px 12px 9px}
+.edu-thumbnails{padding:10px 12px 16px}
+.edu-thumbnail{flex-basis:62px}
+.edu-thumbnail img{height:80px}
+.edu-viewer-hint{padding:0 17px 18px;line-height:1.6}
+.edu-library-title{align-items:flex-start;flex-direction:column}
+.edu-library-title h2{font-size:31px}
+.edu-search{width:100%}
+.edu-fullscreen .edu-viewer-header{padding:9px 14px}
+.edu-fullscreen .edu-viewer-header h2{font-size:17px}
+.edu-fullscreen .edu-viewer-actions{position:absolute;right:9px;top:9px}
+.edu-fullscreen .edu-viewer-header .edu-overline,.edu-fullscreen .edu-viewer-header h2,.edu-fullscreen .edu-pdf-button{display:none}
+.edu-fullscreen .edu-slide-stage{padding:8px 30px}
+.edu-fullscreen .edu-slide-image{max-height:calc(100dvh - 250px)}
+.edu-fullscreen .edu-chapters{display:none}
+.edu-fullscreen .edu-thumbnail img{height:44px}
+}
