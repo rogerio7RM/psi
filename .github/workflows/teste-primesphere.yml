@@ -72,8 +72,9 @@ jobs:
           curl -fsSI --max-time 15 'https://www.primesphereintelligence.com/?260925' -o /tmp/redirect.headers
           echo 'Redirect recebido:'
           cat /tmp/redirect.headers
-          grep -qiE '^HTTP/[0-9.]+ 301' /tmp/redirect.headers
-          grep -qiE '^location: https://primesphereintelligence\.com/\?260925\r?$' /tmp/redirect.headers
+          tr -d '\r' < /tmp/redirect.headers > /tmp/redirect.clean
+          grep -qiE '^HTTP/[0-9.]+ 301' /tmp/redirect.clean
+          grep -qiFx 'location: https://primesphereintelligence.com/?260925' /tmp/redirect.clean
           final=$(curl -fsSL -o /dev/null -w '%{url_effective}' 'https://www.primesphereintelligence.com/?260925')
           test "$final" = 'https://primesphereintelligence.com/?260925'
           echo 'PASS: www redireciona com 301 para o dominio principal e conserva ?260925'
