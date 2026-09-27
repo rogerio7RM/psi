@@ -23,7 +23,7 @@ export default function SiteHeader({ currentPath }: Props) {
 
         <nav className='psi-nav-desktop' aria-label='Navegação principal'>
           {links.map(([href, label]) => (
-            <a className={currentPath === href ? 'is-active' : ''} href={href} key={href}>{label}</a>
+            <a className={(currentPath === href || (href !== '/' && currentPath.startsWith(href + '/'))) ? 'is-active' : ''} href={href} key={href}>{label}</a>
           ))}
         </nav>
 

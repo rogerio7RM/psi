@@ -4,6 +4,7 @@ import SiteFooter from './components/SiteFooter';
 import SiteHeader from './components/SiteHeader';
 import HomeIntro from './components/HomeIntro';
 import PlaceholderPage from './pages/PlaceholderPage';
+import EducationPage from './pages/EducationPage';
 
 type EditionModule = { default: ComponentType };
 type RegisteredEdition = {
@@ -87,7 +88,9 @@ function App() {
   } else if (path === '/quem-somos') {
     content = <PlaceholderPage eyebrow='PrimeSphere' title='Quem Somos' />;
   } else if (path === '/educacional') {
-    content = <PlaceholderPage eyebrow='Conhecimento' title='Educacional' />;
+    content = <EducationPage />;
+  } else if (path.startsWith('/educacional/')) {
+    content = <EducationPage slug={path.slice('/educacional/'.length)} />;
   } else if (path === '/trades') {
     content = <PlaceholderPage eyebrow='Estratégias' title='Trades' />;
   } else {
