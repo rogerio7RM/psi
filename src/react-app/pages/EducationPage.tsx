@@ -48,7 +48,7 @@ function StudyViewer({ study }: { study: Study }) {
     touchStart.current = null;
   }
 
-  const activeChapter = study.chapters.filter((item) => item.pageIndex <= current).at(-1)?.title;
+  const activeChapter = study.chapters.filter((item) => item.pageIndex <= current).slice(-1)[0]?.title;
 
   return (
     <section className={'edu-viewer' + (fullscreen ? ' edu-fullscreen' : '')} id='apresentacao' aria-label={'Apresentação: ' + study.title}>
