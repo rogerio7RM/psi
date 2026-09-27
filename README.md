@@ -1,90 +1,19 @@
-# React + Vite + Hono + Cloudflare Workers
+# PrimeSphere Intelligence
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/vite-react-template)
+Site da **PrimeSphere Intelligence** para leitores brasileiros que acompanham Wall Street. Migração de React + Vite do AppDeploy para **Cloudflare Workers com Wrangler**, aproveitando a infraestrutura já existente deste repositório.
 
-This template provides a minimal setup for building a React application with TypeScript and Vite, designed to run on Cloudflare Workers. It features hot module replacement, ESLint integration, and the flexibility of Workers deployments.
+## Rodar localmente
 
-![React + TypeScript + Vite + Cloudflare Workers](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/fc7b4b62-442b-4769-641b-ad4422d74300/public)
-
-<!-- dash-content-start -->
-
-🚀 Supercharge your web development with this powerful stack:
-
-- [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
-- [**Vite**](https://vite.dev/) - Lightning-fast build tooling and development server
-- [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
-- [**Cloudflare Workers**](https://developers.cloudflare.com/workers/) - Edge computing platform for global deployment
-
-### ✨ Key Features
-
-- 🔥 Hot Module Replacement (HMR) for rapid development
-- 📦 TypeScript support out of the box
-- 🛠️ ESLint configuration included
-- ⚡ Zero-config deployment to Cloudflare's global network
-- 🎯 API routes with Hono's elegant routing
-- 🔄 Full-stack development setup
-- 🔎 Built-in Observability to monitor your Worker
-
-Get started in minutes with local development or deploy directly via the Cloudflare dashboard. Perfect for building modern, performant web applications at the edge.
-
-<!-- dash-content-end -->
-
-## Getting Started
-
-To start a new project with this template, run:
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/vite-react-template
-```
-
-A live deployment of this template is available at:
-[https://react-vite-template.templates.workers.dev](https://react-vite-template.templates.workers.dev)
-
-## Development
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the development server with:
-
-```bash
+```sh
+npm ci
 npm run dev
+npm run check
 ```
 
-Your application will be available at [http://localhost:5173](http://localhost:5173).
+**Importante:** `npm run check` faz typecheck, build e simulação do deploy (não publica). O Worker de produção se chama `primesphere-intelligence`, distinto do projeto legado `psi`. O deploy real está em `Actions → Publicar PrimeSphere (manual)`, exige segredos Cloudflare no ambiente `production` e só roda a partir da branch principal.
 
-## Production
+O repositório mantém a pasta `indicadores/` e todas as edições importadas do antigo frontend em `src/react-app/editions/`. A página inicial detecta a última data compilada, preferindo `afterclose` quando existe; links históricos `?YYMMDD` e `?date=YYMMDD` continuam funcionando.
 
-Build your project for production:
+Veja [docs/primesphere-migration.md](docs/primesphere-migration.md) para plano de migração de domínio, proteção de credenciais e rollback. O domínio de produção ainda aponta para AppDeploy até o corte DNS.
 
-```bash
-npm run build
-```
-
-Preview your build locally:
-
-```bash
-npm run preview
-```
-
-Deploy your project to Cloudflare Workers:
-
-```bash
-npm run build && npm run deploy
-```
-
-Monitor your workers:
-
-```bash
-npx wrangler tail
-```
-
-## Additional Resources
-
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://reactjs.org/)
-- [Hono Documentation](https://hono.dev/)
+**Este repositório é público:** nunca coloque credenciais ou conteúdo restrito em commits. Os arquivos de edições incluídos são apenas conteúdos editoriais do snapshot do site.
