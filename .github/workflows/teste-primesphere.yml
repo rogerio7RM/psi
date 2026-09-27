@@ -1,0 +1,78 @@
+name: Teste completo PrimeSphere
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/teste-primesphere.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: primesphere-smoke-preview
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar e testar build Vite e Wrangler
+        run: |
+          npm ci
+          npm run check
+      - name: Publicar build no Worker de teste (sem tocar na producao)
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --name primesphere-intelligence-preview
+      - name: Testar site publicado, edicoes e dominio principal
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview='https://primesphere-intelligence-preview.rogerio7.workers.dev'
+          main='https://primesphereintelligence.com'
+          echo 'TESTE 1: Preview publicado responde HTTP 200 com os assets Vite'
+          curl -fsSL --retry 3 --retry-delay 2 "$preview/" -o /tmp/preview.html
+          grep -q 'PrimeSphere Intelligence' /tmp/preview.html
+          js=$(grep -oE '/assets/[^"]+\.js' /tmp/preview.html | head -1)
+          css=$(grep -oE '/assets/[^"]+\.css' /tmp/preview.html | head -1)
+          test -n "$js"
+          test -n "$css"
+          curl -fsSL "$preview$js" -o /tmp/preview.js
+          curl -fsSL "$preview$css" -o /tmp/preview.css
+          test $(wc -c </tmp/preview.js) -gt 10000
+          test $(wc -c </tmp/preview.css) -gt 1000
+          echo 'PASS: HTML, JavaScript e CSS carregados'
+          echo 'TESTE 2: Renderizacao real da edicao atual e historica no Chrome'
+          chrome=$(command -v google-chrome || command -v chromium)
+          timeout 50s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=5000 --dump-dom "$preview/" >/tmp/latest.html 2>/tmp/chrome.log
+          timeout 50s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=5000 --dump-dom "$preview/?260917" >/tmp/history.html 2>>/tmp/chrome.log
+          grep -q 'AFTER CLOSE' /tmp/latest.html
+          grep -q '17/09/2026' /tmp/history.html
+          if grep -Eiq 'data-appdeploy-overlay-bootstrap|v2.appdeploy.ai/shared/js/overlay.js' /tmp/latest.html; then
+            echo 'FAIL: Overlay AppDeploy detectado'; exit 1
+          fi
+          echo 'PASS: ultima edicao, historico e ausencia do overlay AppDeploy'
+          echo 'TESTE 3: Dominio principal publicado'
+          curl -fsSL --retry 3 "$main/?260925" -o /tmp/main.html
+          grep -q 'PrimeSphere Intelligence' /tmp/main.html
+          if grep -Eiq 'data-appdeploy-overlay-bootstrap|v2.appdeploy.ai/shared/js/overlay.js' /tmp/main.html; then
+            echo 'FAIL: AppDeploy ainda presente no dominio principal'; exit 1
+          fi
+          echo 'PASS: dominio principal HTTPS e HTML correto'
+          echo 'TESTE 4: WWW 301 e preservacao de query string'
+          curl -fsSI --max-time 15 'https://www.primesphereintelligence.com/?260925' -o /tmp/redirect.headers
+          grep -qiE '^HTTP/[0-9.]+ 301' /tmp/redirect.headers
+          grep -qiE '^location: https://primesphereintelligence\.com/\?260925\r?$' /tmp/redirect.headers
+          final=$(curl -fsSL -o /dev/null -w '%{url_effective}' 'https://www.primesphereintelligence.com/?260925')
+          test "$final" = 'https://primesphereintelligence.com/?260925'
+          echo 'PASS: www redireciona com 301 para o dominio principal e conserva ?260925'
+          echo 'TODOS OS TESTES PASSARAM'
