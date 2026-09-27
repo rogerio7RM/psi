@@ -120,3 +120,14 @@
 .edu-fullscreen .edu-chapters{display:none}
 .edu-fullscreen .edu-thumbnail img{height:44px}
 }
+
+/* Study selector: prominently display all published presentations above the viewer. */
+.edu-study-switcher{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:0 0 32px}
+.edu-switch-item{display:flex;flex-direction:column;gap:7px;padding:19px 22px;border:1px solid #dfe7ec;border-radius:14px;background:#fff;color:#18364d;text-decoration:none;box-shadow:0 5px 16px rgba(8,36,59,.05)}
+.edu-switch-item:hover{border-color:#c7a34c;box-shadow:0 10px 24px rgba(8,36,59,.1)}
+.edu-switch-item.is-selected{background:#102b43;color:#fff;border-color:#102b43}
+.edu-switch-item span{color:#ab8335;letter-spacing:.14em;font-size:10px;font-weight:900}
+.edu-switch-item.is-selected span{color:#e1c578}
+.edu-switch-item strong{font:700 20px/1.25 Georgia,serif}
+.edu-switch-item small{font-size:11px;font-weight:700;color:#708394}
+.edu-switch-item.is-selected small{color:#c2d0db}

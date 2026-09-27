@@ -145,9 +145,19 @@ export default function EducationPage({ slug }: { slug?: string }) {
           <a href='/'>Início</a><span>›</span><a href='/educacional'>Educacional</a><span>›</span><span>{study.title}</span>
         </nav>
 
+        <nav className='edu-study-switcher' aria-label='Selecionar estudo'>
+          {studies.map((item, index) => (
+            <a key={item.slug} className={'edu-switch-item' + (item.slug === study.slug ? ' is-selected' : '')} href={'/educacional/' + item.slug + '#apresentacao'} aria-current={item.slug === study.slug ? 'page' : undefined}>
+              <span>ESTUDO {String(index + 1).padStart(2, '0')}</span>
+              <strong>{item.title}</strong>
+              <small>{item.pageCount} páginas · {item.category}</small>
+            </a>
+          ))}
+        </nav>
+
         <div className='edu-feature-header'>
           <span>ESTUDO EM DESTAQUE</span>
-          <span>10 páginas · Conteúdo educacional</span>
+          <span>{study.pageCount} páginas · Conteúdo educacional</span>
         </div>
 
         <StudyViewer study={study} />
