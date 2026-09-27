@@ -42,7 +42,8 @@ jobs:
             echo 'Credenciais Cloudflare presentes. Preparando deploy de preview.'
           else
             echo 'available=false' >> "$GITHUB_OUTPUT"
-            echo '::notice::Preview aguardando CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID em Settings > Secrets and variables > Actions.'
+            echo '::error::Faltam os segredos CLOUDFLARE_API_TOKEN e/ou CLOUDFLARE_ACCOUNT_ID em Settings > Secrets and variables > Actions.'
+            exit 1
           fi
       - name: Build verificado antes do preview
         if: steps.auth.outputs.available == 'true'
