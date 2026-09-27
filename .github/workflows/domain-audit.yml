@@ -1,0 +1,38 @@
+name: Auditoria de dominio PrimeSphere
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/domain-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Consultar DNS publico antes da transferencia
+        shell: bash
+        run: |
+          echo '=== Nameservers (NS) ==='
+          dig +short NS primesphereintelligence.com
+          echo '=== Root (A e AAAA) ==='
+          dig +short A primesphereintelligence.com
+          dig +short AAAA primesphereintelligence.com
+          echo '=== www (CNAME, A e AAAA) ==='
+          dig +short CNAME www.primesphereintelligence.com
+          dig +short A www.primesphereintelligence.com
+          dig +short AAAA www.primesphereintelligence.com
+          echo '=== Existencia de registros de e-mail ==='
+          mx=$(dig +short MX primesphereintelligence.com)
+          if [ -n "$mx" ]; then echo 'MX: EXISTE'; else echo 'MX: NAO ENCONTRADO'; fi
+          echo '=== Certificado e status HTTP publico ==='
+          for host in https://primesphereintelligence.com https://www.primesphereintelligence.com https://primesphere-intelligence.rogerio7.workers.dev; do
+            echo "URL: $host"
+            curl --location --connect-timeout 10 --max-time 20 --silent --show-error --output /tmp/primesphere-page.html --write-out 'HTTP=%{http_code} final=%{url_effective} TLS=%{ssl_verify_result}\n' "$host" || true
+            head -c 600 /tmp/primesphere-page.html | tr '\n' ' ' | sed 's/</\n</g' | grep -E -i '<title|PrimeSphere' | head -3 || true
+          done
