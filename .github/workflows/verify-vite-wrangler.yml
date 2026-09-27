@@ -2,7 +2,7 @@ name: Validar PrimeSphere (sem publicar)
 
 on:
   push:
-    branches: [migration/primesphere-vite-wrangler]
+    branches: [main, migration/primesphere-vite-wrangler]
   pull_request:
     branches: [main]
   workflow_dispatch:

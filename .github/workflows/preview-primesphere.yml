@@ -1,0 +1,56 @@
+name: Preview PrimeSphere no Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'wrangler.json'
+      - '.github/workflows/preview-primesphere.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: primesphere-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verificar disponibilidade de credenciais Cloudflare
+        id: auth
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo 'Credenciais Cloudflare presentes. Preparando deploy de preview.'
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Preview aguardando CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID em Settings > Secrets and variables > Actions.'
+          fi
+      - name: Build verificado antes do preview
+        if: steps.auth.outputs.available == 'true'
+        run: npm ci && npm run check
+      - name: Publicar Worker separado de preview
+        if: steps.auth.outputs.available == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --name primesphere-intelligence-preview
