@@ -50,6 +50,21 @@ jobs:
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/?date=260917' >/tmp/prime-history.html
           grep -q 'AFTER CLOSE' /tmp/prime-latest.html
           grep -q '17/09/2026' /tmp/prime-history.html
+          echo 'Testar menu e paginas internas com Chrome'
+          curl --silent --fail http://127.0.0.1:4173/primesphere-logo.jpg -o /tmp/psi-logo.jpg
+          test $(wc -c </tmp/psi-logo.jpg) -gt 10000
+          grep -q '/quem-somos' /tmp/prime-latest.html
+          grep -q '/educacional' /tmp/prime-latest.html
+          grep -q '/trades' /tmp/prime-latest.html
+          for page in quem-somos educacional trades; do
+            timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "http://127.0.0.1:4173/$page" >"/tmp/$page.html"
+            grep -q 'Conteúdo em preparação' "/tmp/$page.html"
+            grep -q 'Voltar ao Brief Atual' "/tmp/$page.html"
+            test $(wc -c <"/tmp/$page.html") -gt 1000
+          done
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' > /tmp/prime-mobile.html
+          grep -q 'Abrir menu' /tmp/prime-mobile.html
+          grep -q 'Wall Street, com contexto' /tmp/prime-mobile.html
           if grep -Eiq 'Instalar app|appdeploy' /tmp/prime-latest.html; then echo 'Banner/AppDeploy no site'; exit 1; fi
       - name: Persistir package-lock no branch de migração
         if: github.event_name == 'push' && github.ref == 'refs/heads/migration/primesphere-vite-wrangler'

@@ -6,6 +6,15 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/deploy-primesphere.yml'
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'wrangler.json'
+      - 'tailwind.config.js'
+      - 'postcss.config.js'
 
 permissions:
   contents: read
@@ -28,9 +37,53 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Verificar paginas, logo e brief antes de publicar
+        run: |
+          set -euo pipefail
+          test -s dist/client/index.html
+          test -s dist/client/primesphere-logo.jpg
+          npx vite preview --host 127.0.0.1 --port 4173 >/tmp/psi-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          chrome=$(command -v google-chrome || command -v chromium)
+          for route in / /quem-somos /educacional /trades; do
+            name=$(echo "$route" | tr '/' '_' )
+            timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "http://127.0.0.1:4173$route" >"/tmp/psi-${name}.html"
+            grep -q 'PrimeSphere' "/tmp/psi-${name}.html"
+          done
+          grep -q 'AFTER CLOSE' /tmp/psi-_.html
+          grep -q 'Conteúdo em preparação' /tmp/psi-_quem-somos.html
+          grep -q 'Conteúdo em preparação' /tmp/psi-_educacional.html
+          grep -q 'Conteúdo em preparação' /tmp/psi-_trades.html
       - name: Publicar no Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
+      - name: Confirmar site publico, paginas e redirecionamento WWW
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..6}; do
+            if curl -fsSL "https://primesphereintelligence.com/primesphere-logo.jpg" -o /tmp/psi-live-logo.jpg && test $(wc -c </tmp/psi-live-logo.jpg) -gt 10000; then break; fi
+            sleep 5
+          done
+          test $(wc -c </tmp/psi-live-logo.jpg) -gt 10000
+          chrome=$(command -v google-chrome || command -v chromium)
+          for route in / /quem-somos /educacional /trades; do
+            name=$(echo "$route" | tr '/' '_' )
+            timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "https://primesphereintelligence.com$route" >"/tmp/live-${name}.html"
+            grep -q 'PrimeSphere' "/tmp/live-${name}.html"
+          done
+          grep -q 'AFTER CLOSE' /tmp/live-_.html
+          grep -q 'Conteúdo em preparação' /tmp/live-_quem-somos.html
+          grep -q 'Conteúdo em preparação' /tmp/live-_educacional.html
+          grep -q 'Conteúdo em preparação' /tmp/live-_trades.html
+          curl -fsSI 'https://www.primesphereintelligence.com/?260925' >/tmp/www.txt
+          tr -d '\r' </tmp/www.txt | grep -qiFx 'location: https://primesphereintelligence.com/?260925'
+          echo 'Site atualizado e validado nos dois dominios.'
