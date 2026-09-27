@@ -56,6 +56,9 @@ jobs:
             grep -q 'PrimeSphere' "/tmp/psi-${name}.html"
           done
           grep -q 'AFTER CLOSE' /tmp/psi-_.html
+          grep -q 'Magnificent 7' /tmp/psi-_.html
+          grep -q 'Próximos earnings da semana' /tmp/psi-_.html
+          grep -q 'Micron' /tmp/psi-_.html
           grep -q 'Conteúdo em preparação' /tmp/psi-_quem-somos.html
           grep -q 'Biblioteca de estudos' /tmp/psi-_educacional.html
           grep -q 'A Matemática do Zero DTE' /tmp/psi-_educacional.html
@@ -103,6 +106,9 @@ jobs:
             grep -q 'PrimeSphere' "/tmp/live-${name}.html"
           done
           grep -q 'AFTER CLOSE' /tmp/live-_.html
+          grep -q 'Magnificent 7' /tmp/live-_.html
+          grep -q 'Próximos earnings da semana' /tmp/live-_.html
+          grep -q 'Micron' /tmp/live-_.html
           grep -q 'Conteúdo em preparação' /tmp/live-_quem-somos.html
           grep -q 'Biblioteca de estudos' /tmp/live-_educacional.html
           grep -q 'A Matemática do Zero DTE' /tmp/live-_educacional.html
