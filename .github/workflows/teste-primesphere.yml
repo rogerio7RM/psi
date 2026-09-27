@@ -69,10 +69,15 @@ jobs:
           fi
           echo 'PASS: dominio principal HTTPS e HTML correto'
           echo 'TESTE 4: WWW 301 e preservacao de query string'
-          curl -fsSI --max-time 15 'https://www.primesphereintelligence.com/?260925' -o /tmp/redirect.headers
-          grep -qiE '^HTTP/[0-9.]+ 301' /tmp/redirect.headers
-          grep -qiE '^location: https://primesphereintelligence\.com/\?260925\r?$' /tmp/redirect.headers
+          curl -sSI --max-time 15 'https://www.primesphereintelligence.com/?260925' -o /tmp/redirect.headers
+          echo 'HTTP redirect headers (diagnostico):'
+          grep -Ei '^(HTTP/|location:|server:|cf-ray:)' /tmp/redirect.headers || true
+          grep -qiE '^HTTP/[0-9.]+ 301' /tmp/redirect.headers || { echo 'FALHA: status diferente de 301'; exit 1; }
+          grep -qiE '^location: https://primesphereintelligence\.com/\?260925\r?          echo 'PASS: www redireciona com 301 para o dominio principal e conserva ?260925'
+          echo 'TODOS OS TESTES PASSARAM'
+ /tmp/redirect.headers || { echo 'FALHA: Location inesperado'; exit 1; }
           final=$(curl -fsSL -o /dev/null -w '%{url_effective}' 'https://www.primesphereintelligence.com/?260925')
-          test "$final" = 'https://primesphereintelligence.com/?260925'
+          echo "URL final: $final"
+          test "$final" = 'https://primesphereintelligence.com/?260925' || { echo 'FALHA: URL final inesperada'; exit 1; }
           echo 'PASS: www redireciona com 301 para o dominio principal e conserva ?260925'
           echo 'TODOS OS TESTES PASSARAM'
