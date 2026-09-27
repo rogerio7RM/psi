@@ -1,0 +1,33 @@
+name: Verificar Vite e Wrangler (sem publicar)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/verify-vite-wrangler.yml'
+      - 'docs/primesphere-migration.md'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'wrangler.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Baixar branch
+        uses: actions/checkout@v6
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: TypeScript + Vite + Wrangler dry-run
+        run: npm run check
