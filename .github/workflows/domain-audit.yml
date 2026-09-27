@@ -15,24 +15,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Consultar DNS publico antes da transferencia
+      - name: Diagnosticar DNS publico e redirecionamento WWW
         shell: bash
         run: |
-          echo '=== Nameservers (NS) ==='
-          dig +short NS primesphereintelligence.com
-          echo '=== Root (A e AAAA) ==='
-          dig +short A primesphereintelligence.com
-          dig +short AAAA primesphereintelligence.com
-          echo '=== www (CNAME, A e AAAA) ==='
-          dig +short CNAME www.primesphereintelligence.com
-          dig +short A www.primesphereintelligence.com
-          dig +short AAAA www.primesphereintelligence.com
-          echo '=== Existencia de registros de e-mail ==='
-          mx=$(dig +short MX primesphereintelligence.com)
-          if [ -n "$mx" ]; then echo 'MX: EXISTE'; else echo 'MX: NAO ENCONTRADO'; fi
-          echo '=== Certificado e status HTTP publico ==='
-          for host in https://primesphereintelligence.com https://www.primesphereintelligence.com https://primesphere-intelligence.rogerio7.workers.dev; do
-            echo "URL: $host"
-            curl --location --connect-timeout 10 --max-time 20 --silent --show-error --output /tmp/primesphere-page.html --write-out 'HTTP=%{http_code} final=%{url_effective} TLS=%{ssl_verify_result}\n' "$host" || true
-            head -c 600 /tmp/primesphere-page.html | tr '\n' ' ' | sed 's/</\n</g' | grep -E -i '<title|PrimeSphere' | head -3 || true
+          set +e
+          echo '=== NS publico e DNS autoritativo ==='
+          dig +time=3 +tries=1 +short NS primesphereintelligence.com @1.1.1.1
+          for ns in leanna.ns.cloudflare.com mustafa.ns.cloudflare.com; do
+            echo "===== AUTHORITATIVE: $ns ====="
+            for host in primesphereintelligence.com www.primesphereintelligence.com; do
+              echo "HOST: $host"
+              dig +time=3 +tries=1 @"$ns" "$host" A +noall +comments +answer
+              dig +time=3 +tries=1 @"$ns" "$host" AAAA +noall +comments +answer
+            done
+          done
+          for resolver in 1.1.1.1 8.8.8.8; do
+            echo "===== RECURSIVE: $resolver ====="
+            for host in primesphereintelligence.com www.primesphereintelligence.com; do
+              echo "HOST: $host"
+              dig +time=3 +tries=1 @"$resolver" "$host" A +noall +comments +answer
+              dig +time=3 +tries=1 @"$resolver" "$host" AAAA +noall +comments +answer
+            done
+          done
+          echo '=== HTTPS sem seguir redirects ==='
+          for url in 'https://primesphereintelligence.com/?260925' 'https://www.primesphereintelligence.com/?260925' 'https://primesphere-intelligence.rogerio7.workers.dev/?260925'; do
+            echo "URL: $url"
+            curl -sS -I --connect-timeout 7 --max-time 12 "$url" | sed -n '1,25p'
+            echo "curl_exit: ${PIPESTATUS[0]}"
+          done
+          echo '=== HTTPS seguindo redirects ==='
+          for url in 'https://primesphereintelligence.com/?260925' 'https://www.primesphereintelligence.com/?260925'; do
+            echo "URL: $url"
+            curl -sS -L --max-redirs 6 --connect-timeout 7 --max-time 18 -o /dev/null -w 'HTTP=%{http_code} final=%{url_effective} redirects=%{num_redirects} TLS=%{ssl_verify_result}\n' "$url"
           done
