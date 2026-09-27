@@ -83,7 +83,7 @@ jobs:
             test $(wc -c <"/tmp/psi-study2-$n.webp") -gt 25000
             test "$(head -c 4 "/tmp/psi-study2-$n.webp")" = 'RIFF'
           done
-          grep -q 'Conteúdo em preparação' /tmp/psi-_trades.html
+          grep -q 'Trading Logbook' /tmp/psi-_trades.html
       - name: Publicar no Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:
@@ -130,7 +130,7 @@ jobs:
             curl -fsSL "https://primesphereintelligence.com/estudos/analise-quantitativa-put-spreads-0-dte/slide-$n.webp" -o "/tmp/live-study2-$n.webp"
             test $(wc -c <"/tmp/live-study2-$n.webp") -gt 25000
           done
-          grep -q 'Conteúdo em preparação' /tmp/live-_trades.html
+          grep -q 'Trading Logbook' /tmp/live-_trades.html
           curl -fsSI 'https://www.primesphereintelligence.com/?260925' >/tmp/www.txt
           tr -d '\r' </tmp/www.txt | grep -qiFx 'location: https://primesphereintelligence.com/?260925'
           echo 'Site atualizado e validado nos dois dominios.'

@@ -5,6 +5,7 @@ import SiteHeader from './components/SiteHeader';
 import HomeIntro from './components/HomeIntro';
 import PlaceholderPage from './pages/PlaceholderPage';
 import EducationPage from './pages/EducationPage';
+import TradesPage from './pages/TradesPage';
 
 type EditionModule = { default: ComponentType };
 type RegisteredEdition = {
@@ -92,7 +93,7 @@ function App() {
   } else if (path.startsWith('/educacional/')) {
     content = <EducationPage slug={path.slice('/educacional/'.length)} />;
   } else if (path === '/trades') {
-    content = <PlaceholderPage eyebrow='Estratégias' title='Trades' />;
+    content = <TradesPage />;
   } else {
     content = (
       <PlaceholderPage
