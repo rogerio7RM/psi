@@ -12,6 +12,25 @@ const market = [
   ['Bitcoin', 'US$ 83.989,66', '-0,46%'],
   ['USD/BRL', '5,18', '-0,01%'],
 ];
+
+const magnificent7 = [
+  ['AAPL', 'Apple', 'US$ 341,07', '+1,53%'],
+  ['MSFT', 'Microsoft', 'US$ 516,17', '+3,66%'],
+  ['AMZN', 'Amazon', 'US$ 249,67', '+0,12%'],
+  ['GOOGL', 'Alphabet', 'US$ 343,92', '+0,46%'],
+  ['META', 'Meta', 'US$ 751,66', '-3,33%'],
+  ['NVDA', 'Nvidia', 'US$ 225,07', '+0,22%'],
+  ['TSLA', 'Tesla', 'US$ 372,11', '-1,54%'],
+];
+const weeklyEarnings = [
+  ['28/09 · 22:00', 'JEF', 'Jefferies', 'Atividade de M&A, receitas de trading e pipeline de banco de investimento.'],
+  ['29/09 · 14:00', 'KMX', 'CarMax', 'Demanda por usados, margens e inadimplência no financiamento.'],
+  ['29/09 · 16:00', 'CCL', 'Carnival', 'Reservas futuras, preços de cruzeiros e custo de combustível.'],
+  ['30/09 · 22:30', 'MU', 'Micron', 'Memórias HBM para IA, preços de DRAM e projeções para o próximo trimestre.'],
+  ['01/10 · 14:00', 'ACN', 'Accenture', 'Contratos de IA, novos bookings e projeções de crescimento.'],
+  ['01/10 · 23:00', 'NKE', 'Nike', 'Vendas na China, estoques, margens e ritmo de recuperação.'],
+];
+
 const sectors = [
   ['Industriais (XLI)', '+0,94%'],
   ['Tecnologia (XLK)', '+0,79%'],
@@ -70,6 +89,32 @@ export default function AfterClose260925() {
             ))}
           </div>
           <p className='mt-4 text-xs leading-6 text-slate-500'>Fonte: Bigdata.com / Financial Modeling Prep, 25/09/2026, corte 20:20 UTC (22:20 Madrid). O rendimento do Treasury 10Y é uma taxa, não uma variação diária.</p>
+        </Section>
+
+        <Section title='Magnificent 7 · fechamento de 25/09'>
+          <div className='grid grid-cols-2 gap-3 md:grid-cols-4'>
+            {magnificent7.map(([ticker, company, price, change]) => (
+              <div key={ticker} className='rounded-xl border border-slate-700 bg-slate-950/80 p-4'>
+                <p className='text-xs font-bold text-cyan-300'>{ticker} · {company}</p>
+                <p className='mt-2 text-lg font-bold text-white'>{price}</p>
+                <p className={'mt-1 text-lg font-bold ' + (change.startsWith('+') ? 'text-emerald-400' : 'text-rose-400')}>{change}</p>
+              </div>
+            ))}
+          </div>
+          <p className='mt-4 text-xs leading-6 text-slate-400'>Último fechamento disponível: 25/09/2026 · Bigdata.com/FMP. Variação diária, não pré-market nem cotação em tempo real.</p>
+        </Section>
+        <Section title='Próximos earnings da semana · 28/09 a 02/10'>
+          <p className='mb-4 text-sm leading-7 text-slate-300'>Seleção de empresas relevantes. As expectativas abaixo indicam os temas que o mercado acompanhará; não são estimativas numéricas de consenso.</p>
+          <div className='grid gap-3 md:grid-cols-2'>
+            {weeklyEarnings.map(([time, ticker, company, focus]) => (
+              <div key={ticker} className='rounded-xl border border-slate-700 bg-slate-950/80 p-4'>
+                <p className='text-xs font-bold uppercase tracking-wider text-cyan-300'>{time} Madrid (CEST)</p>
+                <h3 className='mt-2 text-lg font-bold text-white'>{company} <span className='text-cyan-300'>({ticker})</span></h3>
+                <p className='mt-2 text-sm leading-6 text-slate-300'>{focus}</p>
+              </div>
+            ))}
+          </div>
+          <p className='mt-4 text-xs leading-6 text-slate-400'>Fonte: calendário corporativo Bigdata.com, consultado em 27/09/2026. Datas e horários podem mudar; Madrid está seis horas à frente de Nova York nesta semana.</p>
         </Section>
         <section className='grid gap-4 lg:grid-cols-3'>
           {drivers.map(([num, title, fact, impact]) => (
