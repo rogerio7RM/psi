@@ -23,7 +23,9 @@
       "bucket_name": "primesphere-instagram"
     }
   ],
+  "triggers": { "crons": ["0 14,15 * * *"] },
   "vars": {
+    "AUTO_PUBLISH_ENABLED": "false",
     "INSTAGRAM_USER_ID": "38672151025765639"
   }
 }
