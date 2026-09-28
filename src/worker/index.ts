@@ -4,6 +4,7 @@ type PublisherEnv = Env & {
   INSTAGRAM_ACCESS_TOKEN?: string;
   INSTAGRAM_USER_ID?: string;
   PUBLISH_ADMIN_KEY?: string;
+  INSTAGRAM_MEDIA?: R2Bucket;
 };
 const app = new Hono<{ Bindings: PublisherEnv }>();
 const GRAPH = "https://graph.instagram.com/v24.0";
@@ -59,6 +60,45 @@ async function waitForMedia(id: string, token: string) {
   }
   throw new Error("Instagram media is not ready; retry later");
 }
+
+// Public, read-only image URLs for Meta's media ingestion. Only approved files are uploaded
+// through the separately authenticated publisher endpoint.
+app.get("/api/media/:edition/:filename", async (c) => {
+  if (!c.env.INSTAGRAM_MEDIA) return c.notFound();
+  const edition = c.req.param("edition");
+  const filename = c.req.param("filename");
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition) || !/^card_0[1-8]\\.(png|jpg|jpeg)$/.test(filename)) return c.notFound();
+  const object = await c.env.INSTAGRAM_MEDIA.get(`${edition}/${filename}`);
+  if (!object) return c.notFound();
+  return new Response(object.body, {
+    headers: {
+      "Content-Type": object.httpMetadata?.contentType || "image/png",
+      "Cache-Control": "public, max-age=3600",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+});
+
+app.post("/api/publisher/media/:edition/:filename", async (c) => {
+  if (!c.env.INSTAGRAM_MEDIA) return c.json({ error: "R2 binding missing" }, 503);
+  const edition = c.req.param("edition");
+  const filename = c.req.param("filename");
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition) || !/^card_0[1-8]\\.(png|jpg|jpeg)$/.test(filename)) {
+    return c.json({ error: "Invalid media path" }, 400);
+  }
+  const type = c.req.header("content-type")?.split(";")[0].toLowerCase();
+  if (type !== "image/png" && type !== "image/jpeg") return c.json({ error: "PNG or JPEG required" }, 415);
+  const size = Number(c.req.header("content-length") || 0);
+  if (size > 8_000_000) return c.json({ error: "File too large" }, 413);
+  const bytes = await c.req.arrayBuffer();
+  if (bytes.byteLength > 8_000_000 || !bytes.byteLength) return c.json({ error: "Invalid image size" }, 413);
+  const signature = new Uint8Array(bytes.slice(0, 8));
+  const isPng = signature.join(",") === "137,80,78,71,13,10,26,10";
+  const isJpeg = signature[0] === 255 && signature[1] === 216 && signature[2] === 255;
+  if ((type === "image/png" && !isPng) || (type === "image/jpeg" && !isJpeg)) return c.json({ error: "Image signature mismatch" }, 415);
+  await c.env.INSTAGRAM_MEDIA.put(`${edition}/${filename}`, bytes, { httpMetadata: { contentType: type } });
+  return c.json({ uploaded: true, imageUrl: new URL(`/api/media/${edition}/${filename}`, c.req.url).toString() }, 201);
+});
 
 app.post("/api/publisher/instagram/carousel", async (c) => {
   const token = c.env.INSTAGRAM_ACCESS_TOKEN;
