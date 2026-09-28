@@ -31,7 +31,7 @@ app.get("/api/publisher/instagram/status", async (c) => {
     const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) return c.json({ configured: true, authorized: false, httpStatus: response.status }, 502);
     const profile = await response.json() as { id?: string; username?: string };
-    return c.json({ configured: true, authorized: profile.id === userId, username: profile.username, idMatches: profile.id === userId });
+    return c.json({ configured: true, authorized: profile.id === userId, username: profile.username, metaUserId: profile.id, idMatches: profile.id === userId });
   } catch {
     return c.json({ configured: true, authorized: false, reason: "Meta API unavailable" }, 502);
   }
