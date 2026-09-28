@@ -19,5 +19,8 @@
       "binding": "INSTAGRAM_MEDIA",
       "bucket_name": "primesphere-instagram"
     }
-  ]
+  ],
+  "vars": {
+    "INSTAGRAM_USER_ID": "17841477318455704"
+  }
 }
