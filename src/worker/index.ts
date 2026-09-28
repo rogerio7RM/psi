@@ -5,6 +5,7 @@ type PublisherEnv = Env & {
   INSTAGRAM_USER_ID?: string;
   PUBLISH_ADMIN_KEY?: string;
   INSTAGRAM_MEDIA?: R2Bucket;
+  AUTO_PUBLISH_ENABLED?: string;
 };
 const app = new Hono<{ Bindings: PublisherEnv }>();
 const GRAPH = "https://graph.instagram.com/v24.0";
@@ -131,4 +132,77 @@ app.post("/api/publisher/instagram/carousel", async (c) => {
   }
 });
 
-export default app;
+
+type DailyEdition = { edition: string; caption: string; approved: boolean };
+function madridEdition(now: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" }).formatToParts(now);
+  const get = (key: string) => parts.find((part) => part.type === key)?.value || "";
+  return { date: `${get("year")}-${get("month")}-${get("day")}`, hour: Number(get("hour")) };
+}
+async function dailyReadiness(env: PublisherEnv, edition: string) {
+  if (!env.INSTAGRAM_MEDIA) return { ready: false, reason: "R2 unavailable" };
+  const [manifest, published, ...cards] = await Promise.all([
+    env.INSTAGRAM_MEDIA.get(`${edition}/manifest.json`),
+    env.INSTAGRAM_MEDIA.get(`${edition}/published.json`),
+    ...Array.from({ length: 8 }, (_, i) => env.INSTAGRAM_MEDIA!.head(`${edition}/card_${String(i + 1).padStart(2, "0")}.png`)),
+  ]);
+  const metadata = manifest ? await manifest.json<DailyEdition>().catch(() => null) : null;
+  const missing = cards.flatMap((card, i) => card ? [] : [i + 1]);
+  return { ready: !!metadata?.approved && metadata.edition === edition && !!metadata.caption && !missing.length && !published,
+    approved: !!metadata?.approved, missingCards: missing, alreadyPublished: !!published, caption: metadata?.caption };
+}
+async function publishDaily(env: PublisherEnv, origin: string, edition: string) {
+  const state = await dailyReadiness(env, edition);
+  if (!state.ready || !state.caption || !env.INSTAGRAM_ACCESS_TOKEN || !env.INSTAGRAM_USER_ID || !env.INSTAGRAM_MEDIA)
+    return { published: false, reason: "Edition not ready, already published, or Instagram not configured" };
+  // An in-progress marker prevents an automatic retry after an ambiguous Meta response.
+  const marker = `${edition}/publishing.json`;
+  if (await env.INSTAGRAM_MEDIA.head(marker)) return { published: false, reason: "Publishing already attempted; manual review required" };
+  await env.INSTAGRAM_MEDIA.put(marker, JSON.stringify({ startedAt: new Date().toISOString() }), { httpMetadata: { contentType: "application/json" } });
+  const token = env.INSTAGRAM_ACCESS_TOKEN, userId = env.INSTAGRAM_USER_ID;
+  const children: string[] = [];
+  for (let i = 1; i <= 8; i++) {
+    const filename = `card_${String(i).padStart(2, "0")}.png`;
+    const imageUrl = new URL(`/api/media/${edition}/${filename}`, origin).toString();
+    const child = await metaPost(`${userId}/media`, token, { image_url: imageUrl, is_carousel_item: "true" });
+    children.push(child.id!);
+  }
+  for (const id of children) await waitForMedia(id, token);
+  const carousel = await metaPost(`${userId}/media`, token, { media_type: "CAROUSEL", children: children.join(","), caption: state.caption });
+  await waitForMedia(carousel.id!, token);
+  const result = await metaPost(`${userId}/media_publish`, token, { creation_id: carousel.id! });
+  await env.INSTAGRAM_MEDIA.put(`${edition}/published.json`, JSON.stringify({ mediaId: result.id, publishedAt: new Date().toISOString() }), { httpMetadata: { contentType: "application/json" } });
+  return { published: true, mediaId: result.id };
+}
+// Upload an explicitly approved daily caption; no automated publishing until enabled.
+app.post("/api/publisher/instagram/edition/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  if (!c.env.INSTAGRAM_MEDIA) return c.json({ error: "R2 unavailable" }, 503);
+  const body = await c.req.json<{ caption?: string; approved?: boolean }>().catch(() => null);
+  if (!body || typeof body.caption !== "string" || !body.caption.trim() || body.caption.length > 2200 || body.approved !== true)
+    return c.json({ error: "Approved caption required (max 2200 chars)" }, 400);
+  await c.env.INSTAGRAM_MEDIA.put(`${edition}/manifest.json`, JSON.stringify({ edition, caption: body.caption, approved: true }), { httpMetadata: { contentType: "application/json" } });
+  return c.json({ saved: true, edition });
+});
+app.get("/api/publisher/instagram/edition/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  const state = await dailyReadiness(c.env, edition);
+  const { caption: _caption, ...safeState } = state;
+  return c.json({ edition, ...safeState, automationEnabled: c.env.AUTO_PUBLISH_ENABLED === "true" });
+});
+
+export default {
+  fetch: app.fetch,
+  async scheduled(_event: ScheduledEvent, env: PublisherEnv, ctx: ExecutionContext) {
+    if (env.AUTO_PUBLISH_ENABLED !== "true") return;
+    const now = madridEdition(new Date());
+    // Cron runs at 14:00 and 15:00 UTC; publish only at 16:00 Madrid, including DST.
+    if (now.hour !== 16) return;
+    ctx.waitUntil(publishDaily(env, "https://primesphereintelligence.com", now.date).catch((error) => {
+      console.error("Daily Instagram publish failed; publishing marker retained for manual review", String(error));
+    }));
+  },
+};
+
