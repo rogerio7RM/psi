@@ -177,7 +177,7 @@ async function publishDaily(env: PublisherEnv, origin: string, edition: string) 
 // Upload an explicitly approved daily caption; no automated publishing until enabled.
 app.post("/api/publisher/instagram/edition/:edition", async (c) => {
   const edition = c.req.param("edition");
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
   if (!c.env.INSTAGRAM_MEDIA) return c.json({ error: "R2 unavailable" }, 503);
   const body = await c.req.json<{ caption?: string; approved?: boolean }>().catch(() => null);
   if (!body || typeof body.caption !== "string" || !body.caption.trim() || body.caption.length > 2200 || body.approved !== true)
@@ -187,7 +187,7 @@ app.post("/api/publisher/instagram/edition/:edition", async (c) => {
 });
 app.get("/api/publisher/instagram/edition/:edition", async (c) => {
   const edition = c.req.param("edition");
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
   const state = await dailyReadiness(c.env, edition);
   const { caption: _caption, ...safeState } = state;
   return c.json({ edition, ...safeState, automationEnabled: c.env.AUTO_PUBLISH_ENABLED === "true" });
