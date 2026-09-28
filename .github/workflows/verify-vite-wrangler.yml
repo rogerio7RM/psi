@@ -19,7 +19,7 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
       - name: Node 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
@@ -34,7 +34,8 @@ jobs:
           test -f src/react-app/editions/260925-afterclose.tsx
       - name: Verificar renderização real no Chrome
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+          trap 'code=$?; echo "FAILED at line $LINENO (exit $code): $BASH_COMMAND"; for f in /tmp/prime-latest.html /tmp/prime-history.html /tmp/quem-somos.html /tmp/trades.html /tmp/educacional.html; do if test -f "$f"; then echo "$f: $(wc -c < "$f") bytes"; fi; done' ERR
           npx vite preview --host 127.0.0.1 --port 4173 >/tmp/primesphere-preview.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
@@ -48,6 +49,7 @@ jobs:
           test -n "$chrome" || { echo 'Chrome nao disponivel no runner'; exit 1; }
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' >/tmp/prime-latest.html
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/?date=260917' >/tmp/prime-history.html
+          echo "Checking latest page"
           grep -q 'AFTER CLOSE' /tmp/prime-latest.html
           grep -q '17/09/2026' /tmp/prime-history.html
           echo 'Testar menu e paginas internas com Chrome'
