@@ -67,7 +67,7 @@ app.get("/api/media/:edition/:filename", async (c) => {
   if (!c.env.INSTAGRAM_MEDIA) return c.notFound();
   const edition = c.req.param("edition");
   const filename = c.req.param("filename");
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition) || !/^card_0[1-8]\\.(png|jpg|jpeg)$/.test(filename)) return c.notFound();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition) || !/^card_0[1-8]\.(png|jpg|jpeg)$/.test(filename)) return c.notFound();
   const object = await c.env.INSTAGRAM_MEDIA.get(`${edition}/${filename}`);
   if (!object) return c.notFound();
   return new Response(object.body, {
@@ -83,7 +83,7 @@ app.post("/api/publisher/media/:edition/:filename", async (c) => {
   if (!c.env.INSTAGRAM_MEDIA) return c.json({ error: "R2 binding missing" }, 503);
   const edition = c.req.param("edition");
   const filename = c.req.param("filename");
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition) || !/^card_0[1-8]\\.(png|jpg|jpeg)$/.test(filename)) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition) || !/^card_0[1-8]\.(png|jpg|jpeg)$/.test(filename)) {
     return c.json({ error: "Invalid media path" }, 400);
   }
   const type = c.req.header("content-type")?.split(";")[0].toLowerCase();
