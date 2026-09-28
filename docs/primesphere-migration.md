@@ -1,28 +1,23 @@
-# Migração real da PrimeSphere para Vite + Wrangler
+# PrimeSphere: Cloudflare como único destino de publicação
 
-**Situação:** arquivos de edição do AppDeploy copiados para \`src/react-app/editions/\`; Tailwind e CSS restaurados; a página principal renderiza automaticamente a data mais recente, priorizando \`afterclose\` em vez de \`final\` e da edição inicial. Preservados \`indicadores/\` e Worker Hono já existentes no \`psi\`.
+O código do site fica em `rogerio7RM/psi` (branch `main`). O workflow `.github/workflows/primesphere-cloudflare-auto.yml` faz automaticamente `npm ci`, typecheck, build e `wrangler deploy` a cada push em `main`, além de permitir disparo manual. O AppDeploy não faz parte do fluxo de publicação.
 
-**Atenção:** o repositório \`rogerio7RM/psi\` é público. Não armazene chaves de Bigdata, Cloudflare ou outras credenciais nele. Os arquivos importados de AppDeploy são atualmente páginas editoriais TSX, não incluem assets binários. Os fundos Instagram aprovados em OneDrive não faziam parte da versão inspecionada no AppDeploy e precisam ser importados separadamente se forem usados na web.
+## Configuração obrigatória (uma única vez)
 
-## Workflow seguro
-1. Pull request \`migration/primesphere-vite-wrangler\` executa \`npm install\`, \`npm run check\` e smoke test sobre \`dist/client/index.html\`. Na branch, a ação atualiza automaticamente \`package-lock.json\` quando necessário.
-2. Verifique a renderização real em desktop e celular em Cloudflare preview. O workflow CI só compila; não valida layout nem dados de mercado.
-3. Somente depois dos testes, integre a PR em \`main\`; o deploy é **manual** por \`Actions → Publicar PrimeSphere (manual) → Run workflow\`, condicionado ao ambiente protegido \`production\`.
-4. Em \`Settings → Secrets and variables → Actions\`, configure \`CLOUDFLARE_ACCOUNT_ID\` e \`CLOUDFLARE_API_TOKEN\`. Idealmente salve os segredos no ambiente GitHub \`production\` e crie regra de aprovação. Nunca os coloque no chat nem no repositório.
-5. O novo Worker usa o nome \`primesphere-intelligence\` para não sobrescrever o antigo \`psi\`. Após publicar, confirme o \`*.workers.dev\` e realize smoke test ao vivo.
-6. Só após conferência, associe \`primesphereintelligence.com\` e \`www\` ao novo Worker nas rotas/custom domains Cloudflare, revisando DNS, SSL, MX, SPF, DKIM e outras entradas para não afetar e-mail. **O domínio atual continua no AppDeploy até essa etapa.**
+Em GitHub → Settings → Secrets and variables → Actions, configure os secrets `CLOUDFLARE_API_TOKEN` (token com permissão Workers Scripts Edit para a conta correta) e `CLOUDFLARE_ACCOUNT_ID`. Opcionalmente, defina a variável `PRIMESPHERE_SITE_URL` como a URL pública do site para o smoke test HTTP após o deploy. Nunca armazene tokens no repositório.
 
-### Comandos
-\`\`\`sh
-npm ci
-npm run check        # TypeScript → Vite → Wrangler deploy --dry-run
-npm run deploy       # Publicação real; requer credenciais Cloudflare
-\`\`\`
+No Cloudflare, vincule `primesphereintelligence.com` e `www.primesphereintelligence.com` ao Worker `primesphere-intelligence`, revise DNS e SSL e preserve os registros de e-mail. Confirme o domínio e o funcionamento do Worker antes de desativar a infraestrutura antiga. A criação do workflow não configura automaticamente DNS, segredos nem confirma que o deploy já concluiu.
 
-### Política de edições
-- Arquivos \`YYMMDD.tsx\`, \`YYMMDD-final.tsx\`, \`YYMMDD-afterclose.tsx\` são compilados automaticamente via Vite \`import.meta.glob\`.
-- Para cada data, o app serve \`afterclose > final > edição base\`. Se não houver data solicitada, usa a última data disponível.
-- Consulta histórica: \`?260925\` ou \`?date=260925\`.
-- **Importante:** edição mais recente publicada no histórico acessível ainda é 25/09/2026; a migração **não cria** edição nova nem atualiza automaticamente dados financeiros. Não confundir última edição publicada com cotação ao vivo.
+## Edições e conteúdo
 
-Documentação Cloudflare: https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
+`src/react-app/editions/YYMMDD.tsx`: Morning Brief; `YYMMDD-final.tsx`: atualização final; `YYMMDD-afterclose.tsx`: fechamento. O app seleciona automaticamente a edição mais recente e prioriza afterclose > final > morning. Cada nova edição publicada via commit em main dispara o deploy automático.
+
+A geração editorial diária ainda exige um processo de ingestão de dados, verificação de fontes e geração de arquivos. O workflow de deploy **não** inventa notícias, não busca cotações e não cria edições sozinho. Antes de habilitar publicação editorial sem supervisão, adicionar validação de data, proveniência de cotações, controle de duplicidade e bloqueio em caso de falha.
+
+## Instagram automático (arquitetura)
+
+Pipeline separado: dados verificados → roteiro PT-BR → oito imagens independentes 4:5 com backgrounds aprovados → validação de dimensões/contraste/legibilidade → hospedagem HTTPS dos oito arquivos → Meta Graph API ou agendador com autoPublish → conferência do ID e estado de publicação → alerta em caso de erro. Credenciais Meta devem ficar nos secrets do GitHub ou Cloudflare; não no código. Não publicar se faltar dado confirmado, imagem ou autorização. O workflow de deploy do site não publica no Instagram.
+
+## Verificação
+
+GitHub → Actions → PrimeSphere Cloudflare Auto Deploy deve mostrar build e deploy concluídos. Conferir a URL do Worker, o domínio principal e a última edição. Se o workflow falhar, consultar o log e corrigir o erro; não considerar o commit como publicação concluída.
