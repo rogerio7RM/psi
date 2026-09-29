@@ -1,0 +1,53 @@
+name: PrimeSphere Instagram staging
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: Edition date (YYYY-MM-DD)
+        required: true
+        default: "2026-09-29"
+
+permissions:
+  contents: read
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: https://primesphereintelligence.com
+      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install renderer
+        run: npm install --no-save --package-lock=false sharp
+      - name: Validate edition
+        run: |
+          test -n "$PUBLISH_ADMIN_KEY" || (echo "Missing PUBLISH_ADMIN_KEY" && exit 1)
+          test -f "content/instagram/${{ inputs.edition }}.json" || (echo "Edition content not found" && exit 1)
+      - name: Download approved backgrounds from R2 through authenticated Worker
+        run: |
+          mkdir -p .staging/backgrounds .staging/cards
+          node <<'NODE'
+          const fs=require("fs"), d=require("./content/instagram/${{ inputs.edition }}.json");
+          (async()=>{for(const c of d.cards){const n=String(c.background).padStart(2,"0");const r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+c.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw new Error("Background "+c.background+" HTTP "+r.status);fs.writeFileSync(".staging/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()));}})().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+      - name: Render and QA 8 cards
+        run: node scripts/render-instagram-cards.mjs "content/instagram/${{ inputs.edition }}.json" .staging/backgrounds .staging/cards
+      - name: Upload cards and approved caption to R2
+        run: |
+          node <<'NODE'
+          const fs=require("fs"), d=require("./content/instagram/${{ inputs.edition }}.json");
+          (async()=>{for(let i=1;i<=8;i++){const n=String(i).padStart(2,"0"),b=fs.readFileSync(".staging/cards/card_"+n+".png");const r=await fetch(process.env.BASE_URL+"/api/publisher/media/"+d.edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY,"Content-Type":"image/png","Content-Length":String(b.length)},body:b});if(!r.ok)throw new Error("Card "+n+" upload HTTP "+r.status);}
+          const r=await fetch(process.env.BASE_URL+"/api/publisher/instagram/edition/"+d.edition,{method:"POST",headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY,"Content-Type":"application/json"},body:JSON.stringify({caption:d.caption,approved:true})});if(!r.ok)throw new Error("Manifest HTTP "+r.status);
+          const s=await fetch(process.env.BASE_URL+"/api/publisher/instagram/edition/"+d.edition,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});const j=await s.json();console.log("STAGING RESULT:",JSON.stringify(j));if(!j.ready)process.exit(1);})().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+      - name: Upload QA preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: instagram-${{ inputs.edition }}-qa
+          path: .staging/cards/*.png
+          retention-days: 7
