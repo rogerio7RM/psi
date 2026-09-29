@@ -42,7 +42,7 @@ app.get("/api/publisher/instagram/status", async (c) => {
 // A clean result is meaningful only if the entire requested date was scanned.
 app.get("/api/publisher/instagram/duplicates/:edition", async (c) => {
   const edition = c.req.param("edition");
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
   const token = c.env.INSTAGRAM_ACCESS_TOKEN;
   if (!token) return c.json({ verified: false, reason: "Instagram token unavailable" }, 503);
   const matches: Array<{ id: string; timestamp?: string; permalink?: string }> = [];
