@@ -38,6 +38,38 @@ app.get("/api/publisher/instagram/status", async (c) => {
   }
 });
 
+// Read-only duplicate check against recent media on the connected Instagram account.
+// A clean result is meaningful only if the entire requested date was scanned.
+app.get("/api/publisher/instagram/duplicates/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  const token = c.env.INSTAGRAM_ACCESS_TOKEN;
+  if (!token) return c.json({ verified: false, reason: "Instagram token unavailable" }, 503);
+  const matches: Array<{ id: string; timestamp?: string; permalink?: string }> = [];
+  try {
+    let next: string | null = `${GRAPH}/me/media?fields=id,caption,timestamp,permalink,media_type&limit=50`;
+    let pages = 0, reachedEarlierDate = false;
+    while (next && pages < 10) {
+      const response: Response = await fetch(next, { headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) return c.json({ verified: false, reason: "Meta media listing unavailable", httpStatus: response.status }, 502);
+      const data = await response.json() as { data?: Array<{id:string;caption?:string;timestamp?:string;permalink?:string}>; paging?: {next?:string} };
+      for (const media of data.data || []) {
+        const day = media.timestamp?.slice(0,10);
+        if (day && day < edition) reachedEarlierDate = true;
+        if (day === edition && /wall street|antes da abertura|primesphere|portfolio intelligence/i.test(media.caption || ""))
+          matches.push({ id: media.id, timestamp: media.timestamp, permalink: media.permalink });
+      }
+      next = data.paging?.next || null;
+      pages++;
+      if (reachedEarlierDate) break;
+    }
+    return c.json({ edition, verified: reachedEarlierDate || !next, duplicateFound: matches.length > 0,
+      matches, scannedPages: pages, incomplete: !!next && !reachedEarlierDate });
+  } catch {
+    return c.json({ verified: false, reason: "Meta duplicate check failed" }, 502);
+  }
+});
+
 type MetaResponse = { id?: string; status_code?: string; error?: { message?: string } };
 async function metaPost(path: string, token: string, params: Record<string, string>): Promise<MetaResponse> {
   const body = new URLSearchParams(params);
