@@ -112,6 +112,16 @@ app.get("/api/media/:edition/:filename", async (c) => {
   });
 });
 
+// Authenticated access to the approved background library in R2.
+app.get("/api/publisher/background/:number", async (c) => {
+  if (!c.env.INSTAGRAM_MEDIA) return c.notFound();
+  const number = Number(c.req.param("number"));
+  if (!Number.isInteger(number) || number < 1 || number > 38) return c.notFound();
+  const object = await c.env.INSTAGRAM_MEDIA.get(`backgrounds/aprovados/Background aprovado (${number}).png`);
+  if (!object) return c.notFound();
+  return new Response(object.body, { headers: { "Content-Type": "image/png", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
+});
+
 app.post("/api/publisher/media/:edition/:filename", async (c) => {
   if (!c.env.INSTAGRAM_MEDIA) return c.json({ error: "R2 binding missing" }, 503);
   const edition = c.req.param("edition");
