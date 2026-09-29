@@ -1,0 +1,14 @@
+{
+  "edition": "2026-09-29",
+  "caption": "Wall Street segue pressionada pelos juros longos dos EUA, enquanto tecnologia mostra mais resistência. O mercado acompanha Treasuries, petróleo, dados de atividade e os próximos indicadores de inflação.\n\nConteúdo informativo. Não constitui recomendação de investimento.\n\n#WallStreet #Mercados #Investimentos #PrimeSphere",
+  "cards": [
+    {"background":21,"eyebrow":"PRIMESPHERE INTELLIGENCE","title":"Wall Street","accent":"AGORA","body":"Juros longos voltam ao centro do mercado","footer":"29 SET 2026 • @portfoliointelligence"},
+    {"background":22,"eyebrow":"WALL STREET EM 30 SEGUNDOS","title":"Mercado sem direção firme","accent":"JUROS ↑","body":"Treasuries pressionam o apetite por risco. Tecnologia mostra mais resistência que outros setores.","footer":"PrimeSphere Intelligence"},
+    {"background":23,"eyebrow":"O QUE MOVE O MERCADO","title":"1. Treasury yields","accent":"PRESSÃO","body":"A alta dos rendimentos dos títulos americanos volta a apertar as condições financeiras.","footer":"PrimeSphere Intelligence"},
+    {"background":24,"eyebrow":"O QUE MOVE O MERCADO","title":"2. Dados econômicos","accent":"ATENÇÃO","body":"Confiança do consumidor e mercado de trabalho reforçam a leitura de uma economia mais cautelosa.","footer":"PrimeSphere Intelligence"},
+    {"background":25,"eyebrow":"O QUE MOVE O MERCADO","title":"3. Tecnologia","accent":"RESILIÊNCIA","body":"Semicondutores ajudam a limitar a pressão sobre os principais índices americanos.","footer":"PrimeSphere Intelligence"},
+    {"background":26,"eyebrow":"RADAR","title":"Nvidia em foco","accent":"NVDA","body":"A companhia permanece no radar após anunciar um grande programa de recompra de ações.","footer":"PrimeSphere Intelligence"},
+    {"background":27,"eyebrow":"MACRO","title":"Petróleo + juros","accent":"VOLATILIDADE","body":"Geopolítica, energia e Treasuries continuam influenciando a precificação de risco em Wall Street.","footer":"PrimeSphere Intelligence"},
+    {"background":28,"eyebrow":"O QUE OBSERVAR","title":"Inflação e Fed","accent":"PRÓXIMO PASSO","body":"Os próximos dados de inflação podem alterar novamente as expectativas para a trajetória dos juros americanos.","footer":"Siga @portfoliointelligence"}
+  ]
+}
