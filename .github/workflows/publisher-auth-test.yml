@@ -1,0 +1,39 @@
+name: PrimeSphere publisher authentication test
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/publisher-auth-test.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify-publisher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify authenticated publisher status (read only)
+        env:
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+        run: |
+          node <<'NODE'
+          const key = process.env.PUBLISH_ADMIN_KEY;
+          if (!key) { console.error("BLOCKED: GitHub secret PUBLISH_ADMIN_KEY unavailable"); process.exit(1); }
+          const base = "https://primesphereintelligence.com";
+          const edition = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year:"numeric",month:"2-digit",day:"2-digit" }).format(new Date());
+          for (const path of ["/api/publisher/instagram/status", "/api/publisher/instagram/edition/" + edition]) {
+            let response;
+            try { response = await fetch(base + path, {headers: {"X-Publisher-Key":key}, signal: AbortSignal.timeout(15000)}); }
+            catch(e) { console.error(path + ": network failure: " + e.name); process.exitCode=1; continue; }
+            let body = {};
+            try {body=await response.json()} catch {}
+            if (path.endsWith("/status")) {
+              console.log("Meta status: HTTP " + response.status + "; configured=" + Boolean(body.configured) + "; authorized=" + Boolean(body.authorized) + "; idMatches=" + Boolean(body.idMatches));
+              if (!response.ok || body.authorized !== true || body.idMatches !== true) process.exitCode=1;
+            } else {
+              console.log("Edition " + edition + ": HTTP " + response.status + "; ready=" + Boolean(body.ready) + "; approved=" + Boolean(body.approved) + "; missingCards=" + JSON.stringify(body.missingCards || []) + "; alreadyPublished=" + Boolean(body.alreadyPublished) + "; automationEnabled=" + Boolean(body.automationEnabled));
+              if (!response.ok) process.exitCode=1;
+            }
+          }
+          NODE
