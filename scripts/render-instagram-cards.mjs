@@ -21,7 +21,6 @@ for (let i=0;i<8;i++){
  <text x="135" y="${390+title.length*86}" fill="white" font-family="Arial,sans-serif" font-size="30" font-weight="800">${esc(c.accent)}</text>
  ${body.map((x,j)=>`<text x="110" y="${530+title.length*86+j*54}" fill="white" font-family="Arial,sans-serif" font-size="40" font-weight="500">${esc(x)}</text>`).join("")}
  <text x="110" y="1160" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="27">${esc(c.footer)}</text>
- <text x="930" y="1160" text-anchor="end" fill="#67e8f9" font-family="Arial,sans-serif" font-size="25">${i+1}/8</text>
  </svg>`;
  const out=path.join(outDir,`card_${String(i+1).padStart(2,"0")}.png`);
  await sharp(bg).resize(1080,1350,{fit:"cover"}).composite([{input:Buffer.from(svg)}]).png({quality:92}).toFile(out);
