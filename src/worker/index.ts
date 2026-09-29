@@ -216,7 +216,10 @@ async function publishDaily(env: PublisherEnv, origin: string, edition: string) 
   const state = await dailyReadiness(env, edition);
   if (!state.ready || !state.caption || !env.INSTAGRAM_ACCESS_TOKEN || !env.INSTAGRAM_USER_ID || !env.INSTAGRAM_MEDIA)
     return { published: false, reason: "Edition not ready, already published, or Instagram not configured" };
-  const duplicate = await metaDuplicateForEdition(env, edition);\n  if (!duplicate.verified) return { published: false, reason: "Meta duplicate check incomplete; publication blocked" };\n  if (duplicate.duplicateFound) return { published: false, reason: "Equivalent Instagram edition already exists; publication blocked" };\n  // An in-progress marker prevents an automatic retry after an ambiguous Meta response.
+  const duplicate = await metaDuplicateForEdition(env, edition);
+  if (!duplicate.verified) return { published: false, reason: "Meta duplicate check incomplete; publication blocked" };
+  if (duplicate.duplicateFound) return { published: false, reason: "Equivalent Instagram edition already exists; publication blocked" };
+  // An in-progress marker prevents an automatic retry after an ambiguous Meta response.
   const marker = `${edition}/publishing.json`;
   if (await env.INSTAGRAM_MEDIA.head(marker)) return { published: false, reason: "Publishing already attempted; manual review required" };
   await env.INSTAGRAM_MEDIA.put(marker, JSON.stringify({ startedAt: new Date().toISOString() }), { httpMetadata: { contentType: "application/json" } });
