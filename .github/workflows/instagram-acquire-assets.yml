@@ -1,0 +1,49 @@
+name: PrimeSphere acquire approved Instagram cards
+
+on:
+  push:
+    paths:
+      - ".github/workflows/instagram-acquire-assets.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and validate approved cards
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://primesphere-card-transfer-h2wh0x.v2.appdeploy.ai"
+          expected=(
+            "0FE3C933E4A750481A36C92C6C02A3EF11DD54FC254E9D2D755844F8A414AC1A"
+            "CE33A4D3FC3FD2689A4F0300DC2A81E0E572E5783AEA4E77649EBCABCFA407A8"
+            "2B14DFDE00BC2395591365A0FE2F368263D1393B550B34C4F5445A66D1EFFDFD"
+            "E519E848A12AF322D004E648ACD355C5038B45EA046DD4367C24751324B63D2F"
+            "A68E1467E1071ED8A39A5D0DB4D0FFD71F61E52EDF37F5382EC26BCC17D2B4D0"
+            "BF89E01BF1F179549807F033065BA87BA036EE49F8B98474F34A744AE147D3A7"
+            "FDF22505369F7BAD9E9A505A6101A203A051A5E75B1C73123B0D14DA6BBD8C33"
+            "34B7C132472C21AF119BF1DF5849B9629AF781E28994B0E8577FC6DDCC14AFF3"
+          )
+          mkdir -p tmp/instagram/2026-09-30
+          for n in 01 02 03 04 05 06 07 08; do
+            idx=$((10#$n-1))
+            file="tmp/instagram/2026-09-30/card_$n.png"
+            curl -fsSL --retry 3 "$base/card_$n.png" -o "$file"
+            actual=$(sha256sum "$file" | awk '{print toupper($1)}')
+            test "$actual" = "${expected[$idx]}"
+            python3 -c 'import struct,sys; b=open(sys.argv[1],"rb").read(24); assert b[:8]==b"\x89PNG\r\n\x1a\n"; assert struct.unpack(">II",b[16:24])==(1080,1350)' "$file"
+          done
+          echo "Eight approved cards validated"
+      - name: Commit approved assets
+        run: |
+          git config user.name "PrimeSphere Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add tmp/instagram/2026-09-30/card_*.png
+          git diff --cached --quiet && exit 0
+          git commit -m "Stage approved Instagram cards 2026-09-30"
+          git push
