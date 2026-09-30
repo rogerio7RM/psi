@@ -249,6 +249,20 @@ async function publishDaily(env: PublisherEnv, origin: string, edition: string) 
   await env.INSTAGRAM_MEDIA.put(`${edition}/published.json`, JSON.stringify({ mediaId: result.id, publishedAt: new Date().toISOString() }), { httpMetadata: { contentType: "application/json" } });
   return { published: true, mediaId: result.id };
 }
+// Publish one approved edition through the same guarded daily pipeline.
+// This endpoint never accepts tokens or captions from the caller; it reads the approved
+// manifest and media already staged in R2, checks duplicates, and writes published.json.
+app.post("/api/publisher/instagram/publish/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  try {
+    const result = await publishDaily(c.env, new URL(c.req.url).origin, edition);
+    return c.json(result, result.published ? 200 : 409);
+  } catch {
+    return c.json({ published: false, reason: "Instagram publication failed; review Worker logs before retrying" }, 502);
+  }
+});
+
 // Upload an explicitly approved daily caption; no automated publishing until enabled.
 app.post("/api/publisher/instagram/edition/:edition", async (c) => {
   const edition = c.req.param("edition");
