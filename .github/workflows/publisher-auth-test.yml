@@ -1,4 +1,5 @@
 name: PrimeSphere publisher authentication test
+# Auth probe: verifies repository secret access without exposing its value.
 on:
   workflow_dispatch:
   push:
