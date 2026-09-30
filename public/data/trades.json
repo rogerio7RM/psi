@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "PrimeSphere/Operacoes Logbook.xlsx",
   "sourceModifiedAt": "2026-09-30T16:53:08Z",
-  "syncedAt": "2026-09-30T16:57:13.215Z",
+  "syncedAt": "2026-09-30T18:36:18.185Z",
   "currencyAssumption": "USD",
   "accounting": "Excel negative=entry, positive=cost; amounts are cashflows, not realized P&L",
   "rows": [
@@ -74,7 +74,7 @@
       "quantity": 1,
       "strategy": "DIAGONAL",
       "rawAmount": 279,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 9,
@@ -414,7 +414,7 @@
       "quantity": 1,
       "strategy": "THL",
       "rawAmount": 125,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 44,
@@ -434,7 +434,7 @@
       "quantity": 1,
       "strategy": "3BW -Put",
       "rawAmount": -33,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 46,
@@ -444,7 +444,7 @@
       "quantity": 4,
       "strategy": "ROLL",
       "rawAmount": -480,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 47,
@@ -504,7 +504,7 @@
       "quantity": 2,
       "strategy": "THL",
       "rawAmount": 29,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 53,
@@ -524,7 +524,7 @@
       "quantity": 1,
       "strategy": "THL dual 742",
       "rawAmount": -65,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 55,
@@ -544,7 +544,7 @@
       "quantity": 1,
       "strategy": "Covered call",
       "rawAmount": -98,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 57,
@@ -554,7 +554,7 @@
       "quantity": 1,
       "strategy": "2 TA",
       "rawAmount": 2,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 58,
@@ -584,7 +584,7 @@
       "quantity": 1,
       "strategy": "THL",
       "rawAmount": 560,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 61,
@@ -594,7 +594,7 @@
       "quantity": 1,
       "strategy": "bull spread",
       "rawAmount": -805,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 62,
@@ -624,7 +624,7 @@
       "quantity": 1,
       "strategy": "THL",
       "rawAmount": 174,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 65,
@@ -634,7 +634,7 @@
       "quantity": 1,
       "strategy": "THL",
       "rawAmount": 172,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 66,
@@ -644,7 +644,7 @@
       "quantity": 1,
       "strategy": "TA Put",
       "rawAmount": 138,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 67,
@@ -674,7 +674,7 @@
       "quantity": 1,
       "strategy": "IRON CONDOR",
       "rawAmount": -166,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 70,
@@ -694,7 +694,7 @@
       "quantity": 1,
       "strategy": "TA",
       "rawAmount": -160,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 72,
@@ -704,7 +704,7 @@
       "quantity": 1,
       "strategy": "Covered call",
       "rawAmount": -290,
-      "status": "unknown"
+      "status": "open"
     },
     {
       "sourceRow": 73,
