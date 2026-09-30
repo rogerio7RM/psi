@@ -29,7 +29,7 @@ jobs:
             let body = {};
             try {body=await response.json()} catch {}
             if (path.endsWith("/status")) {
-              console.log("Meta status: HTTP " + response.status + "; configured=" + Boolean(body.configured) + "; authorized=" + Boolean(body.authorized) + "; idMatches=" + Boolean(body.idMatches));
+              console.log("Meta status: HTTP " + response.status + "; configured=" + Boolean(body.configured) + "; authorized=" + Boolean(body.authorized) + "; idMatches=" + Boolean(body.idMatches) + "; upstreamHttpStatus=" + (body.httpStatus ?? "n/a") + "; reason=" + (body.reason ?? "n/a"));
               if (!response.ok || body.authorized !== true || body.idMatches !== true) process.exitCode=1;
             } else {
               console.log("Edition " + edition + ": HTTP " + response.status + "; ready=" + Boolean(body.ready) + "; approved=" + Boolean(body.approved) + "; missingCards=" + JSON.stringify(body.missingCards || []) + "; alreadyPublished=" + Boolean(body.alreadyPublished) + "; automationEnabled=" + Boolean(body.automationEnabled));
