@@ -40,14 +40,7 @@ jobs:
             var="CARD_${i}_URL"
             url="${!var}"
             curl -fsSL --retry 3 --retry-delay 2 "$url" -o "cards/card_${i}.png"
-            python3 - "cards/card_${i}.png" <<'PY'
-import struct,sys
-p=sys.argv[1]
-b=open(p,'rb').read(24)
-assert b[:8]==b'\x89PNG\r\n\x1a\n', p+" is not PNG"
-w,h=struct.unpack(">II",b[16:24])
-assert (w,h)==(1080,1350), f"{p}: {w}x{h}"
-PY
+            python3 -c 'import struct,sys; p=sys.argv[1]; b=open(p,"rb").read(24); assert b[:8]==b"\\x89PNG\\r\\n\\x1a\\n", p+" is not PNG"; w,h=struct.unpack(">II",b[16:24]); assert (w,h)==(1080,1350), f"{p}: {w}x{h}"' "cards/card_${i}.png"
           done
           echo "8 cards validated at 1080x1350"
 
