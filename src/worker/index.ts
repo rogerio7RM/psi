@@ -30,7 +30,17 @@ app.get("/api/publisher/instagram/status", async (c) => {
     const url = new URL(`${GRAPH}/me`);
     url.searchParams.set("fields", "id,username");
     const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    if (!response.ok) return c.json({ configured: true, authorized: false, httpStatus: response.status }, 502);
+    if (!response.ok) {
+      const failure = await response.json().catch(() => ({})) as { error?: { code?: number; error_subcode?: number; type?: string } };
+      return c.json({
+        configured: true,
+        authorized: false,
+        httpStatus: response.status,
+        metaErrorCode: failure.error?.code ?? null,
+        metaErrorSubcode: failure.error?.error_subcode ?? null,
+        metaErrorType: failure.error?.type ?? null,
+      }, 502);
+    }
     const profile = await response.json() as { id?: string; username?: string };
     return c.json({ configured: true, authorized: profile.id === userId, username: profile.username, metaUserId: profile.id, idMatches: profile.id === userId });
   } catch {
