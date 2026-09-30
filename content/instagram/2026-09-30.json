@@ -1,0 +1,70 @@
+{
+  "edition": "2026-09-30",
+  "caption": "Morning Brief PrimeSphere — 30/09/2026. Wall Street chega à última sessão do trimestre com futuros mistos e atenção concentrada em ADP, PCE e Treasury de 10 anos. No radar corporativo, Boeing, Northrop Grumman e Robinhood se destacam no premarket, enquanto Micron reporta após o fechamento.\n\nConteúdo informativo e educacional. Não constitui recomendação individual de investimento.\n\n#WallStreet #Mercados #Investimentos #PrimeSphere #PortfolioIntelligence",
+  "cards": [
+    {
+      "background": 29,
+      "eyebrow": "PRIMESPHERE INTELLIGENCE",
+      "title": "Wall Street",
+      "accent": "ANTES DA ABERTURA",
+      "body": "Última sessão do trimestre com futuros mistos e mercado à espera de ADP e PCE.",
+      "footer": "30 SET 2026 • @portfoliointelligence"
+    },
+    {
+      "background": 30,
+      "eyebrow": "WALL STREET EM 30 SEGUNDOS",
+      "title": "Mercado em espera",
+      "accent": "SNAPSHOT",
+      "body": "S&P +0,06% | Nasdaq -0,16% | Dow +0,21% | Russell +0,33%. VIX 16,20 | Treasury 10Y 5,26%.",
+      "footer": "PrimeSphere Intelligence"
+    },
+    {
+      "background": 31,
+      "eyebrow": "AS 3 COISAS DO DIA",
+      "title": "Dados + juros",
+      "accent": "FOCO DO MERCADO",
+      "body": "1 PCE: núcleo esperado +0,3% m/m. 2 ADP: consenso +70 mil. 3 Treasury 10Y: 5,26%.",
+      "footer": "Número → motivo → impacto"
+    },
+    {
+      "background": 32,
+      "eyebrow": "PREMARKET MOVERS",
+      "title": "Quem está se mexendo",
+      "accent": "BA • NOC • HOOD",
+      "body": "Boeing +~3% com contrato da Marinha. Northrop -~3% a -4% após perder a disputa. Robinhood +~2% com novos recursos.",
+      "footer": "Catalisadores confirmados no Morning Brief"
+    },
+    {
+      "background": 33,
+      "eyebrow": "AGENDA",
+      "title": "O relógio do mercado",
+      "accent": "HOJE",
+      "body": "14:15 ADP. 14:30 PCE, renda e gastos. 15:45 Chicago PMI. 16:30 estoques de petróleo EIA.",
+      "footer": "Horários de Madrid"
+    },
+    {
+      "background": 34,
+      "eyebrow": "EARNINGS RADAR",
+      "title": "Micron após o fechamento",
+      "accent": "MU",
+      "body": "Micron é o principal evento corporativo do dia e pode mexer com a leitura sobre memória e infraestrutura de IA.",
+      "footer": "Call prevista para 22:30 Madrid"
+    },
+    {
+      "background": 35,
+      "eyebrow": "O QUE OBSERVAR",
+      "title": "Yields primeiro",
+      "accent": "RADAR",
+      "body": "Reação do Treasury 10Y ao ADP e PCE, Nasdaq após os dados, petróleo e dólar, e Micron no after market.",
+      "footer": "PrimeSphere Intelligence"
+    },
+    {
+      "background": 36,
+      "eyebrow": "PRIMESPHERE INTELLIGENCE",
+      "title": "Contexto antes do ruído",
+      "accent": "PRIMESPHEREINTELLIGENCE.COM",
+      "body": "Acompanhe o Morning Brief completo no site. Conteúdo informativo e educacional; não é recomendação de investimento.",
+      "footer": "@portfoliointelligence"
+    }
+  ]
+}
