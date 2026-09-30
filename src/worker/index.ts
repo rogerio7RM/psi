@@ -31,7 +31,7 @@ app.get("/api/publisher/instagram/status", async (c) => {
     url.searchParams.set("fields", "id,username");
     const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) {
-      const failure = await response.json().catch(() => ({})) as { error?: { code?: number; error_subcode?: number; type?: string } };
+      const failure = await response.json().catch(() => ({})) as { error?: { code?: number; error_subcode?: number; type?: string; message?: string } };
       return c.json({
         configured: true,
         authorized: false,
@@ -39,6 +39,7 @@ app.get("/api/publisher/instagram/status", async (c) => {
         metaErrorCode: failure.error?.code ?? null,
         metaErrorSubcode: failure.error?.error_subcode ?? null,
         metaErrorType: failure.error?.type ?? null,
+        metaErrorMessage: (failure.error?.message || "").slice(0, 240).replace(/[A-Za-z0-9_\-.]{40,}/g, "[redacted]") || null,
       }, 502);
     }
     const profile = await response.json() as { id?: string; username?: string };
