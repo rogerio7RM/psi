@@ -1,0 +1,39 @@
+name: PrimeSphere Instagram R2 hash check
+
+on:
+  push:
+    paths:
+      - ".github/workflows/instagram-r2-hash-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Compare R2 cards with approved OneDrive hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://primesphereintelligence.com/api/media/2026-09-30"
+          expected=(
+            "0FE3C933E4A750481A36C92C6C02A3EF11DD54FC254E9D2D755844F8A414AC1A"
+            "CE33A4D3FC3FD2689A4F0300DC2A81E0E572E5783AEA4E77649EBCABCFA407A8"
+            "2B14DFDE00BC2395591365A0FE2F368263D1393B550B34C4F5445A66D1EFFDFD"
+            "E519E848A12AF322D004E648ACD355C5038B45EA046DD4367C24751324B63D2F"
+            "A68E1467E1071ED8A39A5D0DB4D0FFD71F61E52EDF37F5382EC26BCC17D2B4D0"
+            "BF89E01BF1F179549807F033065BA87BA036EE49F8B98474F34A744AE147D3A7"
+            "FDF22505369F7BAD9E9A505A6101A203A051A5E75B1C73123B0D14DA6BBD8C33"
+            "34B7C132472C21AF119BF1DF5849B9629AF781E28994B0E8577FC6DDCC14AFF3"
+          )
+          mkdir -p cards
+          for n in 01 02 03 04 05 06 07 08; do
+            idx=$((10#$n-1))
+            curl -fsSL --retry 3 "$base/card_$n.png" -o "cards/card_$n.png"
+            actual=$(sha256sum "cards/card_$n.png" | awk '{print toupper($1)}')
+            echo "card_$n actual=$actual expected=${expected[$idx]}"
+            test "$actual" = "${expected[$idx]}"
+          done
+          echo "ALL_8_MATCH=true"
