@@ -1,0 +1,79 @@
+name: PrimeSphere Instagram secure publish
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/instagram-publish-bridge.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      BASE_URL: https://primesphereintelligence.com
+      EDITION: "2026-09-30"
+      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate publisher secret
+        run: |
+          test -n "$PUBLISH_ADMIN_KEY" || (echo "Missing PUBLISH_ADMIN_KEY" && exit 1)
+
+      - name: Download and validate new cards
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p cards
+          source_file=".github/workflows/instagram-publish-now.yml"
+          for i in 01 02 03 04 05 06 07 08; do
+            url=$(sed -n "s|^      CARD_${i}_URL: \"\(.*\)\"$|\1|p" "$source_file")
+            test -n "$url" || (echo "Missing temporary URL for card $i" && exit 1)
+            curl -fsSL --retry 3 --retry-delay 2 "$url" -o "cards/card_${i}.png"
+            python3 -c 'import struct,sys; p=sys.argv[1]; b=open(p,"rb").read(24); assert b[:8]==b"\\x89PNG\\r\\n\\x1a\\n"; w,h=struct.unpack(">II",b[16:24]); assert (w,h)==(1080,1350)' "cards/card_${i}.png"
+          done
+          echo "8 new cards validated"
+
+      - name: Replace R2 cards and approved caption
+        run: |
+          node <<'NODE'
+          const fs=require("fs");
+          const base=process.env.BASE_URL, key=process.env.PUBLISH_ADMIN_KEY, edition=process.env.EDITION;
+          const caption="Morning Brief PrimeSphere — 30/09/2026.\n\nInflação veio mais suave que o consenso, enquanto o emprego surpreendeu para cima. Os yields continuam no centro da precificação e a leitura do mercado segue seletiva entre setores e empresas.\n\nTecnologia lidera entre os setores, enquanto HPE se destaca com novo pedido ligado à infraestrutura de IA. Jabil, Moderna e Northrop seguem pressionadas. Depois do fechamento, o foco corporativo passa para a Micron, com atenção a HBM, margens, pricing e guidance para 2027.\n\nPara o investidor brasileiro, USD/BRL e Treasury de 10 anos continuam peças importantes na leitura da exposição a Wall Street.\n\nConteúdo informativo e educacional. Não constitui recomendação individual de investimento.\n\n#WallStreet #Mercados #Investimentos #PrimeSphere #PortfolioIntelligence";
+          (async()=>{
+            for(let i=1;i<=8;i++){
+              const n=String(i).padStart(2,"0");
+              const body=fs.readFileSync("cards/card_"+n+".png");
+              const r=await fetch(base+"/api/publisher/media/"+edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png","Content-Length":String(body.length)},body});
+              if(!r.ok) throw new Error("R2 upload card "+n+" HTTP "+r.status);
+            }
+            const m=await fetch(base+"/api/publisher/instagram/edition/"+edition,{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},body:JSON.stringify({caption,approved:true})});
+            if(!m.ok) throw new Error("Manifest HTTP "+m.status);
+            console.log("New cards and caption staged");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+
+      - name: Validate Meta and publish
+        run: |
+          node <<'NODE'
+          const base=process.env.BASE_URL, key=process.env.PUBLISH_ADMIN_KEY, edition=process.env.EDITION;
+          (async()=>{
+            const headers={"X-Publisher-Key":key};
+            const auth=await fetch(base+"/api/publisher/instagram/status",{headers});
+            const a=await auth.json();
+            console.log("Meta authorized="+Boolean(a.authorized)+"; idMatches="+Boolean(a.idMatches));
+            if(!auth.ok||a.authorized!==true||a.idMatches!==true) throw new Error("Meta authorization not ready");
+            const check=await fetch(base+"/api/publisher/instagram/edition/"+edition,{headers});
+            const state=await check.json();
+            console.log("Edition ready="+Boolean(state.ready)+"; missingCards="+JSON.stringify(state.missingCards||[])+"; alreadyPublished="+Boolean(state.alreadyPublished));
+            if(!check.ok||state.ready!==true||state.alreadyPublished===true) throw new Error("Edition not ready");
+            const publish=await fetch(base+"/api/publisher/instagram/publish/"+edition,{method:"POST",headers});
+            const result=await publish.json();
+            console.log("Publish result: published="+Boolean(result.published)+"; mediaId="+(result.mediaId||"n/a")+"; reason="+(result.reason||"n/a"));
+            if(!publish.ok||result.published!==true||!result.mediaId) throw new Error("Instagram publication failed");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
