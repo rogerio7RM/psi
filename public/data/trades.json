@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "source": "PrimeSphere/Operacoes Logbook.xlsx",
-  "sourceModifiedAt": "2026-09-27T17:59:30Z",
-  "syncedAt": "2026-09-27T18:05:03.935Z",
+  "sourceModifiedAt": "2026-09-30T16:53:08Z",
+  "syncedAt": "2026-09-30T16:57:13.215Z",
   "currencyAssumption": "USD",
   "accounting": "Excel negative=entry, positive=cost; amounts are cashflows, not realized P&L",
   "rows": [
@@ -377,16 +377,6 @@
       "status": "closed"
     },
     {
-      "sourceRow": 39,
-      "date": "2026-09-21",
-      "asset": "SPX",
-      "strike": "Manobras para fechar o caos",
-      "quantity": 1,
-      "strategy": "SHIT",
-      "rawAmount": 2835,
-      "status": "closed"
-    },
-    {
       "sourceRow": 40,
       "date": "2026-09-22",
       "asset": "QQQ",
@@ -433,8 +423,8 @@
       "strike": "OCT 16 Sept 29 1100",
       "quantity": 1,
       "strategy": "THL",
-      "rawAmount": 95,
-      "status": "unknown"
+      "rawAmount": 32,
+      "status": "closed"
     },
     {
       "sourceRow": 45,
@@ -503,8 +493,8 @@
       "strike": "Oct2/Oct 9 24",
       "quantity": 10,
       "strategy": "THL",
-      "rawAmount": 120,
-      "status": "unknown"
+      "rawAmount": -80,
+      "status": "closed"
     },
     {
       "sourceRow": 52,
@@ -582,9 +572,9 @@
       "asset": "MU",
       "strike": "sept 28 175/170",
       "quantity": 1,
-      "strategy": "ta",
-      "rawAmount": -180,
-      "status": "unknown"
+      "strategy": "TA",
+      "rawAmount": 305,
+      "status": "closed"
     },
     {
       "sourceRow": 60,
@@ -605,6 +595,146 @@
       "strategy": "bull spread",
       "rawAmount": -805,
       "status": "unknown"
+    },
+    {
+      "sourceRow": 62,
+      "date": "2026-09-28",
+      "asset": "SPX",
+      "strike": "0DTE 16 Delta PUT",
+      "quantity": 1,
+      "strategy": "TA Put",
+      "rawAmount": 630,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 63,
+      "date": "2026-09-28",
+      "asset": "QQQ",
+      "strike": "733",
+      "quantity": 1,
+      "strategy": "PUT",
+      "rawAmount": -46,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 64,
+      "date": "2026-09-28",
+      "asset": "MU",
+      "strike": "oct 2 oct 5 950",
+      "quantity": 1,
+      "strategy": "THL",
+      "rawAmount": 174,
+      "status": "unknown"
+    },
+    {
+      "sourceRow": 65,
+      "date": "2026-09-28",
+      "asset": "MU",
+      "strike": "oct 2 oct 5 950",
+      "quantity": 1,
+      "strategy": "THL",
+      "rawAmount": 172,
+      "status": "unknown"
+    },
+    {
+      "sourceRow": 66,
+      "date": "2026-09-28",
+      "asset": "AMZN",
+      "strike": "oct 16 -274.5/245",
+      "quantity": 1,
+      "strategy": "TA Put",
+      "rawAmount": 138,
+      "status": "unknown"
+    },
+    {
+      "sourceRow": 67,
+      "date": "2026-09-29",
+      "asset": "GOOGL",
+      "strike": "SPT 30 342 call",
+      "quantity": 2,
+      "strategy": "Covered call",
+      "rawAmount": -266,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 68,
+      "date": "2026-09-29",
+      "asset": "QQQ",
+      "strike": "SEPT 29 735",
+      "quantity": 1,
+      "strategy": "PUT",
+      "rawAmount": -69,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 69,
+      "date": "2026-09-29",
+      "asset": "PG",
+      "strike": "Oct 16 141/146 152.5/157.5",
+      "quantity": 1,
+      "strategy": "IRON CONDOR",
+      "rawAmount": -166,
+      "status": "unknown"
+    },
+    {
+      "sourceRow": 70,
+      "date": "2026-09-29",
+      "asset": "SPX",
+      "strike": "0DTE",
+      "quantity": 1,
+      "strategy": "IRON CONDOR",
+      "rawAmount": -75,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 71,
+      "date": "2026-09-29",
+      "asset": "MU",
+      "strike": "Oc 2 1015/1020",
+      "quantity": 1,
+      "strategy": "TA",
+      "rawAmount": -160,
+      "status": "unknown"
+    },
+    {
+      "sourceRow": 72,
+      "date": "2026-09-30",
+      "asset": "GOOGL",
+      "strike": "Oct 2 342.5",
+      "quantity": 1,
+      "strategy": "Covered call",
+      "rawAmount": -290,
+      "status": "unknown"
+    },
+    {
+      "sourceRow": 73,
+      "date": "2026-09-30",
+      "asset": "QQQ",
+      "strike": "0DTE 143 ATM",
+      "quantity": 1,
+      "strategy": "put",
+      "rawAmount": -39,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 74,
+      "date": "2026-09-30",
+      "asset": "SPX",
+      "strike": "IRON CONDOR 0DTE",
+      "quantity": 1,
+      "strategy": "IRON CONDOR",
+      "rawAmount": -90,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 75,
+      "date": "2026-09-30",
+      "asset": "SPX",
+      "strike": "IRON CONDOR 0DTE",
+      "quantity": 1,
+      "strategy": "IRON CONDOR",
+      "rawAmount": -70,
+      "status": "closed"
     }
   ]
 }
