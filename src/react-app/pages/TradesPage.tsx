@@ -9,7 +9,7 @@ type Trade = {
   quantity: number;
   strategy: string;
   rawAmount: number;
-  status: 'closed' | 'unknown';
+  status: 'closed' | 'open';
 };
 type Snapshot = {
   schemaVersion: number;
@@ -20,6 +20,7 @@ type Snapshot = {
   rows: Trade[];
 };
 type FlowFilter = 'todos' | 'entradas' | 'custos';
+type PeriodFilter = 'day' | 'week' | 'mtd' | 'ytd';
 
 const number = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 const showCash = (value: number) => (value > 0 ? '+' : value < 0 ? '−' : '') + '$' + number.format(Math.abs(value));
@@ -28,6 +29,29 @@ const formatUpdate = (iso: string) => {
   if (!iso) return 'Não disponível';
   const date = new Date(iso);
   return Number.isNaN(date.valueOf()) ? iso : new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/New_York', dateStyle: 'short', timeStyle: 'short' }).format(date) + ' (Nova York)';
+};
+
+const todayInNewYork = () => {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return values.year + '-' + values.month + '-' + values.day;
+};
+const shiftIsoDate = (iso: string, days: number) => {
+  const [year, month, day] = iso.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+};
+const periodBounds = (period: PeriodFilter) => {
+  const today = todayInNewYork();
+  if (period === 'day') return { from: today, to: today, label: 'Operações de hoje' };
+  if (period === 'week') {
+    const [year, month, day] = today.split('-').map(Number);
+    const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+    return { from: shiftIsoDate(today, -((weekday + 6) % 7)), to: today, label: 'Semana' };
+  }
+  if (period === 'mtd') return { from: today.slice(0, 8) + '01', to: today, label: 'MTD' };
+  return { from: today.slice(0, 4) + '-01-01', to: today, label: 'YTD' };
 };
 
 function CashChart({ rows }: { rows: Trade[] }) {
@@ -75,8 +99,7 @@ export default function TradesPage() {
   const [flow, setFlow] = useState<FlowFilter>('todos');
   const [status, setStatus] = useState('todos');
   const [visible, setVisible] = useState(15);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [period, setPeriod] = useState<PeriodFilter>('ytd');
 
   useEffect(() => {
     let mounted = true;
@@ -91,9 +114,8 @@ export default function TradesPage() {
   }, []);
 
   const allRows = useMemo(() => snapshot?.rows ?? [], [snapshot]);
-  const periodActive = Boolean(dateFrom || dateTo);
-  // ISO YYYY-MM-DD strings sort chronologically; a selected interval excludes undated records.
-  const rows = useMemo(() => allRows.filter(row => !periodActive || (row.date !== null && (!dateFrom || row.date >= dateFrom) && (!dateTo || row.date <= dateTo))), [allRows, dateFrom, dateTo, periodActive]);
+  const bounds = useMemo(() => periodBounds(period), [period]);
+  const rows = useMemo(() => allRows.filter(row => row.date !== null && row.date >= bounds.from && row.date <= bounds.to), [allRows, bounds]);
   const inflow = rows.reduce((total, row) => total + Math.max(0, -row.rawAmount), 0);
   const outflow = rows.reduce((total, row) => total + Math.max(0, row.rawAmount), 0);
   const net = inflow - outflow;
@@ -131,24 +153,27 @@ export default function TradesPage() {
         {!snapshot && !error && <div className='trades-loading' role='status'>Carregando histórico de operações…</div>}
 
         {snapshot && <>
-          <section className='trades-period-filter' aria-label='Filtro de datas'>
+          <section className='trades-period-filter' aria-label='Recorte do relatório'>
             <div className='trades-period-intro'>
               <span className='trades-overline'>RECORTE DO RELATÓRIO</span>
-              <h2>Filtrar por período</h2>
-              <p>{periodActive ? 'Exibindo somente lançamentos entre as datas selecionadas.' : 'Todo o histórico, incluindo registros sem data.'}</p>
+              <h2>Período</h2>
+              <p>Escolha uma visão rápida das operações.</p>
             </div>
-            <div className='trades-period-fields'>
-              <label htmlFor='trades-date-from'>De<input id='trades-date-from' aria-label='Data inicial' type='date' value={dateFrom} max={dateTo || undefined} onChange={event => { setDateFrom(event.target.value); setVisible(15); }} /></label>
-              <label htmlFor='trades-date-to'>Até<input id='trades-date-to' aria-label='Data final' type='date' value={dateTo} min={dateFrom || undefined} onChange={event => { setDateTo(event.target.value); setVisible(15); }} /></label>
-              <button type='button' className='trades-period-clear' disabled={!periodActive} onClick={() => { setDateFrom(''); setDateTo(''); setVisible(15); }}>Limpar período</button>
+            <div className='trades-tabs trades-period-tabs' role='group' aria-label='Período do relatório'>
+              {([
+                ['day', 'Hoje'],
+                ['week', 'Semana'],
+                ['mtd', 'MTD'],
+                ['ytd', 'YTD'],
+              ] as [PeriodFilter, string][]).map(([key, label]) => <button type='button' key={key} className={period === key ? 'selected' : ''} aria-pressed={period === key} onClick={() => { setPeriod(key); setVisible(15); }}>{label}</button>)}
             </div>
-            <div className='trades-period-summary' aria-live='polite'>{periodActive ? 'Período: ' + (dateFrom ? showDate(dateFrom) : 'Início') + ' até ' + (dateTo ? showDate(dateTo) : 'Última data') + ' · ' : 'Todo o histórico · '}{rows.length} lançamentos{periodActive && allRows.some(row => !row.date) ? ' · Registros sem data excluídos' : ''}</div>
+            <div className='trades-period-summary' aria-live='polite'>{bounds.label} · {showDate(bounds.from)} até {showDate(bounds.to)} · {rows.length} lançamentos</div>
           </section>
           <section className='trades-metrics' aria-label='Resumo das movimentações'>
             <div className='trades-metric featured'><div className='trades-metric-label'>Saldo das movimentações <span>↗</span></div><strong className={net >= 0 ? 'trades-green' : 'trades-red'}>{showCash(net)}</strong><small>Entradas menos custos registrados</small></div>
             <div className='trades-metric'><div className='trades-metric-label'>Entradas recebidas <span>＋</span></div><strong className='trades-green'>{showCash(inflow)}</strong><small>{rows.filter(row => row.rawAmount < 0).length} lançamentos de crédito</small></div>
             <div className='trades-metric'><div className='trades-metric-label'>Custos pagos <span>↗</span></div><strong className='trades-red'>{showCash(-outflow)}</strong><small>{rows.filter(row => row.rawAmount > 0).length} lançamentos de débito</small></div>
-            <div className='trades-metric'><div className='trades-metric-label'>Lançamentos <span>▦</span></div><strong>{number.format(rows.length)}</strong><small>{rows.filter(row => row.status === 'closed').length} marcados CLOSED · {rows.filter(row => row.status === 'unknown').length} sem status</small></div>
+            <div className='trades-metric'><div className='trades-metric-label'>Lançamentos <span>▦</span></div><strong>{number.format(rows.length)}</strong><small>{rows.filter(row => row.status === 'closed').length} CLOSED · {rows.filter(row => row.status === 'open').length} OPEN</small></div>
           </section>
           <section className='trades-overview'>
             <div className='trades-panel chart-panel'><div className='trades-panel-heading'><div><h2>Evolução do caixa</h2><p>Fluxo acumulado dos registros com data</p></div><span className='trades-pill muted'>HISTÓRICO</span></div><div className='trades-chart-number'>{showCash(rows.filter(row => row.date).reduce((a, row) => a - row.rawAmount, 0))} <small>Com data</small></div><CashChart rows={rows} /><div className='trades-chart-note'><strong>Leitura do gráfico:</strong> representa movimentações registradas, não rentabilidade ou P&amp;L realizado. {undated ? String(undated) + ' lançamentos sem data não entram nesta curva.' : ''}</div></div>
@@ -160,12 +185,12 @@ export default function TradesPage() {
               <div className='trades-tabs' role='group' aria-label='Tipo de movimentação'>
                 {(['todos', 'entradas', 'custos'] as FlowFilter[]).map(kind => <button type='button' className={flow === kind ? 'selected' : ''} aria-pressed={flow === kind} key={kind} onClick={() => changeFilter(kind)}>{kind === 'todos' ? 'Todos' : kind === 'entradas' ? 'Entradas' : 'Custos'}</button>)}
               </div>
-              <div className='trades-filter-fields'><input aria-label='Buscar ativo ou estratégia' placeholder='Buscar ativo ou estratégia…' value={term} onChange={event => { setTerm(event.target.value); setVisible(15); }} /><select aria-label='Filtrar por ativo' value={asset} onChange={event => { setAsset(event.target.value); setVisible(15); }}><option value=''>Todos os ativos</option>{allAssets.map(ticker => <option key={ticker} value={ticker}>{ticker}</option>)}</select><select aria-label='Filtrar por status' value={status} onChange={event => { setStatus(event.target.value); setVisible(15); }}><option value='todos'>Todos os status</option><option value='closed'>CLOSED</option><option value='unknown'>Sem status</option></select></div>
+              <div className='trades-filter-fields'><input aria-label='Buscar ativo ou estratégia' placeholder='Buscar ativo ou estratégia…' value={term} onChange={event => { setTerm(event.target.value); setVisible(15); }} /><select aria-label='Filtrar por ativo' value={asset} onChange={event => { setAsset(event.target.value); setVisible(15); }}><option value=''>Todos os ativos</option>{allAssets.map(ticker => <option key={ticker} value={ticker}>{ticker}</option>)}</select><select aria-label='Filtrar por status' value={status} onChange={event => { setStatus(event.target.value); setVisible(15); }}><option value='todos'>Todos os status</option><option value='closed'>CLOSED</option><option value='open'>OPEN</option></select></div>
             </div>
-            <div className='trades-table-scroll'><table className='trades-table'><thead><tr><th>Data</th><th>Ativo</th><th>Estratégia</th><th>Strike / vencimento</th><th>Qtd.</th><th>Status</th><th className='trades-align-right'>Fluxo de caixa</th></tr></thead><tbody>{filtered.slice(0, visible).map(row => <tr key={row.sourceRow}><td>{showDate(row.date)}</td><td className='trades-ticker'>{row.asset}</td><td>{row.strategy}</td><td className='trades-strike'>{row.strike || '—'}</td><td>{row.quantity}</td><td><span className={'trades-status ' + (row.status === 'closed' ? 'closed' : 'unknown')}>{row.status === 'closed' ? 'CLOSED' : 'Sem status'}</span></td><td className={'trades-amount trades-align-right ' + (row.rawAmount <= 0 ? 'trades-green' : 'trades-red')}>{showCash(-row.rawAmount)}</td></tr>)}</tbody></table>{!filtered.length && <p className='trades-empty'>Nenhum lançamento corresponde aos filtros.</p>}</div>
+            <div className='trades-table-scroll'><table className='trades-table'><thead><tr><th>Data</th><th>Ativo</th><th>Estratégia</th><th>Strike / vencimento</th><th>Qtd.</th><th>Status</th><th className='trades-align-right'>Fluxo de caixa</th></tr></thead><tbody>{filtered.slice(0, visible).map(row => <tr key={row.sourceRow}><td>{showDate(row.date)}</td><td className='trades-ticker'>{row.asset}</td><td>{row.strategy}</td><td className='trades-strike'>{row.strike || '—'}</td><td>{row.quantity}</td><td><span className={'trades-status ' + (row.status === 'closed' ? 'closed' : 'open')}>{row.status === 'closed' ? 'CLOSED' : 'OPEN'}</span></td><td className={'trades-amount trades-align-right ' + (row.rawAmount <= 0 ? 'trades-green' : 'trades-red')}>{showCash(-row.rawAmount)}</td></tr>)}</tbody></table>{!filtered.length && <p className='trades-empty'>Nenhum lançamento corresponde aos filtros.</p>}</div>
             <div className='trades-table-footer'><span>Mostrando {Math.min(visible, filtered.length)} de {filtered.length} lançamentos filtrados.</span>{visible < filtered.length && <button type='button' onClick={() => setVisible(v => v + 15)}>Carregar mais ↓</button>}</div>
           </section>
-          <div className='trades-disclaimer'><span>ⓘ</span><p><strong>Transparência:</strong> os valores são fluxos de caixa, não retornos realizados. Rolagens e ajustes aparecem como lançamentos individuais; operações sem CLOSED não são necessariamente posições abertas. Unidade monetária exibida como USD, a confirmar na planilha. As observações internas do Excel não são publicadas.</p></div>
+          <div className='trades-disclaimer'><span>ⓘ</span><p><strong>Transparência:</strong> os valores são fluxos de caixa, não retornos realizados. Rolagens e ajustes aparecem como lançamentos individuais; toda operação que não estiver marcada como CLOSED no Excel é exibida como OPEN. Unidade monetária exibida como USD, a confirmar na planilha. As observações internas do Excel não são publicadas.</p></div>
           <div className='trades-footer-meta'>Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
         </>}
       </div>
