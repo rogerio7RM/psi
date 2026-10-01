@@ -3,9 +3,13 @@ import type { ComponentType } from 'react';
 import SiteFooter from './components/SiteFooter';
 import SiteHeader from './components/SiteHeader';
 import HomeIntro from './components/HomeIntro';
+import AccessGate from './components/AccessGate';
 import PlaceholderPage from './pages/PlaceholderPage';
 import EducationPage from './pages/EducationPage';
 import TradesPage from './pages/TradesPage';
+import LoginPage from './pages/LoginPage';
+import AccountPage from './pages/AccountPage';
+import AdminPage from './pages/AdminPage';
 
 type EditionModule = { default: ComponentType };
 type RegisteredEdition = {
@@ -54,6 +58,9 @@ function App() {
       '/trades': 'Trades | PrimeSphere Intelligence',
       '/trades/EB': 'Trades EB | PrimeSphere Intelligence',
       '/trades/DC': 'Trades DC | PrimeSphere Intelligence',
+      '/login': 'Entrar | PrimeSphere Intelligence',
+      '/conta': 'Minha Conta | PrimeSphere Intelligence',
+      '/admin': 'Administração | PrimeSphere Intelligence',
     };
     document.title = titles[path] ?? 'PrimeSphere Intelligence';
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -90,16 +97,23 @@ function App() {
     }
   } else if (path === '/quem-somos') {
     content = <PlaceholderPage eyebrow='PrimeSphere' title='Quem Somos' />;
+  } else if (path === '/login') {
+    content = <LoginPage />;
+  } else if (path === '/conta') {
+    content = <AccountPage />;
+  } else if (path === '/admin') {
+    content = <AdminPage />;
   } else if (path === '/educacional') {
-    content = <EducationPage />;
+    content = <AccessGate permission='education.library'><EducationPage /></AccessGate>;
   } else if (path.startsWith('/educacional/')) {
-    content = <EducationPage slug={path.slice('/educacional/'.length)} />;
+    const slug = path.slice('/educacional/'.length);
+    content = <AccessGate permission={'education.study.' + slug}><EducationPage slug={slug} /></AccessGate>;
   } else if (path === '/trades') {
-    content = <TradesPage account='RM' />;
+    content = <AccessGate permission='trades.rm'><TradesPage account='RM' /></AccessGate>;
   } else if (path.toUpperCase() === '/TRADES/EB') {
-    content = <TradesPage account='EB' />;
+    content = <AccessGate permission='trades.eb'><TradesPage account='EB' /></AccessGate>;
   } else if (path.toUpperCase() === '/TRADES/DC') {
-    content = <TradesPage account='DC' />;
+    content = <AccessGate permission='trades.dc'><TradesPage account='DC' /></AccessGate>;
   } else {
     content = (
       <PlaceholderPage

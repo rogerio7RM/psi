@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { registerSubscriberRoutes } from "./subscriber";
 
 type PublisherEnv = Env & {
   INSTAGRAM_ACCESS_TOKEN?: string;
@@ -8,6 +9,8 @@ type PublisherEnv = Env & {
   PUBLISH_ADMIN_KEY?: string;
   INSTAGRAM_MEDIA?: R2Bucket;
   AUTO_PUBLISH_ENABLED?: string;
+  AUTH_DB?: D1Database;
+  PRIVATE_CONTENT?: R2Bucket;
 };
 const app = new Hono<{ Bindings: PublisherEnv }>();
 const GRAPH = "https://graph.instagram.com/v24.0";
@@ -25,6 +28,8 @@ app.use("/api/publisher/*", async (c, next) => {
   }
   await next();
 });
+
+registerSubscriberRoutes(app);
 
 app.get("/api/publisher/instagram/status", async (c) => {
   const { INSTAGRAM_ACCESS_TOKEN: token, INSTAGRAM_USER_ID: userId } = c.env;

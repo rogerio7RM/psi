@@ -11,7 +11,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,6 +20,16 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Prepare subscription infrastructure
+        run: node scripts/prepare-auth-infra.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Seed protected content in private R2
+        run: node scripts/upload-private-content.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Validate Trades privacy
         run: node scripts/validate-trades-public.mjs
       - name: Typecheck and build
@@ -40,7 +50,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: Smoke test public site and confirm published edition
+      - name: Smoke test public site, login gates and protected content
         env:
           SITE_URL: https://primesphereintelligence.com
         shell: bash
@@ -71,17 +81,25 @@ jobs:
           expected_date="$day_num de $month_name de $year"
           grep -q "$expected_date" /tmp/primesphere-rendered.html
           echo "Public edition confirmed: $LATEST_EDITION ($expected_date)"
-          for route in trades trades/EB trades/DC; do
+
+          curl --fail --silent "$SITE_URL/api/auth/me" -o /tmp/auth.json
+          grep -q '"configured":true' /tmp/auth.json
+
+          for route in trades trades/EB trades/DC educacional; do
             safe=$(echo "$route" | tr '/' '-')
             ok=0
             for attempt in {1..6}; do
-              if timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/$route" > "/tmp/$safe.html" 2>/tmp/chrome-trades.log; then
-                if grep -q 'Trading Logbook' "/tmp/$safe.html"; then ok=1; break; fi
+              if timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/$route" > "/tmp/$safe.html" 2>/tmp/chrome-subscriber.log; then
+                if grep -Eq 'Área de assinantes|Criar administrador' "/tmp/$safe.html"; then ok=1; break; fi
               fi
               sleep 5
             done
             test "$ok" = '1'
+            ! grep -q 'Trading Logbook' "/tmp/$safe.html"
           done
-          grep -q 'HISTÓRICO REAL' /tmp/trades.html
-          grep -q 'CONTA EB' /tmp/trades-EB.html
-          grep -q 'CONTA DC' /tmp/trades-DC.html
+
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades.json")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades-eb.json")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades-dc.json")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/estudos/matematica-zero-dte/estudo-0-dte.pdf")" = "401"
+          echo 'Subscriber gates and private content protection confirmed.'

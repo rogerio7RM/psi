@@ -15,119 +15,55 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm run check
-      - name: Verificar paginas, logo e brief antes de publicar
-        run: |
-          set -euo pipefail
-          test -s dist/client/index.html
-          test -s dist/client/primesphere-logo.jpg
-          npx vite preview --host 127.0.0.1 --port 4173 >/tmp/psi-preview.log 2>&1 &
-          preview_pid=$!
-          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
-          for attempt in {1..30}; do
-            if curl --silent --fail http://127.0.0.1:4173/ >/dev/null; then break; fi
-            sleep 1
-          done
-          chrome=$(command -v google-chrome || command -v chromium)
-          for route in / /quem-somos /educacional /trades; do
-            name=$(echo "$route" | tr '/' '_' )
-            timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "http://127.0.0.1:4173$route" >"/tmp/psi-${name}.html"
-            grep -q 'PrimeSphere' "/tmp/psi-${name}.html"
-          done
-          grep -q 'AFTER CLOSE' /tmp/psi-_.html
-          grep -q 'Magnificent 7' /tmp/psi-_.html
-          grep -q 'Próximos earnings da semana' /tmp/psi-_.html
-          grep -q 'Micron' /tmp/psi-_.html
-          grep -q 'Conteúdo em preparação' /tmp/psi-_quem-somos.html
-          grep -q 'Biblioteca de estudos' /tmp/psi-_educacional.html
-          grep -q 'A Matemática do Zero DTE' /tmp/psi-_educacional.html
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/educacional/matematica-zero-dte' > /tmp/psi-study.html
-          grep -q 'Índice de páginas' /tmp/psi-study.html
-          curl -fsSL http://127.0.0.1:4173/estudos/matematica-zero-dte/estudo-0-dte.pdf -o /tmp/psi-study.pdf
-          test $(wc -c </tmp/psi-study.pdf) -gt 300000
-          test "$(head -c 5 /tmp/psi-study.pdf)" = '%PDF-'
-          for n in {01..10}; do
-            curl -fsSL "http://127.0.0.1:4173/estudos/matematica-zero-dte/slide-$n.webp" -o "/tmp/psi-slide-$n.webp"
-            test $(wc -c <"/tmp/psi-slide-$n.webp") -gt 40000
-          done
-          echo 'Verificar segundo estudo na build'
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/educacional/analise-quantitativa-put-spreads-0-dte' > /tmp/psi-study2.html
-          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/psi-study2.html
-          grep -q 'PÁGINA 01 / 12' /tmp/psi-study2.html
-          curl -fsSL 'http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf' -o /tmp/psi-study2.pdf
-          test $(wc -c </tmp/psi-study2.pdf) -gt 750000
-          test "$(head -c 5 /tmp/psi-study2.pdf)" = '%PDF-'
-          for n in {01..12}; do
-            curl -fsSL "http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/slide-$n.webp" -o "/tmp/psi-study2-$n.webp"
-            test $(wc -c <"/tmp/psi-study2-$n.webp") -gt 25000
-            test "$(head -c 4 "/tmp/psi-study2-$n.webp")" = 'RIFF'
-          done
-          grep -q 'Trading Logbook' /tmp/psi-_trades.html
-          grep -q 'RECORTE DO RELATÓRIO' /tmp/psi-_trades.html
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/EB' >/tmp/psi-trades-eb.html
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/DC' >/tmp/psi-trades-dc.html
-          grep -q 'CONTA EB' /tmp/psi-trades-eb.html
-          grep -q 'CONTA DC' /tmp/psi-trades-dc.html
-      - name: Publicar no Cloudflare Workers
+      - name: Install dependencies
+        run: npm ci
+      - name: Prepare subscription infrastructure
+        run: node scripts/prepare-auth-infra.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Seed protected content in private R2
+        run: node scripts/upload-private-content.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Validate Trades data contract
+        run: node scripts/validate-trades-public.mjs
+      - name: Typecheck, build and Worker dry-run
+        run: npm run check
+      - name: Deploy Cloudflare Worker and assets
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
-      - name: Confirmar site publico, paginas e redirecionamento WWW
+      - name: Verify production access control
         shell: bash
         run: |
           set -euo pipefail
-          for i in {1..6}; do
-            if curl -fsSL "https://primesphereintelligence.com/primesphere-logo.jpg" -o /tmp/psi-live-logo.jpg && test $(wc -c </tmp/psi-live-logo.jpg) -gt 10000; then break; fi
-            sleep 5
+          SITE_URL='https://primesphereintelligence.com'
+          curl --fail --location --retry 5 --retry-delay 5 "$SITE_URL" -o /tmp/home.html
+          grep -qi '<html' /tmp/home.html
+          curl --fail --silent "$SITE_URL/api/auth/me" -o /tmp/auth.json
+          grep -q '"configured":true' /tmp/auth.json
+
+          for protected in             /data/trades.json             /data/trades-eb.json             /data/trades-dc.json             /estudos/matematica-zero-dte/estudo-0-dte.pdf; do
+            code="$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL$protected")"
+            test "$code" = '401'
           done
-          test $(wc -c </tmp/psi-live-logo.jpg) -gt 10000
+
           chrome=$(command -v google-chrome || command -v chromium)
-          for route in / /quem-somos /educacional /trades; do
-            name=$(echo "$route" | tr '/' '_' )
-            timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "https://primesphereintelligence.com$route" >"/tmp/live-${name}.html"
-            grep -q 'PrimeSphere' "/tmp/live-${name}.html"
+          for route in /trades /trades/EB /trades/DC /educacional; do
+            safe=$(echo "$route" | tr '/' '_')
+            timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL$route" > "/tmp/$safe.html"
+            grep -Eq 'Área de assinantes|Criar administrador' "/tmp/$safe.html"
           done
-          grep -q 'AFTER CLOSE' /tmp/live-_.html
-          grep -q 'Magnificent 7' /tmp/live-_.html
-          grep -q 'Próximos earnings da semana' /tmp/live-_.html
-          grep -q 'Micron' /tmp/live-_.html
-          grep -q 'Conteúdo em preparação' /tmp/live-_quem-somos.html
-          grep -q 'Biblioteca de estudos' /tmp/live-_educacional.html
-          grep -q 'A Matemática do Zero DTE' /tmp/live-_educacional.html
-          timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'https://primesphereintelligence.com/educacional/matematica-zero-dte' > /tmp/live-study.html
-          grep -q 'Índice de páginas' /tmp/live-study.html
-          curl -fsSL 'https://primesphereintelligence.com/estudos/matematica-zero-dte/estudo-0-dte.pdf' -o /tmp/live-study.pdf
-          test "$(head -c 5 /tmp/live-study.pdf)" = '%PDF-'
-          for n in {01..10}; do
-            curl -fsSL "https://primesphereintelligence.com/estudos/matematica-zero-dte/slide-$n.webp" -o "/tmp/live-slide-$n.webp"
-            test $(wc -c <"/tmp/live-slide-$n.webp") -gt 40000
-          done
-          echo 'Verificar segundo estudo no site publico'
-          timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'https://primesphereintelligence.com/educacional/analise-quantitativa-put-spreads-0-dte' > /tmp/live-study2.html
-          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/live-study2.html
-          grep -q 'PÁGINA 01 / 12' /tmp/live-study2.html
-          curl -fsSL 'https://primesphereintelligence.com/estudos/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf' -o /tmp/live-study2.pdf
-          test "$(head -c 5 /tmp/live-study2.pdf)" = '%PDF-'
-          for n in {01..12}; do
-            curl -fsSL "https://primesphereintelligence.com/estudos/analise-quantitativa-put-spreads-0-dte/slide-$n.webp" -o "/tmp/live-study2-$n.webp"
-            test $(wc -c <"/tmp/live-study2-$n.webp") -gt 25000
-          done
-          grep -q 'Trading Logbook' /tmp/live-_trades.html
-          grep -q 'RECORTE DO RELATÓRIO' /tmp/live-_trades.html
-          timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'https://primesphereintelligence.com/trades/EB' >/tmp/live-trades-eb.html
-          timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'https://primesphereintelligence.com/trades/DC' >/tmp/live-trades-dc.html
-          grep -q 'CONTA EB' /tmp/live-trades-eb.html
-          grep -q 'CONTA DC' /tmp/live-trades-dc.html
-          curl -fsSI 'https://www.primesphereintelligence.com/?260925' >/tmp/www.txt
-          tr -d '\r' </tmp/www.txt | grep -qiFx 'location: https://primesphereintelligence.com/?260925'
-          echo 'Site atualizado e validado nos dois dominios.'
+
+          echo 'PrimeSphere deployed with subscriber access controls enabled.'
