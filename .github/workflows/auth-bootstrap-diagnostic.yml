@@ -1,0 +1,38 @@
+name: PrimeSphere auth bootstrap diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/auth-bootstrap-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BASE_URL: https://primesphereintelligence.com
+      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+    steps:
+      - name: Check auth state
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== /api/auth/me ==="
+          curl -sS -D /tmp/me.headers "$BASE_URL/api/auth/me" -o /tmp/me.body || true
+          cat /tmp/me.headers
+          cat /tmp/me.body
+          echo
+          echo "=== bootstrap probe with GitHub secret ==="
+          code=$(curl -sS -o /tmp/bootstrap.body -w '%{http_code}' \
+            -X POST "$BASE_URL/api/auth/bootstrap" \
+            -H "Content-Type: application/json" \
+            -H "X-Setup-Key: $PUBLISH_ADMIN_KEY" \
+            --data '{"name":"","email":"","password":""}')
+          echo "HTTP $code"
+          cat /tmp/bootstrap.body
+          echo
