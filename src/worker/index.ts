@@ -73,7 +73,18 @@ app.get("/api/publisher/facebook/status", async (c) => {
       }, 502);
     }
     const page = await response.json() as { id?: string; name?: string };
-    return c.json({ configured: true, authorized: page.id === pageId, pageName: page.name, metaPageId: page.id, idMatches: page.id === pageId });
+    const meUrl = new URL(`${FB_GRAPH}/me`);
+    meUrl.searchParams.set("fields", "id,name");
+    const meResponse = await fetch(meUrl, { headers: { Authorization: `Bearer ${token}` } });
+    const identity = meResponse.ok ? await meResponse.json().catch(() => ({})) as { id?: string; name?: string } : {};
+    return c.json({
+      configured: true,
+      authorized: page.id === pageId,
+      pageName: page.name,
+      metaPageId: page.id,
+      idMatches: page.id === pageId,
+      tokenActsAsPage: identity.id === pageId,
+    });
   } catch {
     return c.json({ configured: true, authorized: false, reason: "Facebook Graph API unavailable" }, 502);
   }
