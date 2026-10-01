@@ -396,6 +396,10 @@ function publicUser(user: UserRecord, plan: PlanRecord | null) {
     plan_code: user.planCode,
     plan_name: plan?.name ?? null,
     permissions: user.permissions,
+    trade_account: inferTradeAccount(user, [
+      ...(plan?.active ? plan.permissions : []),
+      ...user.permissions.filter(validPermission),
+    ]),
   };
 }
 
@@ -459,7 +463,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
       passwordHash: credentials.hash, passwordSalt: credentials.salt, passwordIterations: credentials.iterations,
       role: "admin", status: "active", subscriptionStatus: "internal", planCode: "INTERNAL_FULL",
       accessExpiresAt: null, billingProvider: null, providerCustomerId: null, providerSubscriptionId: null,
-      permissions: [], sessionVersion: 1, lastLoginAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+      permissions: [], tradeAccount: null, sessionVersion: 1, lastLoginAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
     };
     await saveUser(store, user);
     await putJson(store, AUTH + "config.json", { adminBootstrapped: true, updatedAt: timestamp });
@@ -701,6 +705,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
       providerCustomerId: body?.providerCustomerId || null,
       providerSubscriptionId: body?.providerSubscriptionId || null,
       permissions: Array.isArray(body?.permissions) ? body.permissions.filter(validPermission) : [],
+      tradeAccount: normalizeTradeAccount(body?.tradeAccount),
       sessionVersion: 1, lastLoginAt: null, createdAt: timestamp, updatedAt: timestamp,
     };
     await saveUser(store, user);
