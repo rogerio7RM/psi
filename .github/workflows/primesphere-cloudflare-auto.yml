@@ -24,17 +24,51 @@ jobs:
         run: node scripts/validate-trades-public.mjs
       - name: Typecheck and build
         run: npm run build
-      - name: Verify compiled site
-        run: test -s dist/client/index.html
+      - name: Verify compiled site and latest Morning Brief
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/client/index.html
+          latest_file=$(find src/react-app/editions -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{6}\.tsx' -printf '%f\n' | sort | tail -1)
+          test -n "$latest_file"
+          latest_code="${latest_file%.tsx}"
+          grep -q "Morning Brief" "src/react-app/editions/$latest_file"
+          echo "LATEST_EDITION=$latest_code" >> "$GITHUB_ENV"
+          echo "Latest Morning Brief: $latest_code"
       - name: Deploy Cloudflare Worker and static assets
         run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: Smoke test public site
+      - name: Smoke test public site and confirm published edition
         if: ${{ vars.PRIMESPHERE_SITE_URL != '' }}
         env:
           SITE_URL: ${{ vars.PRIMESPHERE_SITE_URL }}
+        shell: bash
         run: |
+          set -euo pipefail
           curl --fail --location --retry 5 --retry-delay 5 --max-time 30 "$SITE_URL" -o /tmp/primesphere.html
           grep -qi '<html' /tmp/primesphere.html
+          chrome=$(command -v google-chrome || command -v chromium)
+          test -n "$chrome"
+          for attempt in {1..6}; do
+            if timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/?$LATEST_EDITION" > /tmp/primesphere-rendered.html 2>/tmp/chrome.log; then
+              if grep -q 'Morning Brief' /tmp/primesphere-rendered.html; then
+                break
+              fi
+            fi
+            sleep 5
+          done
+          grep -q 'Morning Brief' /tmp/primesphere-rendered.html
+          year="20${LATEST_EDITION:0:2}"
+          month="${LATEST_EDITION:2:2}"
+          day_num=$((10#${LATEST_EDITION:4:2}))
+          case "$month" in
+            01) month_name='janeiro' ;; 02) month_name='fevereiro' ;; 03) month_name='março' ;;
+            04) month_name='abril' ;; 05) month_name='maio' ;; 06) month_name='junho' ;;
+            07) month_name='julho' ;; 08) month_name='agosto' ;; 09) month_name='setembro' ;;
+            10) month_name='outubro' ;; 11) month_name='novembro' ;; 12) month_name='dezembro' ;;
+          esac
+          expected_date="$day_num de $month_name de $year"
+          grep -q "$expected_date" /tmp/primesphere-rendered.html
+          echo "Public edition confirmed: $LATEST_EDITION ($expected_date)"
