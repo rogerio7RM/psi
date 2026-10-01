@@ -3,12 +3,15 @@ import { Hono } from "hono";
 type PublisherEnv = Env & {
   INSTAGRAM_ACCESS_TOKEN?: string;
   INSTAGRAM_USER_ID?: string;
+  FACEBOOK_PAGE_ACCESS_TOKEN?: string;
+  FACEBOOK_PAGE_ID?: string;
   PUBLISH_ADMIN_KEY?: string;
   INSTAGRAM_MEDIA?: R2Bucket;
   AUTO_PUBLISH_ENABLED?: string;
 };
 const app = new Hono<{ Bindings: PublisherEnv }>();
 const GRAPH = "https://graph.instagram.com/v24.0";
+const FB_GRAPH = "https://graph.facebook.com/v24.0";
 
 app.get("/api/", (c) => c.json({ name: "PrimeSphere Intelligence", publisher: "Meta API integration" }));
 
@@ -46,6 +49,33 @@ app.get("/api/publisher/instagram/status", async (c) => {
     return c.json({ configured: true, authorized: profile.id === userId, username: profile.username, metaUserId: profile.id, idMatches: profile.id === userId });
   } catch {
     return c.json({ configured: true, authorized: false, reason: "Meta API unavailable" }, 502);
+  }
+
+});
+
+app.get("/api/publisher/facebook/status", async (c) => {
+  const { FACEBOOK_PAGE_ACCESS_TOKEN: token, FACEBOOK_PAGE_ID: pageId } = c.env;
+  if (!token || !pageId) return c.json({ configured: false, reason: "Missing Facebook Page credentials" }, 503);
+  try {
+    const url = new URL(`${FB_GRAPH}/${pageId}`);
+    url.searchParams.set("fields", "id,name");
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!response.ok) {
+      const failure = await response.json().catch(() => ({})) as { error?: { code?: number; error_subcode?: number; type?: string; message?: string } };
+      return c.json({
+        configured: true,
+        authorized: false,
+        httpStatus: response.status,
+        metaErrorCode: failure.error?.code ?? null,
+        metaErrorSubcode: failure.error?.error_subcode ?? null,
+        metaErrorType: failure.error?.type ?? null,
+        metaErrorMessage: (failure.error?.message || "").slice(0, 240).replace(/[A-Za-z0-9_\-.]{40,}/g, "[redacted]") || null,
+      }, 502);
+    }
+    const page = await response.json() as { id?: string; name?: string };
+    return c.json({ configured: true, authorized: page.id === pageId, pageName: page.name, metaPageId: page.id, idMatches: page.id === pageId });
+  } catch {
+    return c.json({ configured: true, authorized: false, reason: "Facebook Graph API unavailable" }, 502);
   }
 });
 
@@ -103,6 +133,54 @@ async function waitForMedia(id: string, token: string) {
     await new Promise((resolve) => setTimeout(resolve, 1500));
   }
   throw new Error("Instagram media is not ready; retry later");
+}
+
+
+async function facebookGet(path: string, token: string, params: Record<string, string> = {}) {
+  const url = new URL(`${FB_GRAPH}/${path}`);
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  const data = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) throw new Error(`Facebook Graph API returned HTTP ${response.status}`);
+  return data;
+}
+async function facebookPost(path: string, token: string, params: Record<string, string>) {
+  const body = new URLSearchParams(params);
+  const response = await fetch(`${FB_GRAPH}/${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  const data = await response.json().catch(() => ({})) as { id?: string };
+  if (!response.ok || !data.id) throw new Error(`Facebook Graph API returned HTTP ${response.status}`);
+  return data;
+}
+function editionLabel(edition: string) {
+  const [year, month, day] = edition.split("-");
+  return `${day}/${month}/${year}`;
+}
+async function facebookDuplicateForEdition(env: PublisherEnv, edition: string) {
+  const token = env.FACEBOOK_PAGE_ACCESS_TOKEN, pageId = env.FACEBOOK_PAGE_ID;
+  if (!token || !pageId) return { verified: false, duplicateFound: false };
+  let next: string | null = `${FB_GRAPH}/${pageId}/feed?fields=id,message,created_time,permalink_url&limit=50`;
+  let pages = 0, duplicateFound = false;
+  const label = editionLabel(edition);
+  while (next && pages < 4) {
+    const response: Response = await fetch(next, { headers: { Authorization: `Bearer ${token}` } });
+    if (!response.ok) return { verified: false, duplicateFound: false };
+    const data = await response.json() as { data?: Array<{message?:string;created_time?:string}>; paging?: {next?:string} };
+    for (const post of data.data || []) {
+      const message = post.message || "";
+      if (message.includes(label) && /morning brief|wall street|primesphere|portfolio intelligence/i.test(message)) {
+        duplicateFound = true;
+        break;
+      }
+    }
+    next = data.paging?.next || null;
+    pages++;
+    if (duplicateFound) break;
+  }
+  return { verified: duplicateFound || pages > 0, duplicateFound };
 }
 
 // Public, read-only image URLs for Meta's media ingestion. Only approved files are uploaded
@@ -260,6 +338,86 @@ app.post("/api/publisher/instagram/publish/:edition", async (c) => {
     return c.json(result, result.published ? 200 : 409);
   } catch {
     return c.json({ published: false, reason: "Instagram publication failed; review Worker logs before retrying" }, 502);
+  }
+});
+
+
+async function facebookReadiness(env: PublisherEnv, edition: string) {
+  if (!env.INSTAGRAM_MEDIA) return { ready: false, reason: "R2 unavailable" };
+  const [manifest, published, ...cards] = await Promise.all([
+    env.INSTAGRAM_MEDIA.get(`${edition}/manifest.json`),
+    env.INSTAGRAM_MEDIA.get(`${edition}/facebook-published.json`),
+    ...Array.from({ length: 8 }, (_, i) => env.INSTAGRAM_MEDIA!.head(`${edition}/card_${String(i + 1).padStart(2, "0")}.png`)),
+  ]);
+  const metadata = manifest ? await manifest.json<DailyEdition>().catch(() => null) : null;
+  const missing = cards.flatMap((card, i) => card ? [] : [i + 1]);
+  return {
+    ready: !!metadata?.approved && metadata.edition === edition && !!metadata.caption && !missing.length && !published,
+    approved: !!metadata?.approved,
+    missingCards: missing,
+    alreadyPublished: !!published,
+    caption: metadata?.caption,
+  };
+}
+
+app.get("/api/publisher/facebook/duplicates/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  try {
+    const result = await facebookDuplicateForEdition(c.env, edition);
+    return c.json({ edition, ...result });
+  } catch {
+    return c.json({ edition, verified: false, duplicateFound: false, reason: "Facebook duplicate check failed" }, 502);
+  }
+});
+
+app.get("/api/publisher/facebook/edition/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  const state = await facebookReadiness(c.env, edition);
+  return c.json(state);
+});
+
+app.post("/api/publisher/facebook/publish/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  const token = c.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+  const pageId = c.env.FACEBOOK_PAGE_ID;
+  if (!token || !pageId) return c.json({ published: false, reason: "Facebook Page not configured" }, 503);
+  try {
+    const state = await facebookReadiness(c.env, edition);
+    if (!state.ready || !state.caption || !c.env.INSTAGRAM_MEDIA)
+      return c.json({ published: false, reason: "Edition not ready or Facebook edition already published" }, 409);
+
+    const duplicate = await facebookDuplicateForEdition(c.env, edition);
+    if (!duplicate.verified) return c.json({ published: false, reason: "Facebook duplicate check incomplete; publication blocked" }, 409);
+    if (duplicate.duplicateFound) return c.json({ published: false, reason: "Equivalent Facebook edition already exists; publication blocked" }, 409);
+
+    const marker = `${edition}/facebook-publishing.json`;
+    if (await c.env.INSTAGRAM_MEDIA.head(marker))
+      return c.json({ published: false, reason: "Facebook publishing already attempted; manual review required" }, 409);
+    await c.env.INSTAGRAM_MEDIA.put(marker, JSON.stringify({ startedAt: new Date().toISOString() }), { httpMetadata: { contentType: "application/json" } });
+
+    const mediaIds: string[] = [];
+    const origin = new URL(c.req.url).origin;
+    for (let i = 1; i <= 8; i++) {
+      const filename = `card_${String(i).padStart(2, "0")}.png`;
+      const imageUrl = new URL(`/api/media/${edition}/${filename}`, origin).toString();
+      const photo = await facebookPost(`${pageId}/photos`, token, { url: imageUrl, published: "false" });
+      mediaIds.push(photo.id!);
+    }
+
+    const params: Record<string, string> = { message: state.caption };
+    mediaIds.forEach((id, index) => { params[`attached_media[${index}]`] = JSON.stringify({ media_fbid: id }); });
+    const post = await facebookPost(`${pageId}/feed`, token, params);
+    await c.env.INSTAGRAM_MEDIA.put(
+      `${edition}/facebook-published.json`,
+      JSON.stringify({ postId: post.id, publishedAt: new Date().toISOString() }),
+      { httpMetadata: { contentType: "application/json" } },
+    );
+    return c.json({ published: true, postId: post.id });
+  } catch {
+    return c.json({ published: false, reason: "Facebook publication failed; review Worker logs and Page permissions before retrying" }, 502);
   }
 });
 
