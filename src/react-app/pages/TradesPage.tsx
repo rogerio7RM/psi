@@ -96,11 +96,19 @@ function CashChart({ rows }: { rows: Trade[] }) {
 
 export default function TradesPage() {
   const { loading: authLoading, user } = useAuth();
-  const publicRequested = new URLSearchParams(window.location.search).get('view') === 'public';
+  const query = new URLSearchParams(window.location.search);
+  const publicRequested = query.get('view') === 'public';
+  const adminRequested = (query.get('account') || 'RM').trim().toUpperCase();
+  const adminAccount = /^[A-Z0-9_-]{2,20}$/.test(adminRequested) ? adminRequested : 'RM';
   const privateAccount = user?.role === 'admin' ? null : (user?.tradeAccount ?? null);
   const showPrivate = !authLoading && !!privateAccount && !publicRequested;
-  const dataPath = authLoading ? '' : showPrivate ? `/api/content/trades/${privateAccount!.toLowerCase()}` : '/api/content/trades/rm';
-  const accountLabel = showPrivate ? `MINHA CARTEIRA · ${privateAccount}` : 'PÚBLICO · RM';
+  const activeAccount = user?.role === 'admin' ? adminAccount : (showPrivate ? privateAccount! : 'RM');
+  const dataPath = authLoading ? '' : `/api/content/trades/${activeAccount.toLowerCase()}`;
+  const accountLabel = user?.role === 'admin'
+    ? `ADMIN · ${activeAccount}`
+    : showPrivate ? `MINHA CARTEIRA · ${privateAccount}` : 'PÚBLICO · RM';
+  const [adminSelectorOpen, setAdminSelectorOpen] = useState(false);
+  const [adminAccounts, setAdminAccounts] = useState<string[]>(['RM']);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState(false);
   const [term, setTerm] = useState('');
@@ -109,6 +117,21 @@ export default function TradesPage() {
   const [status, setStatus] = useState('todos');
   const [visible, setVisible] = useState(15);
   const [period, setPeriod] = useState<PeriodFilter>('ytd');
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
+    let mounted = true;
+    fetch('/api/admin/trade-accounts', { credentials: 'same-origin', cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((data) => {
+        const accounts = Array.isArray(data.accounts)
+          ? data.accounts.filter((account: unknown): account is string => typeof account === 'string' && /^[A-Z0-9_-]{2,20}$/.test(account))
+          : [];
+        if (mounted) setAdminAccounts(accounts.length ? accounts : ['RM']);
+      })
+      .catch(() => { if (mounted) setAdminAccounts(['RM']); });
+    return () => { mounted = false; };
+  }, [user?.role]);
 
   useEffect(() => {
     if (!dataPath) return;
@@ -151,18 +174,20 @@ export default function TradesPage() {
   return (
     <main className='trades-page'>
       <div className='trades-container'>
-        <div className='trades-crumb'><a href='/'>PrimeSphere</a><span>›</span> Portfólio <span>›</span> <strong>Trades</strong><span>›</span><strong>{showPrivate ? 'Minha carteira' : 'Público RM'}</strong></div>
+        <div className='trades-crumb'><a href='/'>PrimeSphere</a><span>›</span> Portfólio <span>›</span> <strong>Trades</strong><span>›</span><strong>{user?.role === 'admin' ? `Carteira ${activeAccount}` : showPrivate ? 'Minha carteira' : 'Público RM'}</strong></div>
         <div className='trades-hero'>
           <div>
             <div className='trades-overline'>PRIMESPHERE / PORTFOLIO INTELLIGENCE</div>
             <h1>Trading Logbook <span className='trades-head-accent'>↗</span></h1>
-            <p>{showPrivate ? 'Sua carteira privada de operações.' : 'Carteira pública RM, disponível sem login.'} Movimentações de opções, histórico de estratégias e acompanhamento incremental.</p>
+            <p>{user?.role === 'admin' ? `Visualização administrativa da carteira ${activeAccount}.` : showPrivate ? 'Sua carteira privada de operações.' : 'Carteira pública RM, disponível sem login.'} Movimentações de opções, histórico de estratégias e acompanhamento incremental.</p>
           </div>
           <div className='trades-hero-actions'>
             <span className='trades-pill'>{accountLabel}</span>
-            {!!privateAccount && (showPrivate
-              ? <a className='trades-button' href='/trades?view=public'>Ver público (RM)</a>
-              : <a className='trades-button' href='/trades'>Minha carteira ({privateAccount})</a>)}
+            {user?.role === 'admin'
+              ? <button className='trades-button' type='button' onClick={() => setAdminSelectorOpen(true)}>Selecionar carteira ▾</button>
+              : !!privateAccount && (showPrivate
+                ? <a className='trades-button' href='/trades?view=public'>Ver público (RM)</a>
+                : <a className='trades-button' href='/trades'>Minha carteira ({privateAccount})</a>)}
             {!user && !authLoading && <a className='trades-button' href='/login?return=/trades'>Entrar para ver minha carteira</a>}
             <a className='trades-button' href='#historico'>Ver operações ↓</a>
           </div>
@@ -210,8 +235,35 @@ export default function TradesPage() {
             <div className='trades-table-footer'><span>Mostrando {Math.min(visible, filtered.length)} de {filtered.length} lançamentos filtrados.</span>{visible < filtered.length && <button type='button' onClick={() => setVisible(v => v + 15)}>Carregar mais ↓</button>}</div>
           </section>
           <div className='trades-disclaimer'><span>ⓘ</span><p><strong>Transparência:</strong> os valores são fluxos de caixa, não retornos realizados. Rolagens e ajustes aparecem como lançamentos individuais; toda operação que não estiver marcada como CLOSED no Excel é exibida como OPEN. Unidade monetária exibida como USD, a confirmar na planilha. As observações internas do Excel não são publicadas.</p></div>
-          <div className='trades-footer-meta'>Conta: {showPrivate ? privateAccount : 'RM'} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
+          <div className='trades-footer-meta'>Conta: {activeAccount} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
         </>}
+        {user?.role === 'admin' && adminSelectorOpen && (
+          <div className='trades-modal-backdrop' role='presentation' onClick={() => setAdminSelectorOpen(false)}>
+            <section className='trades-modal' role='dialog' aria-modal='true' aria-labelledby='trades-modal-title' onClick={(event) => event.stopPropagation()}>
+              <div className='trades-modal-head'>
+                <div>
+                  <span className='trades-overline'>ADMINISTRADOR</span>
+                  <h2 id='trades-modal-title'>Selecionar carteira de Trades</h2>
+                  <p>Escolha qual carteira deseja visualizar.</p>
+                </div>
+                <button type='button' className='trades-modal-close' aria-label='Fechar' onClick={() => setAdminSelectorOpen(false)}>×</button>
+              </div>
+              <div className='trades-account-grid'>
+                {adminAccounts.map((account) => (
+                  <a
+                    key={account}
+                    className={'trades-account-option ' + (account === activeAccount ? 'is-active' : '')}
+                    href={account === 'RM' ? '/trades?account=RM' : '/trades?account=' + encodeURIComponent(account)}
+                  >
+                    <strong>{account}</strong>
+                    <span>{account === 'RM' ? 'Carteira pública' : 'Carteira privada'}</span>
+                    {account === activeAccount && <small>Visualizando agora</small>}
+                  </a>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </main>
   );
