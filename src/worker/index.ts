@@ -136,14 +136,6 @@ async function waitForMedia(id: string, token: string) {
 }
 
 
-async function facebookGet(path: string, token: string, params: Record<string, string> = {}) {
-  const url = new URL(`${FB_GRAPH}/${path}`);
-  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
-  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  const data = await response.json().catch(() => ({})) as Record<string, unknown>;
-  if (!response.ok) throw new Error(`Facebook Graph API returned HTTP ${response.status}`);
-  return data;
-}
 async function facebookPost(path: string, token: string, params: Record<string, string>) {
   const body = new URLSearchParams(params);
   const response = await fetch(`${FB_GRAPH}/${path}`, {
