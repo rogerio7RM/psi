@@ -17,7 +17,7 @@ type UserRecord = {
   providerCustomerId: string | null;
   providerSubscriptionId: string | null;
   permissions: string[];
-  tradeAccount: "EB" | "DC" | null;
+  tradeAccount: string | null;
   sessionVersion: number;
   lastLoginAt: string | null;
   createdAt: string;
@@ -59,7 +59,7 @@ export type Viewer = {
   planCode: string | null;
   planName: string | null;
   permissions: string[];
-  tradeAccount: "EB" | "DC" | null;
+  tradeAccount: string | null;
   accessActive: boolean;
 };
 
@@ -174,12 +174,12 @@ function permissionMatches(granted: string, required: string) {
   return granted.endsWith(".*") && required.startsWith(granted.slice(0, -1));
 }
 
-function normalizeTradeAccount(value: unknown): "EB" | "DC" | null {
+function normalizeTradeAccount(value: unknown): string | null {
   const account = String(value ?? "").trim().toUpperCase();
-  return account === "EB" || account === "DC" ? account : null;
+  return /^[A-Z0-9_-]{2,20}$/.test(account) && account !== "RM" ? account : null;
 }
 
-function inferTradeAccount(user: UserRecord, permissions: string[]): "EB" | "DC" | null {
+function inferTradeAccount(user: UserRecord, permissions: string[]): string | null {
   const explicit = normalizeTradeAccount(user.tradeAccount);
   if (explicit) return explicit;
   if (user.planCode === "INTERNAL_EB") return "EB";
