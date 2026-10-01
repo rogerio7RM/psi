@@ -1,11 +1,6 @@
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 
-type ProtectedEnv = {
-  AUTH_DB?: D1Database;
-  PRIVATE_CONTENT?: R2Bucket;
-};
-
 type AccessRow = {
   id: string;
   role: string;
