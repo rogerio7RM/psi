@@ -583,43 +583,6 @@ export function registerSubscriberRoutes(app: Hono<any>) {
   app.get("/data/trades-dc.json", (c) => c.notFound());
   app.get("/estudos/*", (c) => c.notFound());
 
-  app.post("/api/publisher/private/assign-trade-accounts", async (c) => {
-    const store = bucket(c);
-    if (!store) return c.json({ error: "Private storage unavailable" }, 503);
-    const body = await c.req.json<{ assignments?: Array<{ name?: string; account?: string }> }>().catch(() => null);
-    const assignments = Array.isArray(body?.assignments) ? body!.assignments!.slice(0, 20) : [];
-    if (!assignments.length) return c.json({ error: "Assignments required" }, 400);
-
-    const users: UserRecord[] = [];
-    for (const key of await listKeys(store, AUTH + "users/", 2000)) {
-      const user = await getJson<UserRecord>(store, key);
-      if (user) users.push(user);
-    }
-
-    const results = [];
-    for (const assignment of assignments) {
-      const requestedName = String(assignment.name || "").trim();
-      const normalizedName = requestedName.toLocaleLowerCase();
-      const account = normalizeTradeAccount(assignment.account);
-      if (!requestedName || !account) {
-        results.push({ name: requestedName, account, status: "invalid" });
-        continue;
-      }
-      const matches = users.filter((user) => user.name.trim().toLocaleLowerCase() === normalizedName);
-      if (matches.length !== 1) {
-        results.push({ name: requestedName, account, status: matches.length ? "ambiguous" : "not_found" });
-        continue;
-      }
-      const user = matches[0];
-      user.tradeAccount = account;
-      user.updatedAt = nowIso();
-      await saveUser(store, user);
-      await audit(store, null, "publisher_assign_trade_account", "user", user.id, { account });
-      results.push({ name: user.name, account, status: "updated" });
-    }
-    return c.json({ results });
-  });
-
   app.put("/api/publisher/private/trades/:account", async (c) => {
     const store = bucket(c);
     if (!store) return c.json({ error: "Private storage unavailable" }, 503);
