@@ -20,16 +20,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Prepare subscription infrastructure
-        run: node scripts/prepare-auth-infra.mjs
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: Seed protected content in private R2
-        run: node scripts/upload-private-content.mjs
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Validate Trades privacy
         run: node scripts/validate-trades-public.mjs
       - name: Typecheck and build
@@ -102,4 +92,4 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades-eb.json")" = "401"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades-dc.json")" = "401"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/estudos/matematica-zero-dte/estudo-0-dte.pdf")" = "401"
-          echo 'Subscriber gates and private content protection confirmed.'
+          echo 'Subscriber gates and protected content confirmed.'
