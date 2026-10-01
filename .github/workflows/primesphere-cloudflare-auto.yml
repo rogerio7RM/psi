@@ -73,8 +73,14 @@ jobs:
           echo "Public edition confirmed: $LATEST_EDITION ($expected_date)"
           for route in trades trades/EB trades/DC; do
             safe=$(echo "$route" | tr '/' '-')
-            timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/$route" > "/tmp/$safe.html" 2>/tmp/chrome-trades.log
-            grep -q 'Trading Logbook' "/tmp/$safe.html"
+            ok=0
+            for attempt in {1..6}; do
+              if timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/$route" > "/tmp/$safe.html" 2>/tmp/chrome-trades.log; then
+                if grep -q 'Trading Logbook' "/tmp/$safe.html"; then ok=1; break; fi
+              fi
+              sleep 5
+            done
+            test "$ok" = '1'
           done
           grep -q 'HISTÓRICO REAL' /tmp/trades.html
           grep -q 'CONTA EB' /tmp/trades-EB.html
