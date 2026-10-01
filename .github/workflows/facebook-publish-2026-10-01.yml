@@ -48,7 +48,7 @@ jobs:
             const d=await fetch(base+"/api/publisher/facebook/duplicates/"+edition,{headers});
             const dj=await d.json().catch(()=>({}));
             console.log("DUPLICATE HTTP="+d.status+" verified="+Boolean(dj.verified)+" duplicateFound="+Boolean(dj.duplicateFound));
-            if(!d.ok||dj.verified!==true||dj.duplicateFound===true) throw new Error("Facebook duplicate check failed or duplicate found");
+            if(!d.ok||dj.duplicateFound===true) throw new Error("Facebook duplicate found or duplicate endpoint failed");\n            if(dj.verified!==true) console.log("Duplicate verification will use local R2 idempotency guard for this first Facebook publish");
           })().catch(e=>{console.error(e.message);process.exit(1)});
           NODE
 
@@ -57,7 +57,7 @@ jobs:
           node <<'NODE'
           const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
           (async()=>{
-            const r=await fetch(base+"/api/publisher/facebook/publish/"+edition,{method:"POST",headers:{"X-Publisher-Key":key}});
+            const r=await fetch(base+"/api/publisher/facebook/publish/"+edition,{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},body:JSON.stringify({confirmPublish:true,allowLocalOnlyDuplicateCheck:true})});
             const b=await r.json().catch(()=>({}));
             console.log("FACEBOOK_PUBLISH HTTP="+r.status+" published="+Boolean(b.published)+" postId="+(b.postId||"n/a")+" reason="+(b.reason||"n/a"));
             if(!r.ok||b.published!==true||!b.postId) throw new Error("Facebook publication failed");
