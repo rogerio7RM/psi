@@ -59,11 +59,22 @@ jobs:
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/quem-somos' >/tmp/quem-somos.html
           grep -q 'Conteúdo em preparação' /tmp/quem-somos.html
 
-          for route in /trades /trades/EB /trades/DC /educacional /educacional/matematica-zero-dte; do
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades' >/tmp/trades.html
+          grep -q 'Trading Logbook' /tmp/trades.html
+          grep -q 'PÚBLICO · RM' /tmp/trades.html
+          ! grep -Eq 'Área de assinantes|Criar administrador' /tmp/trades.html
+
+          for route in /trades/EB /trades/DC; do
+            safe=$(echo "$route" | tr '/' '_')
+            timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "http://127.0.0.1:4173$route" > "/tmp/$safe.html"
+            grep -q 'Página não encontrada' "/tmp/$safe.html"
+            ! grep -q 'Trading Logbook' "/tmp/$safe.html"
+          done
+
+          for route in /educacional /educacional/matematica-zero-dte; do
             safe=$(echo "$route" | tr '/' '_')
             timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "http://127.0.0.1:4173$route" > "/tmp/$safe.html"
             grep -Eq 'Área de assinantes|Criar administrador' "/tmp/$safe.html"
-            ! grep -q 'Trading Logbook' "/tmp/$safe.html"
           done
 
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' >/tmp/mobile.html
