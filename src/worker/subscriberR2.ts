@@ -17,7 +17,6 @@ type UserRecord = {
   providerCustomerId: string | null;
   providerSubscriptionId: string | null;
   permissions: string[];
-  tradeAccount?: "EB" | "DC" | null;
   sessionVersion: number;
   lastLoginAt: string | null;
   createdAt: string;
@@ -59,7 +58,6 @@ export type Viewer = {
   planCode: string | null;
   planName: string | null;
   permissions: string[];
-  tradeAccount: "EB" | "DC" | null;
   accessActive: boolean;
 };
 
