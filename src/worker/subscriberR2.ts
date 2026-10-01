@@ -671,7 +671,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     if (body.billingProvider !== undefined) user.billingProvider = body.billingProvider || null;
     if (body.providerCustomerId !== undefined) user.providerCustomerId = body.providerCustomerId || null;
     if (body.providerSubscriptionId !== undefined) user.providerSubscriptionId = body.providerSubscriptionId || null;
-    if (Array.isArray(body.permissions)) user.permissions = [...new Set(body.permissions.filter(validPermission))];
+    if (Array.isArray(body.permissions)) user.permissions = [...new Set((body.permissions as unknown[]).filter((permission): permission is string => typeof permission === "string" && validPermission(permission)))];
     user.updatedAt = nowIso();
     await saveUser(store, user);
     await audit(store, viewer.id, "update_user", "user", user.id, { status: user.status, subscriptionStatus: user.subscriptionStatus, planCode: user.planCode });
