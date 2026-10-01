@@ -154,7 +154,7 @@ function editionLabel(edition: string) {
 async function facebookDuplicateForEdition(env: PublisherEnv, edition: string) {
   const token = env.FACEBOOK_PAGE_ACCESS_TOKEN, pageId = env.FACEBOOK_PAGE_ID;
   if (!token || !pageId) return { verified: false, duplicateFound: false };
-  let next: string | null = `${FB_GRAPH}/${pageId}/feed?fields=id,message,created_time,permalink_url&limit=50`;
+  let next: string | null = `${FB_GRAPH}/${pageId}/posts?fields=id,message,created_time,permalink_url&limit=50`;
   let pages = 0, duplicateFound = false;
   const label = editionLabel(edition);
   while (next && pages < 4) {
