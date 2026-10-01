@@ -1,0 +1,34 @@
+name: PrimeSphere assign current trade accounts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/assign-current-trade-accounts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE_URL: https://primesphereintelligence.com
+      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+    steps:
+      - name: Assign Denes and BicaRico portfolios
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/result.json -w '%{http_code}' \
+            -X POST "$SITE_URL/api/publisher/private/assign-trade-accounts" \
+            -H "Content-Type: application/json" \
+            -H "X-Publisher-Key: $PUBLISH_ADMIN_KEY" \
+            --data '{"assignments":[{"name":"Denes Cantos","account":"DC"},{"name":"BicaRico","account":"EB"}]}')
+          cat /tmp/result.json
+          echo
+          test "$code" = "200"
+          grep -q '"name":"Denes Cantos","account":"DC","status":"updated"' /tmp/result.json
+          grep -q '"name":"BicaRico","account":"EB","status":"updated"' /tmp/result.json
