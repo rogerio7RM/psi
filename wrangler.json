@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "primesphere-intelligence",
-  "main": "./src/worker/index.ts",
+  "main": "./src/worker/entry.ts",
   "compatibility_date": "2025-10-08",
   "compatibility_flags": [
     "nodejs_compat"
