@@ -52,6 +52,8 @@ function App() {
       '/quem-somos': 'Quem Somos | PrimeSphere Intelligence',
       '/educacional': 'Educacional | PrimeSphere Intelligence',
       '/trades': 'Trades | PrimeSphere Intelligence',
+      '/trades/EB': 'Trades EB | PrimeSphere Intelligence',
+      '/trades/DC': 'Trades DC | PrimeSphere Intelligence',
     };
     document.title = titles[path] ?? 'PrimeSphere Intelligence';
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -93,7 +95,11 @@ function App() {
   } else if (path.startsWith('/educacional/')) {
     content = <EducationPage slug={path.slice('/educacional/'.length)} />;
   } else if (path === '/trades') {
-    content = <TradesPage />;
+    content = <TradesPage account='RM' />;
+  } else if (path.toUpperCase() === '/TRADES/EB') {
+    content = <TradesPage account='EB' />;
+  } else if (path.toUpperCase() === '/TRADES/DC') {
+    content = <TradesPage account='DC' />;
   } else {
     content = (
       <PlaceholderPage

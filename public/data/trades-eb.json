@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 2,
+  "source": "PrimeSphere/Operacoes Logbook.xlsx",
+  "sourceModifiedAt": "2026-10-01T14:16:11Z",
+  "syncedAt": "2026-10-01T14:24:34.375Z",
+  "currencyAssumption": "USD",
+  "account": "EB",
+  "secretFlagPolicy": "Rows with SECRET FLAG = Y are excluded",
+  "rows": [
+    {
+      "sourceRow": 59,
+      "date": "2026-09-25",
+      "asset": "MU",
+      "strike": "sept 28 175/170",
+      "quantity": 1,
+      "strategy": "TA",
+      "rawAmount": 305,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 64,
+      "date": "2026-09-28",
+      "asset": "MU",
+      "strike": "oct 2 oct 5 950",
+      "quantity": 1,
+      "strategy": "THL",
+      "rawAmount": 108,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 71,
+      "date": "2026-09-29",
+      "asset": "MU",
+      "strike": "Oc 2 1015/1020",
+      "quantity": 1,
+      "strategy": "TA",
+      "rawAmount": -160,
+      "status": "open"
+    },
+    {
+      "sourceRow": 75,
+      "date": "2026-09-30",
+      "asset": "SPX",
+      "strike": "IRON CONDOR 0DTE",
+      "quantity": 1,
+      "strategy": "IRON CONDOR",
+      "rawAmount": -70,
+      "status": "closed"
+    },
+    {
+      "sourceRow": 77,
+      "date": "2026-10-01",
+      "asset": "GOOGL",
+      "strike": "OCT 30 335/330",
+      "quantity": 1,
+      "strategy": "TA PUT",
+      "rawAmount": -180,
+      "status": "unknown"
+    }
+  ]
+}

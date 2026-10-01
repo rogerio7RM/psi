@@ -64,9 +64,14 @@ jobs:
           grep -q 'Voltar ao Brief Atual' /tmp/quem-somos.html
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades' >/tmp/trades.html
           grep -q 'Trading Logbook' /tmp/trades.html
-          grep -q 'Filtrar por período' /tmp/trades.html
-          grep -q 'Limpar período' /tmp/trades.html
+          grep -q 'RECORTE DO RELATÓRIO' /tmp/trades.html
+          grep -q 'HISTÓRICO REAL' /tmp/trades.html
           test $(wc -c </tmp/trades.html) -gt 1000
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/EB' >/tmp/trades-eb.html
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/DC' >/tmp/trades-dc.html
+          grep -q 'CONTA EB' /tmp/trades-eb.html
+          grep -q 'CONTA DC' /tmp/trades-dc.html
+          if grep -q 'href="/trades/EB"' /tmp/prime-latest.html || grep -q 'href="/trades/DC"' /tmp/prime-latest.html; then echo 'Hidden trade account leaked into menu'; exit 1; fi
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4500 --dump-dom 'http://127.0.0.1:4173/educacional' > /tmp/educacional.html
           grep -q 'Biblioteca de estudos' /tmp/educacional.html
           grep -q 'A Matemática do Zero DTE' /tmp/educacional.html

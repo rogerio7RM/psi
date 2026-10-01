@@ -71,8 +71,11 @@ jobs:
             test "$(head -c 4 "/tmp/psi-study2-$n.webp")" = 'RIFF'
           done
           grep -q 'Trading Logbook' /tmp/psi-_trades.html
-          grep -q 'Filtrar por período' /tmp/psi-_trades.html
-          grep -q 'Limpar período' /tmp/psi-_trades.html
+          grep -q 'RECORTE DO RELATÓRIO' /tmp/psi-_trades.html
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/EB' >/tmp/psi-trades-eb.html
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/DC' >/tmp/psi-trades-dc.html
+          grep -q 'CONTA EB' /tmp/psi-trades-eb.html
+          grep -q 'CONTA DC' /tmp/psi-trades-dc.html
       - name: Publicar no Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:
@@ -120,8 +123,11 @@ jobs:
             test $(wc -c <"/tmp/live-study2-$n.webp") -gt 25000
           done
           grep -q 'Trading Logbook' /tmp/live-_trades.html
-          grep -q 'Filtrar por período' /tmp/live-_trades.html
-          grep -q 'Limpar período' /tmp/live-_trades.html
+          grep -q 'RECORTE DO RELATÓRIO' /tmp/live-_trades.html
+          timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'https://primesphereintelligence.com/trades/EB' >/tmp/live-trades-eb.html
+          timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'https://primesphereintelligence.com/trades/DC' >/tmp/live-trades-dc.html
+          grep -q 'CONTA EB' /tmp/live-trades-eb.html
+          grep -q 'CONTA DC' /tmp/live-trades-dc.html
           curl -fsSI 'https://www.primesphereintelligence.com/?260925' >/tmp/www.txt
           tr -d '\r' </tmp/www.txt | grep -qiFx 'location: https://primesphereintelligence.com/?260925'
           echo 'Site atualizado e validado nos dois dominios.'

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import './TradesPage.css';
 
+type AccountCode = 'RM' | 'EB' | 'DC';
+type TradeStatus = 'closed' | 'open' | 'unknown';
+
 type Trade = {
   sourceRow: number;
   date: string | null;
@@ -9,7 +12,7 @@ type Trade = {
   quantity: number;
   strategy: string;
   rawAmount: number;
-  status: 'closed' | 'open';
+  status: TradeStatus;
 };
 type Snapshot = {
   schemaVersion: number;
@@ -91,7 +94,9 @@ function CashChart({ rows }: { rows: Trade[] }) {
   );
 }
 
-export default function TradesPage() {
+export default function TradesPage({ account = 'RM' }: { account?: AccountCode }) {
+  const dataPath = account === 'RM' ? '/data/trades.json' : `/data/trades-${account.toLowerCase()}.json`;
+  const hiddenAccount = account !== 'RM';
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState(false);
   const [term, setTerm] = useState('');
@@ -103,7 +108,7 @@ export default function TradesPage() {
 
   useEffect(() => {
     let mounted = true;
-    fetch('/data/trades.json?v=' + Date.now(), { cache: 'no-store' }).then(response => {
+    fetch(dataPath + '?v=' + Date.now(), { cache: 'no-store' }).then(response => {
       if (!response.ok) throw new Error('Arquivo indisponível');
       return response.json() as Promise<Snapshot>;
     }).then(data => {
@@ -111,7 +116,7 @@ export default function TradesPage() {
       if (mounted) setSnapshot(data);
     }).catch(() => { if (mounted) setError(true); });
     return () => { mounted = false; };
-  }, []);
+  }, [dataPath]);
 
   const allRows = useMemo(() => snapshot?.rows ?? [], [snapshot]);
   const bounds = useMemo(() => periodBounds(period), [period]);
@@ -139,14 +144,14 @@ export default function TradesPage() {
   return (
     <main className='trades-page'>
       <div className='trades-container'>
-        <div className='trades-crumb'><a href='/'>PrimeSphere</a><span>›</span> Portfólio <span>›</span> <strong>Trades</strong></div>
+        <div className='trades-crumb'><a href='/'>PrimeSphere</a><span>›</span> Portfólio <span>›</span> <strong>Trades</strong>{hiddenAccount && <><span>›</span><strong>{account}</strong></>}</div>
         <div className='trades-hero'>
           <div>
             <div className='trades-overline'>PRIMESPHERE / PORTFOLIO INTELLIGENCE</div>
             <h1>Trading Logbook <span className='trades-head-accent'>↗</span></h1>
             <p>Movimentações de opções, histórico de estratégias e acompanhamento incremental.</p>
           </div>
-          <div className='trades-hero-actions'><span className='trades-pill'>HISTÓRICO REAL</span><a className='trades-button' href='#historico'>Ver operações ↓</a></div>
+          <div className='trades-hero-actions'><span className='trades-pill'>{hiddenAccount ? `CONTA ${account}` : 'HISTÓRICO REAL'}</span><a className='trades-button' href='#historico'>Ver operações ↓</a></div>
         </div>
 
         {error && <div className='trades-error' role='alert'>Não foi possível carregar os lançamentos. Atualize a página para tentar novamente.</div>}
@@ -173,7 +178,7 @@ export default function TradesPage() {
             <div className='trades-metric featured'><div className='trades-metric-label'>Saldo das movimentações <span>↗</span></div><strong className={net >= 0 ? 'trades-green' : 'trades-red'}>{showCash(net)}</strong><small>Entradas menos custos registrados</small></div>
             <div className='trades-metric'><div className='trades-metric-label'>Entradas recebidas <span>＋</span></div><strong className='trades-green'>{showCash(inflow)}</strong><small>{rows.filter(row => row.rawAmount < 0).length} lançamentos de crédito</small></div>
             <div className='trades-metric'><div className='trades-metric-label'>Custos pagos <span>↗</span></div><strong className='trades-red'>{showCash(-outflow)}</strong><small>{rows.filter(row => row.rawAmount > 0).length} lançamentos de débito</small></div>
-            <div className='trades-metric'><div className='trades-metric-label'>Lançamentos <span>▦</span></div><strong>{number.format(rows.length)}</strong><small>{rows.filter(row => row.status === 'closed').length} CLOSED · {rows.filter(row => row.status === 'open').length} OPEN</small></div>
+            <div className='trades-metric'><div className='trades-metric-label'>Lançamentos <span>▦</span></div><strong>{number.format(rows.length)}</strong><small>{rows.filter(row => row.status === 'closed').length} CLOSED · {rows.filter(row => row.status === 'open').length} OPEN{rows.some(row => row.status === 'unknown') ? ` · ${rows.filter(row => row.status === 'unknown').length} SEM STATUS` : ''}</small></div>
           </section>
           <section className='trades-overview'>
             <div className='trades-panel chart-panel'><div className='trades-panel-heading'><div><h2>Evolução do caixa</h2><p>Fluxo acumulado dos registros com data</p></div><span className='trades-pill muted'>HISTÓRICO</span></div><div className='trades-chart-number'>{showCash(rows.filter(row => row.date).reduce((a, row) => a - row.rawAmount, 0))} <small>Com data</small></div><CashChart rows={rows} /><div className='trades-chart-note'><strong>Leitura do gráfico:</strong> representa movimentações registradas, não rentabilidade ou P&amp;L realizado. {undated ? String(undated) + ' lançamentos sem data não entram nesta curva.' : ''}</div></div>
@@ -185,13 +190,13 @@ export default function TradesPage() {
               <div className='trades-tabs' role='group' aria-label='Tipo de movimentação'>
                 {(['todos', 'entradas', 'custos'] as FlowFilter[]).map(kind => <button type='button' className={flow === kind ? 'selected' : ''} aria-pressed={flow === kind} key={kind} onClick={() => changeFilter(kind)}>{kind === 'todos' ? 'Todos' : kind === 'entradas' ? 'Entradas' : 'Custos'}</button>)}
               </div>
-              <div className='trades-filter-fields'><input aria-label='Buscar ativo ou estratégia' placeholder='Buscar ativo ou estratégia…' value={term} onChange={event => { setTerm(event.target.value); setVisible(15); }} /><select aria-label='Filtrar por ativo' value={asset} onChange={event => { setAsset(event.target.value); setVisible(15); }}><option value=''>Todos os ativos</option>{allAssets.map(ticker => <option key={ticker} value={ticker}>{ticker}</option>)}</select><select aria-label='Filtrar por status' value={status} onChange={event => { setStatus(event.target.value); setVisible(15); }}><option value='todos'>Todos os status</option><option value='closed'>CLOSED</option><option value='open'>OPEN</option></select></div>
+              <div className='trades-filter-fields'><input aria-label='Buscar ativo ou estratégia' placeholder='Buscar ativo ou estratégia…' value={term} onChange={event => { setTerm(event.target.value); setVisible(15); }} /><select aria-label='Filtrar por ativo' value={asset} onChange={event => { setAsset(event.target.value); setVisible(15); }}><option value=''>Todos os ativos</option>{allAssets.map(ticker => <option key={ticker} value={ticker}>{ticker}</option>)}</select><select aria-label='Filtrar por status' value={status} onChange={event => { setStatus(event.target.value); setVisible(15); }}><option value='todos'>Todos os status</option><option value='closed'>CLOSED</option><option value='open'>OPEN</option><option value='unknown'>Sem status</option></select></div>
             </div>
-            <div className='trades-table-scroll'><table className='trades-table'><thead><tr><th>Data</th><th>Ativo</th><th>Estratégia</th><th>Strike / vencimento</th><th>Qtd.</th><th>Status</th><th className='trades-align-right'>Fluxo de caixa</th></tr></thead><tbody>{filtered.slice(0, visible).map(row => <tr key={row.sourceRow}><td>{showDate(row.date)}</td><td className='trades-ticker'>{row.asset}</td><td>{row.strategy}</td><td className='trades-strike'>{row.strike || '—'}</td><td>{row.quantity}</td><td><span className={'trades-status ' + (row.status === 'closed' ? 'closed' : 'open')}>{row.status === 'closed' ? 'CLOSED' : 'OPEN'}</span></td><td className={'trades-amount trades-align-right ' + (row.rawAmount <= 0 ? 'trades-green' : 'trades-red')}>{showCash(-row.rawAmount)}</td></tr>)}</tbody></table>{!filtered.length && <p className='trades-empty'>Nenhum lançamento corresponde aos filtros.</p>}</div>
+            <div className='trades-table-scroll'><table className='trades-table'><thead><tr><th>Data</th><th>Ativo</th><th>Estratégia</th><th>Strike / vencimento</th><th>Qtd.</th><th>Status</th><th className='trades-align-right'>Fluxo de caixa</th></tr></thead><tbody>{filtered.slice(0, visible).map(row => <tr key={row.sourceRow}><td>{showDate(row.date)}</td><td className='trades-ticker'>{row.asset}</td><td>{row.strategy}</td><td className='trades-strike'>{row.strike || '—'}</td><td>{row.quantity}</td><td><span className={'trades-status ' + row.status}>{row.status === 'closed' ? 'CLOSED' : row.status === 'open' ? 'OPEN' : 'SEM STATUS'}</span></td><td className={'trades-amount trades-align-right ' + (row.rawAmount <= 0 ? 'trades-green' : 'trades-red')}>{showCash(-row.rawAmount)}</td></tr>)}</tbody></table>{!filtered.length && <p className='trades-empty'>Nenhum lançamento corresponde aos filtros.</p>}</div>
             <div className='trades-table-footer'><span>Mostrando {Math.min(visible, filtered.length)} de {filtered.length} lançamentos filtrados.</span>{visible < filtered.length && <button type='button' onClick={() => setVisible(v => v + 15)}>Carregar mais ↓</button>}</div>
           </section>
           <div className='trades-disclaimer'><span>ⓘ</span><p><strong>Transparência:</strong> os valores são fluxos de caixa, não retornos realizados. Rolagens e ajustes aparecem como lançamentos individuais; toda operação que não estiver marcada como CLOSED no Excel é exibida como OPEN. Unidade monetária exibida como USD, a confirmar na planilha. As observações internas do Excel não são publicadas.</p></div>
-          <div className='trades-footer-meta'>Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
+          <div className='trades-footer-meta'>Conta: {account} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
         </>}
       </div>
     </main>

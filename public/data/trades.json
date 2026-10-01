@@ -1,10 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "source": "PrimeSphere/Operacoes Logbook.xlsx",
-  "sourceModifiedAt": "2026-09-30T16:53:08Z",
-  "syncedAt": "2026-09-30T18:36:18.185Z",
+  "sourceModifiedAt": "2026-10-01T14:16:11Z",
+  "syncedAt": "2026-10-01T14:24:34.375Z",
   "currencyAssumption": "USD",
-  "accounting": "Excel negative=entry, positive=cost; amounts are cashflows, not realized P&L",
+  "account": "RM",
+  "secretFlagPolicy": "Rows with SECRET FLAG = Y are excluded",
   "rows": [
     {
       "sourceRow": 2,
@@ -567,16 +568,6 @@
       "status": "closed"
     },
     {
-      "sourceRow": 59,
-      "date": "2026-09-25",
-      "asset": "MU",
-      "strike": "sept 28 175/170",
-      "quantity": 1,
-      "strategy": "TA",
-      "rawAmount": 305,
-      "status": "closed"
-    },
-    {
       "sourceRow": 60,
       "date": "2026-09-25",
       "asset": "COST",
@@ -617,24 +608,14 @@
       "status": "closed"
     },
     {
-      "sourceRow": 64,
-      "date": "2026-09-28",
-      "asset": "MU",
-      "strike": "oct 2 oct 5 950",
-      "quantity": 1,
-      "strategy": "THL",
-      "rawAmount": 174,
-      "status": "open"
-    },
-    {
       "sourceRow": 65,
       "date": "2026-09-28",
       "asset": "MU",
       "strike": "oct 2 oct 5 950",
       "quantity": 1,
       "strategy": "THL",
-      "rawAmount": 172,
-      "status": "open"
+      "rawAmount": 115,
+      "status": "closed"
     },
     {
       "sourceRow": 66,
@@ -687,16 +668,6 @@
       "status": "closed"
     },
     {
-      "sourceRow": 71,
-      "date": "2026-09-29",
-      "asset": "MU",
-      "strike": "Oc 2 1015/1020",
-      "quantity": 1,
-      "strategy": "TA",
-      "rawAmount": -160,
-      "status": "open"
-    },
-    {
       "sourceRow": 72,
       "date": "2026-09-30",
       "asset": "GOOGL",
@@ -712,7 +683,7 @@
       "asset": "QQQ",
       "strike": "0DTE 143 ATM",
       "quantity": 1,
-      "strategy": "put",
+      "strategy": "PUT",
       "rawAmount": -39,
       "status": "closed"
     },
@@ -727,14 +698,24 @@
       "status": "closed"
     },
     {
-      "sourceRow": 75,
-      "date": "2026-09-30",
-      "asset": "SPX",
-      "strike": "IRON CONDOR 0DTE",
+      "sourceRow": 76,
+      "date": "2026-10-01",
+      "asset": "GOOGL",
+      "strike": "OCT 30 335/330",
       "quantity": 1,
-      "strategy": "IRON CONDOR",
-      "rawAmount": -70,
-      "status": "closed"
+      "strategy": "TA PUT",
+      "rawAmount": -181,
+      "status": "open"
+    },
+    {
+      "sourceRow": 79,
+      "date": "2026-10-01",
+      "asset": "GLD",
+      "strike": "Oct 2 385",
+      "quantity": 1,
+      "strategy": "Covered call",
+      "rawAmount": -90,
+      "status": "unknown"
     }
   ]
 }

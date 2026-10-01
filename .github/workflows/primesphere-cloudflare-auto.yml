@@ -71,3 +71,11 @@ jobs:
           expected_date="$day_num de $month_name de $year"
           grep -q "$expected_date" /tmp/primesphere-rendered.html
           echo "Public edition confirmed: $LATEST_EDITION ($expected_date)"
+          for route in trades trades/EB trades/DC; do
+            safe=$(echo "$route" | tr '/' '-')
+            timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/$route" > "/tmp/$safe.html" 2>/tmp/chrome-trades.log
+            grep -q 'Trading Logbook' "/tmp/$safe.html"
+          done
+          grep -q 'HISTÓRICO REAL' /tmp/trades.html
+          grep -q 'CONTA EB' /tmp/trades-EB.html
+          grep -q 'CONTA DC' /tmp/trades-DC.html
