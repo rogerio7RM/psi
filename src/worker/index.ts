@@ -380,6 +380,16 @@ app.get("/api/publisher/facebook/edition/:edition", async (c) => {
   return c.json(state);
 });
 
+app.delete("/api/publisher/facebook/attempt/:edition", async (c) => {
+  const edition = c.req.param("edition");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
+  if (!c.env.INSTAGRAM_MEDIA) return c.json({ error: "R2 unavailable" }, 503);
+  const published = await c.env.INSTAGRAM_MEDIA.head(`${edition}/facebook-published.json`);
+  if (published) return c.json({ reset: false, reason: "Facebook edition already published" }, 409);
+  await c.env.INSTAGRAM_MEDIA.delete(`${edition}/facebook-publishing.json`);
+  return c.json({ reset: true });
+});
+
 app.post("/api/publisher/facebook/publish/:edition", async (c) => {
   const edition = c.req.param("edition");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
