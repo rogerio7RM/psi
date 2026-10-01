@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { gunzipSync } from "node:zlib";
 import {
   constants,
   createDecipheriv,
@@ -30,7 +31,7 @@ for (const account of accounts) {
   if (envelope.requestId !== manifest.requestId || envelope.account !== account) {
     throw new Error("Envelope identity mismatch for " + account);
   }
-  if (envelope.algorithm !== "RSA-OAEP-SHA256+AES-256-GCM") {
+  if (!["RSA-OAEP-SHA256+AES-256-GCM", "RSA-OAEP-SHA256+AES-256-GCM+GZIP"].includes(envelope.algorithm)) {
     throw new Error("Unsupported envelope algorithm");
   }
 
@@ -48,10 +49,11 @@ for (const account of accounts) {
     Buffer.from(envelope.iv, "base64"),
   );
   decipher.setAuthTag(Buffer.from(envelope.tag, "base64"));
-  const plaintext = Buffer.concat([
+  const decrypted = Buffer.concat([
     decipher.update(Buffer.from(envelope.ciphertext, "base64")),
     decipher.final(),
   ]);
+  const plaintext = envelope.algorithm.endsWith("+GZIP") ? gunzipSync(decrypted) : decrypted;
 
   const hash = createHash("sha256").update(plaintext).digest("hex");
   if (hash !== manifest.hashes?.[account]) {
