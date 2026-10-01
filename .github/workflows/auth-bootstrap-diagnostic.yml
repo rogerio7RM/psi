@@ -18,15 +18,14 @@ jobs:
       BASE_URL: https://primesphereintelligence.com
       PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
     steps:
-      - name: Check auth state
+      - name: Check auth state and runtime
         shell: bash
         run: |
           set -euo pipefail
           echo "=== /api/auth/me ==="
-          curl -sS -D /tmp/me.headers "$BASE_URL/api/auth/me" -o /tmp/me.body || true
-          cat /tmp/me.headers
-          cat /tmp/me.body
+          curl -sS "$BASE_URL/api/auth/me"
           echo
+
           echo "=== bootstrap probe with GitHub secret ==="
           code=$(curl -sS -o /tmp/bootstrap.body -w '%{http_code}' \
             -X POST "$BASE_URL/api/auth/bootstrap" \
@@ -35,4 +34,12 @@ jobs:
             --data '{"name":"","email":"","password":""}')
           echo "HTTP $code"
           cat /tmp/bootstrap.body
+          echo
+
+          echo "=== password + storage self-test ==="
+          code=$(curl -sS -o /tmp/selftest.body -w '%{http_code}' \
+            -X POST "$BASE_URL/api/publisher/private/auth-self-test" \
+            -H "X-Publisher-Key: $PUBLISH_ADMIN_KEY")
+          echo "HTTP $code"
+          cat /tmp/selftest.body
           echo
