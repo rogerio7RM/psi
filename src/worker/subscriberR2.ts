@@ -519,16 +519,21 @@ export function registerSubscriberRoutes(app: Hono<any>) {
   });
 
   app.get("/api/content/trades/:account", async (c) => {
-    c.header("Cache-Control", "private, no-store");
     const store = bucket(c);
     if (!store) return c.json({ error: "Private storage unavailable" }, 503);
     const account = c.req.param("account").toLowerCase();
     if (!["rm", "eb", "dc"].includes(account)) return c.notFound();
-    const viewer = await requireViewer(c, "trades." + account);
-    if (viewer instanceof Response) return viewer;
+
+    if (account !== "rm") {
+      c.header("Cache-Control", "private, no-store");
+      const viewer = await requireViewer(c, "trades." + account);
+      if (viewer instanceof Response) return viewer;
+    }
+
     const object = await store.get(ROOT + "trades/" + account + ".json");
     if (!object) return c.json({ error: "Trade data unavailable" }, 404);
-    return new Response(object.body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
+    const cacheControl = account === "rm" ? "public, max-age=60, stale-while-revalidate=120" : "private, no-store";
+    return new Response(object.body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": cacheControl, "X-Content-Type-Options": "nosniff" } });
   });
 
   app.get("/api/content/education/:slug/:filename", async (c) => {
