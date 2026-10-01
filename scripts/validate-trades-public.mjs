@@ -16,7 +16,7 @@ for (const [account, file] of files) {
     for (const key of Object.keys(row)) {
       if (!allowedKeys.has(key)) throw new Error(`${file}: forbidden field "${key}" at sourceRow ${row.sourceRow ?? index + 2}`);
     }
-    if (!["closed", "open", "unknown"].includes(row.status)) throw new Error(`${file}: invalid status at sourceRow ${row.sourceRow ?? index + 2}`);
+    if (!["closed", "open"].includes(row.status)) throw new Error(`${file}: invalid status at sourceRow ${row.sourceRow ?? index + 2}`);
   }
   console.log(`Trades QA OK: ${account} = ${data.rows.length} rows; Secret/account markers not exposed in rows.`);
 }
