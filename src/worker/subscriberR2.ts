@@ -279,6 +279,7 @@ async function effectivePermissions(store: R2Bucket, user: UserRecord) {
 async function toViewer(store: R2Bucket, user: UserRecord): Promise<Viewer> {
   const active = isAccessActive(user);
   const plan = await getPlan(store, user.planCode);
+  const permissions = active ? await effectivePermissions(store, user) : [];
   return {
     id: user.id,
     email: user.email,
@@ -289,7 +290,8 @@ async function toViewer(store: R2Bucket, user: UserRecord): Promise<Viewer> {
     accessExpiresAt: user.accessExpiresAt,
     planCode: user.planCode,
     planName: plan?.name ?? null,
-    permissions: active ? await effectivePermissions(store, user) : [],
+    permissions,
+    tradeAccount: active ? inferTradeAccount(user, permissions) : null,
     accessActive: active,
   };
 }
