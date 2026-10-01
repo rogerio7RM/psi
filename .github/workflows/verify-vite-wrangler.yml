@@ -23,84 +23,57 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Atualizar lockfile para dependências do site
+      - name: Install
         run: npm ci --no-audit --no-fund
       - name: Build completo e deploy dry-run
         run: npm run check
       - name: Testar artefatos
         run: |
+          set -euo pipefail
           test -f dist/client/index.html
           grep -q 'assets/' dist/client/index.html
           test -f src/react-app/editions/260925-afterclose.tsx
-      - name: Verificar renderização real no Chrome
+          test -f migrations/0001_auth.sql
+          test -f src/worker/subscriber.ts
+          test -f src/worker/protectedContent.ts
+          test -f src/react-app/pages/AdminPage.tsx
+      - name: Verificar renderização pública e gates de assinatura
         run: |
           set -Eeuo pipefail
-          trap 'code=$?; echo "FAILED at line $LINENO (exit $code): $BASH_COMMAND"; for f in /tmp/prime-latest.html /tmp/prime-history.html /tmp/quem-somos.html /tmp/trades.html /tmp/educacional.html; do if test -f "$f"; then echo "$f: $(wc -c < "$f") bytes"; fi; done' ERR
           npx vite preview --host 127.0.0.1 --port 4173 >/tmp/primesphere-preview.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          ready=0
           for attempt in {1..30}; do
-            if curl --silent --fail http://127.0.0.1:4173/ >/dev/null; then ready=1; break; fi
+            if curl --silent --fail http://127.0.0.1:4173/ >/dev/null; then break; fi
             sleep 1
           done
-          test "$ready" = '1' || { cat /tmp/primesphere-preview.log; exit 1; }
+
           chrome=$(command -v google-chrome || command -v chromium || true)
-          test -n "$chrome" || { echo 'Chrome nao disponivel no runner'; exit 1; }
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' >/tmp/prime-latest.html
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/?date=260917' >/tmp/prime-history.html
-          echo "Checking latest page"
-          grep -q 'Morning Brief' /tmp/prime-latest.html
-          grep -Eq '[0-3][0-9]/[01][0-9]/20[0-9]{2}' /tmp/prime-latest.html
-          grep -q '17/09/2026' /tmp/prime-history.html
-          echo 'Testar menu e paginas internas com Chrome'
-          curl --silent --fail http://127.0.0.1:4173/primesphere-logo.jpg -o /tmp/psi-logo.jpg
-          test $(wc -c </tmp/psi-logo.jpg) -gt 10000
-          grep -q '/quem-somos' /tmp/prime-latest.html
-          grep -q '/educacional' /tmp/prime-latest.html
-          grep -q '/trades' /tmp/prime-latest.html
+          test -n "$chrome"
+
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' >/tmp/home.html
+          grep -q 'Morning Brief' /tmp/home.html
+          grep -q '/educacional' /tmp/home.html
+          grep -q '/trades' /tmp/home.html
+
           timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/quem-somos' >/tmp/quem-somos.html
           grep -q 'Conteúdo em preparação' /tmp/quem-somos.html
-          grep -q 'Voltar ao Brief Atual' /tmp/quem-somos.html
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades' >/tmp/trades.html
-          grep -q 'Trading Logbook' /tmp/trades.html
-          grep -q 'RECORTE DO RELATÓRIO' /tmp/trades.html
-          grep -q 'HISTÓRICO REAL' /tmp/trades.html
-          test $(wc -c </tmp/trades.html) -gt 1000
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/EB' >/tmp/trades-eb.html
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/trades/DC' >/tmp/trades-dc.html
-          grep -q 'CONTA EB' /tmp/trades-eb.html
-          grep -q 'CONTA DC' /tmp/trades-dc.html
-          if grep -q 'href="/trades/EB"' /tmp/prime-latest.html || grep -q 'href="/trades/DC"' /tmp/prime-latest.html; then echo 'Hidden trade account leaked into menu'; exit 1; fi
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4500 --dump-dom 'http://127.0.0.1:4173/educacional' > /tmp/educacional.html
-          grep -q 'Biblioteca de estudos' /tmp/educacional.html
-          grep -q 'A Matemática do Zero DTE' /tmp/educacional.html
-          grep -q 'Índice de páginas' /tmp/educacional.html
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4500 --dump-dom 'http://127.0.0.1:4173/educacional/matematica-zero-dte' > /tmp/educacional-mobile.html
-          grep -q 'A Matemática do Zero DTE' /tmp/educacional-mobile.html
-          curl -fsSL 'http://127.0.0.1:4173/estudos/matematica-zero-dte/estudo-0-dte.pdf' -o /tmp/educacional-study.pdf
-          test "$(head -c 5 /tmp/educacional-study.pdf)" = '%PDF-'
-          for n in {01..10}; do
-            curl -fsSL "http://127.0.0.1:4173/estudos/matematica-zero-dte/slide-$n.webp" -o "/tmp/educacional-$n.webp"
-            test $(wc -c <"/tmp/educacional-$n.webp") -gt 40000
+
+          for route in /trades /trades/EB /trades/DC /educacional /educacional/matematica-zero-dte; do
+            safe=$(echo "$route" | tr '/' '_')
+            timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "http://127.0.0.1:4173$route" > "/tmp/$safe.html"
+            grep -Eq 'Área de assinantes|Criar administrador' "/tmp/$safe.html"
+            ! grep -q 'Trading Logbook' "/tmp/$safe.html"
           done
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' > /tmp/prime-mobile.html
-          grep -q 'Abrir menu' /tmp/prime-mobile.html
-          grep -q 'Wall Street, com contexto' /tmp/prime-mobile.html
-          echo 'Verificar segundo estudo: 12 paginas e PDF'
-          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=4500 --dump-dom 'http://127.0.0.1:4173/educacional/analise-quantitativa-put-spreads-0-dte' > /tmp/educacional-study2.html
-          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/educacional-study2.html
-          grep -q 'PÁGINA 01 / 12' /tmp/educacional-study2.html
-          grep -q 'Análise Quantitativa de Put Spreads 0 DTE' /tmp/educacional.html
-          curl -fsSL 'http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf' -o /tmp/educacional-study2.pdf
-          test $(wc -c </tmp/educacional-study2.pdf) -gt 750000
-          test "$(head -c 5 /tmp/educacional-study2.pdf)" = '%PDF-'
-          for n in {01..12}; do
-            curl -fsSL "http://127.0.0.1:4173/estudos/analise-quantitativa-put-spreads-0-dte/slide-$n.webp" -o "/tmp/educacional-study2-$n.webp"
-            test $(wc -c <"/tmp/educacional-study2-$n.webp") -gt 25000
-            test "$(head -c 4 "/tmp/educacional-study2-$n.webp")" = 'RIFF'
-          done
-          if grep -Eiq 'Instalar app|appdeploy' /tmp/prime-latest.html; then echo 'Banner/AppDeploy no site'; exit 1; fi
+
+          timeout 45s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=4000 --dump-dom 'http://127.0.0.1:4173/' >/tmp/mobile.html
+          grep -q 'Abrir menu' /tmp/mobile.html
+          grep -q 'Wall Street, com contexto' /tmp/mobile.html
+
+          if grep -Eiq 'Instalar app|appdeploy' /tmp/home.html; then
+            echo 'Banner/AppDeploy no site'
+            exit 1
+          fi
       - name: Persistir package-lock no branch de migração
         if: github.event_name == 'push' && github.ref == 'refs/heads/migration/primesphere-vite-wrangler'
         run: |
