@@ -7,7 +7,7 @@ type Plan = { id: string; code: string; name: string; description: string; activ
 type User = {
   id: string; email: string; name: string; role: string; status: string; subscription_status: string;
   access_expires_at: string | null; last_login_at: string | null; plan_code: string | null; plan_name: string | null;
-  permissions: string[];
+  permissions: string[]; trade_account: 'EB' | 'DC' | null;
 };
 
 function AdminContent() {
@@ -16,7 +16,7 @@ function AdminContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [message, setMessage] = useState('');
   const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member' });
+  const [draft, setDraft] = useState({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member', tradeAccount: '' });
 
   async function api(path: string, init?: RequestInit) {
     const response = await fetch(path, { credentials: 'same-origin', ...init });
@@ -52,7 +52,7 @@ function AdminContent() {
           subscriptionStatus: draft.role === 'admin' ? 'internal' : 'active',
         }),
       });
-      setDraft({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member' });
+      setDraft({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member', tradeAccount: '' });
       setMessage('Usuário criado.');
       await load();
     } catch (error) {
@@ -80,6 +80,7 @@ function AdminContent() {
           planCode: user.plan_code,
           accessExpiresAt: user.access_expires_at,
           permissions: user.permissions,
+          tradeAccount: user.trade_account,
         }),
       });
       setMessage('Usuário atualizado: ' + user.email);
