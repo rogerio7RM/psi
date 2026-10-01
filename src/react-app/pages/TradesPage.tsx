@@ -211,7 +211,7 @@ export default function TradesPage() {
             <div className='trades-table-footer'><span>Mostrando {Math.min(visible, filtered.length)} de {filtered.length} lançamentos filtrados.</span>{visible < filtered.length && <button type='button' onClick={() => setVisible(v => v + 15)}>Carregar mais ↓</button>}</div>
           </section>
           <div className='trades-disclaimer'><span>ⓘ</span><p><strong>Transparência:</strong> os valores são fluxos de caixa, não retornos realizados. Rolagens e ajustes aparecem como lançamentos individuais; toda operação que não estiver marcada como CLOSED no Excel é exibida como OPEN. Unidade monetária exibida como USD, a confirmar na planilha. As observações internas do Excel não são publicadas.</p></div>
-          <div className='trades-footer-meta'>Conta: {account} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
+          <div className='trades-footer-meta'>Conta: {showPrivate ? privateAccount : 'RM'} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
         </>}
       </div>
     </main>
