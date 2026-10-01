@@ -63,7 +63,7 @@ export type Viewer = {
 
 const SESSION_COOKIE = "psi_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
-const PASSWORD_ITERATIONS = 600_000;
+const PASSWORD_ITERATIONS = 100_000;
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const ROOT = "subscriber/";
