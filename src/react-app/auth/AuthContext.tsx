@@ -12,7 +12,7 @@ export type Viewer = {
   planCode: string | null;
   planName: string | null;
   permissions: string[];
-  tradeAccount: 'EB' | 'DC' | null;
+  tradeAccount: string | null;
   accessActive: boolean;
 };
 
