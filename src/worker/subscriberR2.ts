@@ -384,7 +384,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     if (!store) return c.json({ ok: false, stage: "storage", error: "Private storage unavailable" }, 503);
     const started = Date.now();
     try {
-      const credentials = await hashPassword("PrimeSphere-Diagnostic-Password-2026!");
+      await hashPassword("PrimeSphere-Diagnostic-Password-2026!");
       const afterHash = Date.now();
       const key = AUTH + "diagnostics/" + crypto.randomUUID() + ".json";
       await putJson(store, key, { ok: true, createdAt: nowIso() });
