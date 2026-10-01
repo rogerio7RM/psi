@@ -1,0 +1,124 @@
+name: PrimeSphere Instagram 2026-10-01 isolated publish
+
+on:
+  push:
+    branches:
+      - instagram-2026-10-01
+    paths:
+      - ".github/workflows/instagram-2026-10-01.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publish-instagram:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      BASE_URL: https://primesphereintelligence.com
+      EDITION: "2026-10-01"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install renderer dependency
+        run: python -m pip install --quiet pillow
+
+      - name: Download approved backgrounds
+        env:
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+        run: |
+          node <<'NODE'
+          const fs=require("fs");
+          const base=process.env.BASE_URL, key=process.env.PUBLISH_ADMIN_KEY;
+          if(!key) throw new Error("Missing PUBLISH_ADMIN_KEY");
+          fs.mkdirSync(".staging/backgrounds",{recursive:true});
+          (async()=>{
+            for(let bg=29;bg<=36;bg++){
+              const r=await fetch(base+"/api/publisher/background/"+bg,{headers:{"X-Publisher-Key":key}});
+              if(!r.ok) throw new Error("Background "+bg+" HTTP "+r.status);
+              fs.writeFileSync(".staging/backgrounds/background_"+bg+".png",Buffer.from(await r.arrayBuffer()));
+            }
+            console.log("8 approved backgrounds downloaded");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+
+      - name: Render and QA eight cards
+        run: |
+          mkdir -p .staging/cards
+          python scripts/render-instagram-2026-10-01.py .staging/backgrounds .staging/cards
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          import hashlib
+          files=sorted(Path('.staging/cards').glob('card_*.png'))
+          assert len(files)==8, len(files)
+          for p in files:
+              im=Image.open(p)
+              assert im.format=='PNG', p
+              assert im.size==(1080,1350), (p, im.size)
+              print(p.name, im.size, hashlib.sha256(p.read_bytes()).hexdigest().upper())
+          print("QA_OK=8_PNG_1080x1350")
+          PY
+
+      - name: Stage approved cards and caption in R2
+        env:
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+        run: |
+          node <<'NODE'
+          const fs=require("fs");
+          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
+          if(!key) throw new Error("Missing PUBLISH_ADMIN_KEY");
+          const caption="Morning Brief PrimeSphere — 01/10/2026.\n\nOutubro começa com forte divergência em Wall Street: tecnologia recebe suporte de Micron e do tema de IA, enquanto os Treasuries em níveis elevados continuam pressionando o mercado amplo.\n\nAlphabet reage ao Gemini 4 Argon, Vicor ganha destaque após elevar o guidance e Constellation Energy avança com o acordo de longo prazo com a Amazon. Ao mesmo tempo, o mercado acompanha Jobless Claims, ISM Manufacturing e uma agenda carregada de discursos do Fed.\n\nDepois do fechamento, Nike concentra a atenção corporativa. Para o investidor brasileiro, USD/BRL, dólar global e Treasury de 10 anos continuam relevantes para a leitura da exposição aos EUA.\n\nConteúdo informativo e educacional. Não constitui recomendação individual de investimento.\n\n#WallStreet #Mercados #Investimentos #PrimeSphere #PortfolioIntelligence";
+          (async()=>{
+            for(let i=1;i<=8;i++){
+              const n=String(i).padStart(2,"0"), body=fs.readFileSync(".staging/cards/card_"+n+".png");
+              const r=await fetch(base+"/api/publisher/media/"+edition+"/card_"+n+".png",{
+                method:"POST",
+                headers:{"X-Publisher-Key":key,"Content-Type":"image/png","Content-Length":String(body.length)},
+                body
+              });
+              if(!r.ok) throw new Error("R2 upload card "+n+" HTTP "+r.status);
+            }
+            const m=await fetch(base+"/api/publisher/instagram/edition/"+edition,{
+              method:"POST",
+              headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},
+              body:JSON.stringify({caption,approved:true})
+            });
+            if(!m.ok) throw new Error("Manifest HTTP "+m.status);
+            const state=await fetch(base+"/api/publisher/instagram/edition/"+edition,{headers:{"X-Publisher-Key":key}});
+            const sj=await state.json();
+            console.log("STAGING ready="+Boolean(sj.ready)+" approved="+Boolean(sj.approved)+" missingCards="+JSON.stringify(sj.missingCards||[])+" alreadyPublished="+Boolean(sj.alreadyPublished));
+            if(!state.ok||sj.ready!==true||sj.approved!==true||(sj.missingCards||[]).length||sj.alreadyPublished===true) throw new Error("Edition staging/readiness failed");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+
+      - name: Verify Meta and publish carousel
+        env:
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+        run: |
+          node <<'NODE'
+          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
+          if(!key) throw new Error("Missing PUBLISH_ADMIN_KEY");
+          (async()=>{
+            const headers={"X-Publisher-Key":key};
+            const s=await fetch(base+"/api/publisher/instagram/status",{headers});
+            const sj=await s.json();
+            console.log("META configured="+Boolean(sj.configured)+" authorized="+Boolean(sj.authorized)+" idMatches="+Boolean(sj.idMatches));
+            if(!s.ok||sj.configured!==true||sj.authorized!==true||sj.idMatches!==true) throw new Error("Meta authorization failed");
+            const e=await fetch(base+"/api/publisher/instagram/edition/"+edition,{headers});
+            const ej=await e.json();
+            if(!e.ok||ej.ready!==true||ej.approved!==true||(ej.missingCards||[]).length||ej.alreadyPublished===true) throw new Error("Duplicate or readiness check failed");
+            const p=await fetch(base+"/api/publisher/instagram/publish/"+edition,{method:"POST",headers});
+            const pj=await p.json();
+            console.log("PUBLISH published="+Boolean(pj.published)+" mediaId="+(pj.mediaId||"n/a")+" reason="+(pj.reason||"n/a"));
+            if(!p.ok||pj.published!==true||!pj.mediaId) throw new Error("Instagram publication failed");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+
+      - name: Upload QA cards artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: instagram-2026-10-01-qa
+          path: .staging/cards/*.png
+          retention-days: 7
