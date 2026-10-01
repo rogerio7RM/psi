@@ -95,10 +95,9 @@ function CashChart({ rows }: { rows: Trade[] }) {
 }
 
 export default function TradesPage() {
-  const { loading: authLoading, user, hasPermission } = useAuth();
+  const { loading: authLoading, user } = useAuth();
   const publicRequested = new URLSearchParams(window.location.search).get('view') === 'public';
-  const privateAccounts = (['EB', 'DC'] as const).filter((account) => hasPermission('trades.' + account.toLowerCase()));
-  const privateAccount = user?.role === 'admin' ? null : (privateAccounts.length === 1 ? privateAccounts[0] : null);
+  const privateAccount = user?.role === 'admin' ? null : (user?.tradeAccount ?? null);
   const showPrivate = !authLoading && !!privateAccount && !publicRequested;
   const dataPath = authLoading ? '' : showPrivate ? `/api/content/trades/${privateAccount!.toLowerCase()}` : '/api/content/trades/rm';
   const accountLabel = showPrivate ? `MINHA CARTEIRA · ${privateAccount}` : 'PÚBLICO · RM';
