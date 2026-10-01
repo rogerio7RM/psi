@@ -1,0 +1,84 @@
+name: Trades Sync - Apply Excel Snapshot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.trades-sync/payload/manifest.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trades-sync-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Read manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          request_id=$(node -e "const r=require('./.trades-sync/payload/manifest.json'); if(!/^[a-zA-Z0-9_-]{16,80}$/.test(r.requestId||'')) process.exit(2); process.stdout.write(r.requestId)")
+          echo "REQUEST_ID=$request_id" >> "$GITHUB_ENV"
+      - name: Download one-time private key
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx wrangler r2 object get "primesphere-instagram/subscriber/sync/$REQUEST_ID/private.pem" --remote --file /tmp/trades-sync-private.pem
+          test -s /tmp/trades-sync-private.pem
+      - name: Decrypt and validate all three account snapshots
+        run: node scripts/decrypt-trades-sync.mjs /tmp/trades-sync-private.pem .trades-sync/payload/manifest.json /tmp/trades-sync
+      - name: Publish RM, EB and DC to private R2 storage
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          for account in rm eb dc; do
+            npx wrangler r2 object put "primesphere-instagram/subscriber/trades/$account.json" --remote --file "/tmp/trades-sync/$account.json" --content-type application/json
+          done
+      - name: Verify R2 contents byte-for-byte
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          for account in rm eb dc; do
+            npx wrangler r2 object get "primesphere-instagram/subscriber/trades/$account.json" --remote --file "/tmp/verify-$account.json"
+            cmp "/tmp/trades-sync/$account.json" "/tmp/verify-$account.json"
+          done
+      - name: Verify public/private site access after data refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE_URL='https://primesphereintelligence.com'
+          curl --fail --silent --show-error --retry 4 --retry-delay 3 "$SITE_URL/api/content/trades/rm?v=$REQUEST_ID" -o /tmp/live-rm.json
+          cmp /tmp/trades-sync/rm.json /tmp/live-rm.json
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/api/content/trades/eb?v=$REQUEST_ID")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/api/content/trades/dc?v=$REQUEST_ID")" = "401"
+      - name: Destroy one-time private key
+        if: success()
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx wrangler r2 object delete "primesphere-instagram/subscriber/sync/$REQUEST_ID/private.pem" --remote
+          rm -f /tmp/trades-sync-private.pem
+          echo "Trades R2 sync completed: $REQUEST_ID"

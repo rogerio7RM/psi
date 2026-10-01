@@ -1,0 +1,58 @@
+name: Trades Sync - Generate One-Time Key
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.trades-sync/request.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trades-sync-key
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Read sync request
+        shell: bash
+        run: |
+          set -euo pipefail
+          request_id=$(node -e "const r=require('./.trades-sync/request.json'); if(!/^[a-zA-Z0-9_-]{16,80}$/.test(r.requestId||'')) process.exit(2); process.stdout.write(r.requestId)")
+          echo "REQUEST_ID=$request_id" >> "$GITHUB_ENV"
+      - name: Generate one-time RSA key and store private half in R2
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out /tmp/trades-sync-private.pem
+          openssl rsa -pubout -in /tmp/trades-sync-private.pem -out /tmp/trades-sync-public.pem
+          npx wrangler r2 object put "primesphere-instagram/subscriber/sync/$REQUEST_ID/private.pem" --remote --file /tmp/trades-sync-private.pem --content-type application/x-pem-file
+          rm -f /tmp/trades-sync-private.pem
+      - name: Publish only the public key to GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --rebase origin main
+          mkdir -p .trades-sync/public
+          cp /tmp/trades-sync-public.pem ".trades-sync/public/$REQUEST_ID.pem"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ".trades-sync/public/$REQUEST_ID.pem"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "chore(trades-sync): publish one-time encryption key [skip deploy]"
+          git push origin HEAD:main
