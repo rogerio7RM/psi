@@ -426,14 +426,14 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
       stage = `photo-${i}`;
       const filename = `card_${String(i).padStart(2, "0")}.png`;
       const imageUrl = new URL(`/api/media/${edition}/${filename}`, origin).toString();
-      const photo = await facebookPost(`${pageId}/photos`, token, { url: imageUrl, published: "false" });
+      const photo = await facebookPost("me/photos", token, { url: imageUrl, published: "false" });
       mediaIds.push(photo.id!);
     }
 
     stage = "feed-post";
     const params: Record<string, string> = { message: state.caption };
     mediaIds.forEach((id, index) => { params[`attached_media[${index}]`] = JSON.stringify({ media_fbid: id }); });
-    const post = await facebookPost(`${pageId}/feed`, token, params);
+    const post = await facebookPost("me/feed", token, params);
     publicPostCreated = true;
     stage = "published-marker";
     await c.env.INSTAGRAM_MEDIA.put(
