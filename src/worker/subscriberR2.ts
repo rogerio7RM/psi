@@ -547,7 +547,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     const store = bucket(c);
     if (!store) return c.json({ error: "Private storage unavailable" }, 503);
     const account = c.req.param("account").toLowerCase();
-    if (!["rm", "eb", "dc"].includes(account)) return c.notFound();
+    if (!/^[a-z0-9_-]{2,20}$/.test(account)) return c.notFound();
 
     if (account !== "rm") {
       c.header("Cache-Control", "private, no-store");
@@ -587,7 +587,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     const store = bucket(c);
     if (!store) return c.json({ error: "Private storage unavailable" }, 503);
     const account = c.req.param("account").toLowerCase();
-    if (!["rm", "eb", "dc"].includes(account)) return c.json({ error: "Invalid account" }, 400);
+    if (!/^[a-z0-9_-]{2,20}$/.test(account)) return c.json({ error: "Invalid account" }, 400);
     const raw = await c.req.text();
     if (!raw || raw.length > 2_000_000) return c.json({ error: "Invalid payload size" }, 413);
     let parsed: any;
@@ -607,6 +607,25 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     if (!body.byteLength || body.byteLength > 30_000_000) return c.json({ error: "Invalid file" }, 413);
     await store.put(ROOT + "education/" + slug + "/" + filename, body, { httpMetadata: { contentType: c.req.header("content-type") || contentType(filename) } });
     return c.json({ stored: true, slug, filename });
+  });
+
+  app.get("/api/admin/trade-accounts", async (c) => {
+    const store = bucket(c);
+    if (!store) return c.json({ error: "Private storage unavailable" }, 503);
+    const viewer = await requireAdmin(c);
+    if (viewer instanceof Response) return viewer;
+
+    const accounts = [];
+    for (const key of await listKeys(store, ROOT + "trades/", 1000)) {
+      const match = key.match(/^subscriber\/trades\/([a-z0-9_-]{2,20})\.json$/);
+      if (match) accounts.push(match[1].toUpperCase());
+    }
+    const unique = [...new Set(accounts)].sort((a, b) => {
+      if (a === "RM") return -1;
+      if (b === "RM") return 1;
+      return a.localeCompare(b);
+    });
+    return c.json({ accounts: unique });
   });
 
   app.get("/api/admin/permissions", async (c) => {
