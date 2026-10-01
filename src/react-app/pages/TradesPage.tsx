@@ -119,6 +119,21 @@ export default function TradesPage() {
   const [period, setPeriod] = useState<PeriodFilter>('ytd');
 
   useEffect(() => {
+    if (user?.role !== 'admin') return;
+    let mounted = true;
+    fetch('/api/admin/trade-accounts', { credentials: 'same-origin', cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((data) => {
+        const accounts = Array.isArray(data.accounts)
+          ? data.accounts.filter((account: unknown): account is string => typeof account === 'string' && /^[A-Z0-9_-]{2,20}$/.test(account))
+          : [];
+        if (mounted) setAdminAccounts(accounts.length ? accounts : ['RM']);
+      })
+      .catch(() => { if (mounted) setAdminAccounts(['RM']); });
+    return () => { mounted = false; };
+  }, [user?.role]);
+
+  useEffect(() => {
     if (!dataPath) return;
     let mounted = true;
     setSnapshot(null);
