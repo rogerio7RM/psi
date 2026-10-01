@@ -1,0 +1,30 @@
+name: PrimeSphere Facebook status check
+
+on:
+  push:
+    branches:
+      - facebook-status-check-2026-10-01
+    paths:
+      - ".github/workflows/facebook-status-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check Facebook publisher status
+        env:
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+        run: |
+          node <<'NODE'
+          const key=process.env.PUBLISH_ADMIN_KEY;
+          if(!key){console.error("Missing PUBLISH_ADMIN_KEY");process.exit(1)}
+          (async()=>{
+            const r=await fetch("https://primesphereintelligence.com/api/publisher/facebook/status",{headers:{"X-Publisher-Key":key}});
+            let b={}; try{b=await r.json()}catch{}
+            console.log("Facebook status: HTTP "+r.status+" configured="+Boolean(b.configured)+" authorized="+Boolean(b.authorized)+" idMatches="+Boolean(b.idMatches)+" pageName="+(b.pageName||"n/a")+" reason="+(b.reason||"n/a"));
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
