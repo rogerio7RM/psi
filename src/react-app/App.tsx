@@ -56,8 +56,6 @@ function App() {
       '/quem-somos': 'Quem Somos | PrimeSphere Intelligence',
       '/educacional': 'Educacional | PrimeSphere Intelligence',
       '/trades': 'Trades | PrimeSphere Intelligence',
-      '/trades/EB': 'Trades EB | PrimeSphere Intelligence',
-      '/trades/DC': 'Trades DC | PrimeSphere Intelligence',
       '/login': 'Entrar | PrimeSphere Intelligence',
       '/conta': 'Minha Conta | PrimeSphere Intelligence',
       '/admin': 'Administração | PrimeSphere Intelligence',
@@ -109,11 +107,7 @@ function App() {
     const slug = path.slice('/educacional/'.length);
     content = <AccessGate permission={'education.study.' + slug}><EducationPage slug={slug} /></AccessGate>;
   } else if (path === '/trades') {
-    content = <AccessGate permission='trades.rm'><TradesPage account='RM' /></AccessGate>;
-  } else if (path.toUpperCase() === '/TRADES/EB') {
-    content = <AccessGate permission='trades.eb'><TradesPage account='EB' /></AccessGate>;
-  } else if (path.toUpperCase() === '/TRADES/DC') {
-    content = <AccessGate permission='trades.dc'><TradesPage account='DC' /></AccessGate>;
+    content = <TradesPage />;
   } else {
     content = (
       <PlaceholderPage
