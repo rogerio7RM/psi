@@ -1,0 +1,65 @@
+name: PrimeSphere Facebook publish 2026-10-01
+
+on:
+  push:
+    branches:
+      - facebook-publish-2026-10-01
+    paths:
+      - ".github/workflows/facebook-publish-2026-10-01.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publish-facebook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      BASE_URL: https://primesphereintelligence.com
+      EDITION: "2026-10-01"
+      EXPECTED_PAGE_ID: "1241098355763101"
+      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+
+    steps:
+      - name: Validate Facebook Page credentials
+        run: |
+          node <<'NODE'
+          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,expected=process.env.EXPECTED_PAGE_ID;
+          if(!key) throw new Error("Missing PUBLISH_ADMIN_KEY");
+          (async()=>{
+            const r=await fetch(base+"/api/publisher/facebook/status",{headers:{"X-Publisher-Key":key}});
+            const b=await r.json().catch(()=>({}));
+            console.log("FACEBOOK_STATUS HTTP="+r.status+" configured="+Boolean(b.configured)+" authorized="+Boolean(b.authorized)+" idMatches="+Boolean(b.idMatches)+" pageName="+(b.pageName||"n/a")+" pageId="+(b.metaPageId||"n/a"));
+            if(!r.ok||b.configured!==true||b.authorized!==true||b.idMatches!==true||String(b.metaPageId)!==expected) throw new Error("Facebook Page credentials validation failed");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+
+      - name: Validate edition and duplication
+        run: |
+          node <<'NODE'
+          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
+          (async()=>{
+            const headers={"X-Publisher-Key":key};
+            const e=await fetch(base+"/api/publisher/facebook/edition/"+edition,{headers});
+            const ej=await e.json().catch(()=>({}));
+            console.log("EDITION HTTP="+e.status+" ready="+Boolean(ej.ready)+" approved="+Boolean(ej.approved)+" missingCards="+JSON.stringify(ej.missingCards||[])+" alreadyPublished="+Boolean(ej.alreadyPublished));
+            if(!e.ok||ej.ready!==true||ej.approved!==true||(ej.missingCards||[]).length||ej.alreadyPublished===true) throw new Error("Facebook edition readiness failed");
+
+            const d=await fetch(base+"/api/publisher/facebook/duplicates/"+edition,{headers});
+            const dj=await d.json().catch(()=>({}));
+            console.log("DUPLICATE HTTP="+d.status+" verified="+Boolean(dj.verified)+" duplicateFound="+Boolean(dj.duplicateFound));
+            if(!d.ok||dj.verified!==true||dj.duplicateFound===true) throw new Error("Facebook duplicate check failed or duplicate found");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+
+      - name: Publish Facebook post
+        run: |
+          node <<'NODE'
+          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
+          (async()=>{
+            const r=await fetch(base+"/api/publisher/facebook/publish/"+edition,{method:"POST",headers:{"X-Publisher-Key":key}});
+            const b=await r.json().catch(()=>({}));
+            console.log("FACEBOOK_PUBLISH HTTP="+r.status+" published="+Boolean(b.published)+" postId="+(b.postId||"n/a")+" reason="+(b.reason||"n/a"));
+            if(!r.ok||b.published!==true||!b.postId) throw new Error("Facebook publication failed");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
