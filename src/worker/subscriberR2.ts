@@ -526,8 +526,14 @@ export function registerSubscriberRoutes(app: Hono<any>) {
 
     if (account !== "rm") {
       c.header("Cache-Control", "private, no-store");
-      const viewer = await requireViewer(c, "trades." + account);
+      const viewer = await requireViewer(c);
       if (viewer instanceof Response) return viewer;
+      if (viewer.role !== "admin") {
+        const privateAccounts = ["eb", "dc"].filter((candidate) => viewerHasPermission(viewer, "trades." + candidate));
+        if (privateAccounts.length !== 1 || privateAccounts[0] !== account) {
+          return c.json({ error: "Permission denied" }, 403);
+        }
+      }
     }
 
     const object = await store.get(ROOT + "trades/" + account + ".json");
