@@ -376,19 +376,27 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
   const token = c.env.FACEBOOK_PAGE_ACCESS_TOKEN;
   const pageId = c.env.FACEBOOK_PAGE_ID;
   if (!token || !pageId) return c.json({ published: false, reason: "Facebook Page not configured" }, 503);
+  let payload: { confirmPublish?: boolean; allowLocalOnlyDuplicateCheck?: boolean } = {};
+  try { payload = await c.req.json(); } catch {}
+  if (payload.confirmPublish !== true) return c.json({ published: false, reason: "Explicit confirmPublish required" }, 400);
   try {
     const state = await facebookReadiness(c.env, edition);
     if (!state.ready || !state.caption || !c.env.INSTAGRAM_MEDIA)
       return c.json({ published: false, reason: "Edition not ready or Facebook edition already published" }, 409);
 
     const duplicate = await facebookDuplicateForEdition(c.env, edition);
-    if (!duplicate.verified) return c.json({ published: false, reason: "Facebook duplicate check incomplete; publication blocked" }, 409);
-    if (duplicate.duplicateFound) return c.json({ published: false, reason: "Equivalent Facebook edition already exists; publication blocked" }, 409);
+    if (duplicate.duplicateFound)
+      return c.json({ published: false, reason: "Equivalent Facebook edition already exists; publication blocked" }, 409);
+    if (!duplicate.verified && payload.allowLocalOnlyDuplicateCheck !== true)
+      return c.json({ published: false, reason: "Facebook duplicate check incomplete; publication blocked" }, 409);
 
     const marker = `${edition}/facebook-publishing.json`;
     if (await c.env.INSTAGRAM_MEDIA.head(marker))
       return c.json({ published: false, reason: "Facebook publishing already attempted; manual review required" }, 409);
-    await c.env.INSTAGRAM_MEDIA.put(marker, JSON.stringify({ startedAt: new Date().toISOString() }), { httpMetadata: { contentType: "application/json" } });
+    await c.env.INSTAGRAM_MEDIA.put(marker, JSON.stringify({
+      startedAt: new Date().toISOString(),
+      duplicateVerification: duplicate.verified ? "facebook-graph" : "local-r2-only",
+    }), { httpMetadata: { contentType: "application/json" } });
 
     const mediaIds: string[] = [];
     const origin = new URL(c.req.url).origin;
@@ -404,10 +412,14 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
     const post = await facebookPost(`${pageId}/feed`, token, params);
     await c.env.INSTAGRAM_MEDIA.put(
       `${edition}/facebook-published.json`,
-      JSON.stringify({ postId: post.id, publishedAt: new Date().toISOString() }),
+      JSON.stringify({
+        postId: post.id,
+        publishedAt: new Date().toISOString(),
+        duplicateVerification: duplicate.verified ? "facebook-graph" : "local-r2-only",
+      }),
       { httpMetadata: { contentType: "application/json" } },
     );
-    return c.json({ published: true, postId: post.id });
+    return c.json({ published: true, postId: post.id, duplicateVerification: duplicate.verified ? "facebook-graph" : "local-r2-only" });
   } catch {
     return c.json({ published: false, reason: "Facebook publication failed; review Worker logs and Page permissions before retrying" }, 502);
   }
