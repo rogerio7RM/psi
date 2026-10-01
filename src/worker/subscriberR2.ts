@@ -379,6 +379,30 @@ function publicUser(user: UserRecord, plan: PlanRecord | null) {
 }
 
 export function registerSubscriberRoutes(app: Hono<any>) {
+  app.post("/api/publisher/private/auth-self-test", async (c) => {
+    const store = bucket(c);
+    if (!store) return c.json({ ok: false, stage: "storage", error: "Private storage unavailable" }, 503);
+    const started = Date.now();
+    try {
+      const credentials = await hashPassword("PrimeSphere-Diagnostic-Password-2026!");
+      const afterHash = Date.now();
+      const key = AUTH + "diagnostics/" + crypto.randomUUID() + ".json";
+      await putJson(store, key, { ok: true, createdAt: nowIso() });
+      await store.delete(key);
+      return c.json({
+        ok: true,
+        passwordHashMs: afterHash - started,
+        storageRoundTripMs: Date.now() - afterHash,
+      });
+    } catch (error) {
+      return c.json({
+        ok: false,
+        stage: "runtime",
+        error: error instanceof Error ? error.message.slice(0, 240) : "Unknown error",
+      }, 500);
+    }
+  });
+
   app.get("/api/auth/me", async (c) => {
     c.header("Cache-Control", "no-store");
     const store = bucket(c);
