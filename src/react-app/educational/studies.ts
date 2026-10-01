@@ -48,11 +48,11 @@ export const studies: Study[] = [{
   tagline: 'Estratégias com opções que vencem no mesmo dia',
   category: 'Opções',
   description: 'Estudo ilustrado de 10 páginas sobre movimento esperado, VIX, VIX 1D, IVX, escolha de strikes, alvos de lucro e risco.',
-  pdf: '/estudos/matematica-zero-dte/estudo-0-dte.pdf',
+  pdf: '/api/content/education/matematica-zero-dte/estudo-0-dte.pdf',
   pageCount: 10,
   pages: pageMetadata.map(([title, caption], index) => ({
     title, caption,
-    image: '/estudos/matematica-zero-dte/slide-' + String(index + 1).padStart(2, '0') + '.webp',
+    image: '/api/content/education/matematica-zero-dte/slide-' + String(index + 1).padStart(2, '0') + '.webp',
   })),
   chapters: [
     { title: 'Introdução', pageIndex: 0 },
@@ -67,11 +67,11 @@ export const studies: Study[] = [{
   tagline: 'Distância dos strikes, alvos de lucro e drawdown',
   category: 'Opções',
   description: 'Segundo estudo: apresentação visual de 12 páginas sobre SPX 0 DTE, Expected Move, strikes OTM, metas de 25% e 50% e drawdown.',
-  pdf: '/estudos/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf',
+  pdf: '/api/content/education/analise-quantitativa-put-spreads-0-dte/estudo-put-spreads-0-dte.pdf',
   pageCount: 12,
   pages: secondPageMetadata.map(([title, caption], index) => ({
     title, caption,
-    image: '/estudos/analise-quantitativa-put-spreads-0-dte/slide-' + String(index + 1).padStart(2, '0') + '.webp',
+    image: '/api/content/education/analise-quantitativa-put-spreads-0-dte/slide-' + String(index + 1).padStart(2, '0') + '.webp',
   })),
   chapters: [
     { title: 'Introdução', pageIndex: 0 },
