@@ -11,7 +11,7 @@ type PublisherEnv = Env & {
 };
 const app = new Hono<{ Bindings: PublisherEnv }>();
 const GRAPH = "https://graph.instagram.com/v24.0";
-const FB_GRAPH = "https://graph.facebook.com/v24.0";
+const FB_GRAPH = "https://graph.facebook.com/v26.0";
 
 app.get("/api/", (c) => c.json({ name: "PrimeSphere Intelligence", publisher: "Meta API integration" }));
 
@@ -143,8 +143,18 @@ async function facebookPost(path: string, token: string, params: Record<string, 
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
-  const data = await response.json().catch(() => ({})) as { id?: string };
-  if (!response.ok || !data.id) throw new Error(`Facebook Graph API returned HTTP ${response.status}`);
+  const data = await response.json().catch(() => ({})) as {
+    id?: string;
+    error?: { message?: string; type?: string; code?: number; error_subcode?: number };
+  };
+  if (!response.ok || !data.id) {
+    const safeMessage = (data.error?.message || "Facebook Graph API error")
+      .slice(0, 240)
+      .replace(/[A-Za-z0-9_\-.]{40,}/g, "[redacted]");
+    throw new Error(
+      `HTTP ${response.status}; code=${data.error?.code ?? "n/a"}; subcode=${data.error?.error_subcode ?? "n/a"}; type=${data.error?.type ?? "n/a"}; message=${safeMessage}`
+    );
+  }
   return data;
 }
 function editionLabel(edition: string) {
@@ -379,6 +389,9 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
   let payload: { confirmPublish?: boolean; allowLocalOnlyDuplicateCheck?: boolean } = {};
   try { payload = await c.req.json(); } catch {}
   if (payload.confirmPublish !== true) return c.json({ published: false, reason: "Explicit confirmPublish required" }, 400);
+  let stage = "preflight";
+  let publicPostCreated = false;
+  const marker = `${edition}/facebook-publishing.json`;
   try {
     const state = await facebookReadiness(c.env, edition);
     if (!state.ready || !state.caption || !c.env.INSTAGRAM_MEDIA)
@@ -390,7 +403,6 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
     if (!duplicate.verified && payload.allowLocalOnlyDuplicateCheck !== true)
       return c.json({ published: false, reason: "Facebook duplicate check incomplete; publication blocked" }, 409);
 
-    const marker = `${edition}/facebook-publishing.json`;
     if (await c.env.INSTAGRAM_MEDIA.head(marker))
       return c.json({ published: false, reason: "Facebook publishing already attempted; manual review required" }, 409);
     await c.env.INSTAGRAM_MEDIA.put(marker, JSON.stringify({
@@ -401,15 +413,19 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
     const mediaIds: string[] = [];
     const origin = new URL(c.req.url).origin;
     for (let i = 1; i <= 8; i++) {
+      stage = `photo-${i}`;
       const filename = `card_${String(i).padStart(2, "0")}.png`;
       const imageUrl = new URL(`/api/media/${edition}/${filename}`, origin).toString();
       const photo = await facebookPost(`${pageId}/photos`, token, { url: imageUrl, published: "false" });
       mediaIds.push(photo.id!);
     }
 
+    stage = "feed-post";
     const params: Record<string, string> = { message: state.caption };
     mediaIds.forEach((id, index) => { params[`attached_media[${index}]`] = JSON.stringify({ media_fbid: id }); });
     const post = await facebookPost(`${pageId}/feed`, token, params);
+    publicPostCreated = true;
+    stage = "published-marker";
     await c.env.INSTAGRAM_MEDIA.put(
       `${edition}/facebook-published.json`,
       JSON.stringify({
@@ -420,8 +436,14 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
       { httpMetadata: { contentType: "application/json" } },
     );
     return c.json({ published: true, postId: post.id, duplicateVerification: duplicate.verified ? "facebook-graph" : "local-r2-only" });
-  } catch {
-    return c.json({ published: false, reason: "Facebook publication failed; review Worker logs and Page permissions before retrying" }, 502);
+  } catch (error) {
+    if (c.env.INSTAGRAM_MEDIA && !publicPostCreated) {
+      await c.env.INSTAGRAM_MEDIA.delete(marker).catch(() => undefined);
+    }
+    const safeError = String(error instanceof Error ? error.message : error)
+      .slice(0, 360)
+      .replace(/[A-Za-z0-9_\-.]{40,}/g, "[redacted]");
+    return c.json({ published: false, stage, reason: safeError || "Facebook publication failed" }, 502);
   }
 });
 
