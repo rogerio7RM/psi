@@ -174,6 +174,23 @@ function permissionMatches(granted: string, required: string) {
   return granted.endsWith(".*") && required.startsWith(granted.slice(0, -1));
 }
 
+function normalizeTradeAccount(value: unknown): "EB" | "DC" | null {
+  const account = String(value ?? "").trim().toUpperCase();
+  return account === "EB" || account === "DC" ? account : null;
+}
+
+function inferTradeAccount(user: UserRecord, permissions: string[]): "EB" | "DC" | null {
+  const explicit = normalizeTradeAccount(user.tradeAccount);
+  if (explicit) return explicit;
+  if (user.planCode === "INTERNAL_EB") return "EB";
+  if (user.planCode === "INTERNAL_DC") return "DC";
+  const hasEb = permissions.some((permission) => permissionMatches(permission, "trades.eb"));
+  const hasDc = permissions.some((permission) => permissionMatches(permission, "trades.dc"));
+  if (hasEb !== hasDc) return hasEb ? "EB" : "DC";
+  return null;
+}
+
+
 function isAccessActive(user: UserRecord) {
   if (user.role === "admin") return user.status === "active";
   if (user.status !== "active") return false;
