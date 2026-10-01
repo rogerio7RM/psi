@@ -34,6 +34,18 @@ jobs:
           })().catch(e=>{console.error(e.message);process.exit(1)});
           NODE
 
+      - name: Reset prior failed attempt marker
+        run: |
+          node <<'NODE'
+          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
+          (async()=>{
+            const r=await fetch(base+"/api/publisher/facebook/attempt/"+edition,{method:"DELETE",headers:{"X-Publisher-Key":key}});
+            const b=await r.json().catch(()=>({}));
+            console.log("RESET HTTP="+r.status+" reset="+Boolean(b.reset)+" reason="+(b.reason||"n/a"));
+            if(!r.ok||b.reset!==true) throw new Error("Facebook attempt reset failed");
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          NODE
+
       - name: Validate edition and duplication
         run: |
           node <<'NODE'
