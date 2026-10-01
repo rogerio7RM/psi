@@ -75,21 +75,30 @@ jobs:
           curl --fail --silent "$SITE_URL/api/auth/me" -o /tmp/auth.json
           grep -q '"configured":true' /tmp/auth.json
 
-          for route in trades trades/EB trades/DC educacional; do
-            safe=$(echo "$route" | tr '/' '-')
-            ok=0
-            for attempt in {1..6}; do
-              if timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/$route" > "/tmp/$safe.html" 2>/tmp/chrome-subscriber.log; then
-                if grep -Eq 'Área de assinantes|Criar administrador' "/tmp/$safe.html"; then ok=1; break; fi
-              fi
-              sleep 5
-            done
-            test "$ok" = '1'
-            ! grep -q 'Trading Logbook' "/tmp/$safe.html"
+          ok=0
+          for attempt in {1..6}; do
+            if timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/trades" > /tmp/trades.html 2>/tmp/chrome-subscriber.log; then
+              if grep -q 'Trading Logbook' /tmp/trades.html && grep -q 'PÚBLICO · RM' /tmp/trades.html; then ok=1; break; fi
+            fi
+            sleep 5
           done
+          test "$ok" = '1'
+          ! grep -Eq 'Área de assinantes|Criar administrador' /tmp/trades.html
 
+          ok=0
+          for attempt in {1..6}; do
+            if timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL/educacional" > /tmp/educacional.html 2>/tmp/chrome-subscriber.log; then
+              if grep -Eq 'Área de assinantes|Criar administrador' /tmp/educacional.html; then ok=1; break; fi
+            fi
+            sleep 5
+          done
+          test "$ok" = '1'
+
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/api/content/trades/rm")" = "200"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/api/content/trades/eb")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/api/content/trades/dc")" = "401"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades.json")" = "401"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades-eb.json")" = "401"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/data/trades-dc.json")" = "401"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/estudos/matematica-zero-dte/estudo-0-dte.pdf")" = "401"
-          echo 'Subscriber gates and protected content confirmed.'
+          echo 'Public RM and subscriber-only private Trades confirmed.'

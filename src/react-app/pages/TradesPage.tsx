@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../auth/AuthContext';
 import './TradesPage.css';
 
-type AccountCode = 'RM' | 'EB' | 'DC';
 type TradeStatus = 'closed' | 'open';
 
 type Trade = {
@@ -94,9 +94,14 @@ function CashChart({ rows }: { rows: Trade[] }) {
   );
 }
 
-export default function TradesPage({ account = 'RM' }: { account?: AccountCode }) {
-  const dataPath = `/api/content/trades/${account.toLowerCase()}`;
-  const hiddenAccount = account !== 'RM';
+export default function TradesPage() {
+  const { loading: authLoading, user, hasPermission } = useAuth();
+  const publicRequested = new URLSearchParams(window.location.search).get('view') === 'public';
+  const privateAccounts = (['EB', 'DC'] as const).filter((account) => hasPermission('trades.' + account.toLowerCase()));
+  const privateAccount = user?.role === 'admin' ? null : (privateAccounts.length === 1 ? privateAccounts[0] : null);
+  const showPrivate = !authLoading && !!privateAccount && !publicRequested;
+  const dataPath = authLoading ? '' : showPrivate ? `/api/content/trades/${privateAccount!.toLowerCase()}` : '/api/content/trades/rm';
+  const accountLabel = showPrivate ? `MINHA CARTEIRA · ${privateAccount}` : 'PÚBLICO · RM';
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState(false);
   const [term, setTerm] = useState('');
@@ -107,8 +112,11 @@ export default function TradesPage({ account = 'RM' }: { account?: AccountCode }
   const [period, setPeriod] = useState<PeriodFilter>('ytd');
 
   useEffect(() => {
+    if (!dataPath) return;
     let mounted = true;
-    fetch(dataPath + '?v=' + Date.now(), { cache: 'no-store' }).then(response => {
+    setSnapshot(null);
+    setError(false);
+    fetch(dataPath + '?v=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' }).then(response => {
       if (!response.ok) throw new Error('Arquivo indisponível');
       return response.json() as Promise<Snapshot>;
     }).then(data => {
@@ -144,14 +152,21 @@ export default function TradesPage({ account = 'RM' }: { account?: AccountCode }
   return (
     <main className='trades-page'>
       <div className='trades-container'>
-        <div className='trades-crumb'><a href='/'>PrimeSphere</a><span>›</span> Portfólio <span>›</span> <strong>Trades</strong>{hiddenAccount && <><span>›</span><strong>{account}</strong></>}</div>
+        <div className='trades-crumb'><a href='/'>PrimeSphere</a><span>›</span> Portfólio <span>›</span> <strong>Trades</strong><span>›</span><strong>{showPrivate ? 'Minha carteira' : 'Público RM'}</strong></div>
         <div className='trades-hero'>
           <div>
             <div className='trades-overline'>PRIMESPHERE / PORTFOLIO INTELLIGENCE</div>
             <h1>Trading Logbook <span className='trades-head-accent'>↗</span></h1>
-            <p>Movimentações de opções, histórico de estratégias e acompanhamento incremental.</p>
+            <p>{showPrivate ? 'Sua carteira privada de operações.' : 'Carteira pública RM, disponível sem login.'} Movimentações de opções, histórico de estratégias e acompanhamento incremental.</p>
           </div>
-          <div className='trades-hero-actions'><span className='trades-pill'>{hiddenAccount ? `CONTA ${account}` : 'HISTÓRICO REAL'}</span><a className='trades-button' href='#historico'>Ver operações ↓</a></div>
+          <div className='trades-hero-actions'>
+            <span className='trades-pill'>{accountLabel}</span>
+            {!!privateAccount && (showPrivate
+              ? <a className='trades-button' href='/trades?view=public'>Ver público (RM)</a>
+              : <a className='trades-button' href='/trades'>Minha carteira ({privateAccount})</a>)}
+            {!user && !authLoading && <a className='trades-button' href='/login?return=/trades'>Entrar para ver minha carteira</a>}
+            <a className='trades-button' href='#historico'>Ver operações ↓</a>
+          </div>
         </div>
 
         {error && <div className='trades-error' role='alert'>Não foi possível carregar os lançamentos. Atualize a página para tentar novamente.</div>}
@@ -196,7 +211,7 @@ export default function TradesPage({ account = 'RM' }: { account?: AccountCode }
             <div className='trades-table-footer'><span>Mostrando {Math.min(visible, filtered.length)} de {filtered.length} lançamentos filtrados.</span>{visible < filtered.length && <button type='button' onClick={() => setVisible(v => v + 15)}>Carregar mais ↓</button>}</div>
           </section>
           <div className='trades-disclaimer'><span>ⓘ</span><p><strong>Transparência:</strong> os valores são fluxos de caixa, não retornos realizados. Rolagens e ajustes aparecem como lançamentos individuais; toda operação que não estiver marcada como CLOSED no Excel é exibida como OPEN. Unidade monetária exibida como USD, a confirmar na planilha. As observações internas do Excel não são publicadas.</p></div>
-          <div className='trades-footer-meta'>Conta: {account} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
+          <div className='trades-footer-meta'>Conta: {showPrivate ? privateAccount : 'RM'} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Atualização programada após o fechamento regular de Wall Street.</div>
         </>}
       </div>
     </main>
