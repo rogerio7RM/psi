@@ -7,7 +7,7 @@ type Plan = { id: string; code: string; name: string; description: string; activ
 type User = {
   id: string; email: string; name: string; role: string; status: string; subscription_status: string;
   access_expires_at: string | null; last_login_at: string | null; plan_code: string | null; plan_name: string | null;
-  permissions: string[];
+  permissions: string[]; trade_account: 'EB' | 'DC' | null;
 };
 
 function AdminContent() {
@@ -16,7 +16,7 @@ function AdminContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [message, setMessage] = useState('');
   const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member' });
+  const [draft, setDraft] = useState({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member', tradeAccount: '' });
 
   async function api(path: string, init?: RequestInit) {
     const response = await fetch(path, { credentials: 'same-origin', ...init });
@@ -52,7 +52,7 @@ function AdminContent() {
           subscriptionStatus: draft.role === 'admin' ? 'internal' : 'active',
         }),
       });
-      setDraft({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member' });
+      setDraft({ name: '', email: '', password: '', planCode: 'PREMIUM', role: 'member', tradeAccount: '' });
       setMessage('Usuário criado.');
       await load();
     } catch (error) {
@@ -80,6 +80,7 @@ function AdminContent() {
           planCode: user.plan_code,
           accessExpiresAt: user.access_expires_at,
           permissions: user.permissions,
+          tradeAccount: user.trade_account,
         }),
       });
       setMessage('Usuário atualizado: ' + user.email);
@@ -138,6 +139,7 @@ function AdminContent() {
             <label>E-mail<input type='email' value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} required /></label>
             <label>Senha temporária<input type='password' minLength={12} value={draft.password} onChange={(e) => setDraft({ ...draft, password: e.target.value })} required /></label>
             <label>Plano<select value={draft.planCode} onChange={(e) => setDraft({ ...draft, planCode: e.target.value })}>{plans.filter((plan) => plan.active).map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}</select></label>
+            <label>Carteira de Trades<select value={draft.tradeAccount} onChange={(e) => setDraft({ ...draft, tradeAccount: e.target.value })}><option value=''>Sem carteira privada</option><option value='EB'>EB</option><option value='DC'>DC</option></select></label>
             <label>Tipo<select value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })}><option value='member'>Assinante</option><option value='admin'>Administrador</option></select></label>
             <button type='submit' disabled={creating}>{creating ? 'Criando…' : 'Criar usuário'}</button>
           </form>
@@ -182,6 +184,7 @@ function UserEditor({ user, plans, permissions, onChange, onSave, onReset, toggl
       <div className='subscriber-user-head'><div><strong>{user.name}</strong><span>{user.email}</span></div><span className={'subscriber-status ' + (user.status === 'active' ? 'active' : '')}>{user.status}</span></div>
       <div className='subscriber-user-grid'>
         <label>Plano<select value={user.plan_code || ''} onChange={(e) => onChange({ plan_code: e.target.value || null })}><option value=''>Sem plano</option>{plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}</select></label>
+        <label>Carteira de Trades<select value={user.trade_account || ''} onChange={(e) => onChange({ trade_account: (e.target.value || null) as 'EB' | 'DC' | null })}><option value=''>Sem carteira privada</option><option value='EB'>EB</option><option value='DC'>DC</option></select></label>
         <label>Tipo<select value={user.role} onChange={(e) => onChange({ role: e.target.value })}><option value='member'>Assinante</option><option value='admin'>Administrador</option></select></label>
         <label>Usuário<select value={user.status} onChange={(e) => onChange({ status: e.target.value })}><option value='active'>Ativo</option><option value='suspended'>Suspenso</option></select></label>
         <label>Assinatura<select value={user.subscription_status} onChange={(e) => onChange({ subscription_status: e.target.value })}><option value='active'>Ativa</option><option value='trial'>Trial</option><option value='internal'>Interna</option><option value='past_due'>Pagamento pendente</option><option value='canceled'>Cancelada</option><option value='expired'>Expirada</option></select></label>

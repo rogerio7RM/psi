@@ -17,6 +17,7 @@ type UserRecord = {
   providerCustomerId: string | null;
   providerSubscriptionId: string | null;
   permissions: string[];
+  tradeAccount: "EB" | "DC" | null;
   sessionVersion: number;
   lastLoginAt: string | null;
   createdAt: string;
@@ -58,6 +59,7 @@ export type Viewer = {
   planCode: string | null;
   planName: string | null;
   permissions: string[];
+  tradeAccount: "EB" | "DC" | null;
   accessActive: boolean;
 };
 
@@ -172,6 +174,23 @@ function permissionMatches(granted: string, required: string) {
   return granted.endsWith(".*") && required.startsWith(granted.slice(0, -1));
 }
 
+function normalizeTradeAccount(value: unknown): "EB" | "DC" | null {
+  const account = String(value ?? "").trim().toUpperCase();
+  return account === "EB" || account === "DC" ? account : null;
+}
+
+function inferTradeAccount(user: UserRecord, permissions: string[]): "EB" | "DC" | null {
+  const explicit = normalizeTradeAccount(user.tradeAccount);
+  if (explicit) return explicit;
+  if (user.planCode === "INTERNAL_EB") return "EB";
+  if (user.planCode === "INTERNAL_DC") return "DC";
+  const hasEb = permissions.some((permission) => permissionMatches(permission, "trades.eb"));
+  const hasDc = permissions.some((permission) => permissionMatches(permission, "trades.dc"));
+  if (hasEb !== hasDc) return hasEb ? "EB" : "DC";
+  return null;
+}
+
+
 function isAccessActive(user: UserRecord) {
   if (user.role === "admin") return user.status === "active";
   if (user.status !== "active") return false;
@@ -260,6 +279,7 @@ async function effectivePermissions(store: R2Bucket, user: UserRecord) {
 async function toViewer(store: R2Bucket, user: UserRecord): Promise<Viewer> {
   const active = isAccessActive(user);
   const plan = await getPlan(store, user.planCode);
+  const permissions = active ? await effectivePermissions(store, user) : [];
   return {
     id: user.id,
     email: user.email,
@@ -270,7 +290,8 @@ async function toViewer(store: R2Bucket, user: UserRecord): Promise<Viewer> {
     accessExpiresAt: user.accessExpiresAt,
     planCode: user.planCode,
     planName: plan?.name ?? null,
-    permissions: active ? await effectivePermissions(store, user) : [],
+    permissions,
+    tradeAccount: active ? inferTradeAccount(user, permissions) : null,
     accessActive: active,
   };
 }
@@ -375,6 +396,10 @@ function publicUser(user: UserRecord, plan: PlanRecord | null) {
     plan_code: user.planCode,
     plan_name: plan?.name ?? null,
     permissions: user.permissions,
+    trade_account: inferTradeAccount(user, [
+      ...(plan?.active ? plan.permissions : []),
+      ...user.permissions.filter(validPermission),
+    ]),
   };
 }
 
@@ -438,7 +463,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
       passwordHash: credentials.hash, passwordSalt: credentials.salt, passwordIterations: credentials.iterations,
       role: "admin", status: "active", subscriptionStatus: "internal", planCode: "INTERNAL_FULL",
       accessExpiresAt: null, billingProvider: null, providerCustomerId: null, providerSubscriptionId: null,
-      permissions: [], sessionVersion: 1, lastLoginAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+      permissions: [], tradeAccount: null, sessionVersion: 1, lastLoginAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
     };
     await saveUser(store, user);
     await putJson(store, AUTH + "config.json", { adminBootstrapped: true, updatedAt: timestamp });
@@ -528,11 +553,8 @@ export function registerSubscriberRoutes(app: Hono<any>) {
       c.header("Cache-Control", "private, no-store");
       const viewer = await requireViewer(c);
       if (viewer instanceof Response) return viewer;
-      if (viewer.role !== "admin") {
-        const privateAccounts = ["eb", "dc"].filter((candidate) => viewerHasPermission(viewer, "trades." + candidate));
-        if (privateAccounts.length !== 1 || privateAccounts[0] !== account) {
-          return c.json({ error: "Permission denied" }, 403);
-        }
+      if (viewer.role !== "admin" && viewer.tradeAccount?.toLowerCase() !== account) {
+        return c.json({ error: "Permission denied" }, 403);
       }
     }
 
@@ -560,6 +582,43 @@ export function registerSubscriberRoutes(app: Hono<any>) {
   app.get("/data/trades-eb.json", (c) => c.notFound());
   app.get("/data/trades-dc.json", (c) => c.notFound());
   app.get("/estudos/*", (c) => c.notFound());
+
+  app.post("/api/publisher/private/assign-trade-accounts", async (c) => {
+    const store = bucket(c);
+    if (!store) return c.json({ error: "Private storage unavailable" }, 503);
+    const body = await c.req.json<{ assignments?: Array<{ name?: string; account?: string }> }>().catch(() => null);
+    const assignments = Array.isArray(body?.assignments) ? body!.assignments!.slice(0, 20) : [];
+    if (!assignments.length) return c.json({ error: "Assignments required" }, 400);
+
+    const users: UserRecord[] = [];
+    for (const key of await listKeys(store, AUTH + "users/", 2000)) {
+      const user = await getJson<UserRecord>(store, key);
+      if (user) users.push(user);
+    }
+
+    const results = [];
+    for (const assignment of assignments) {
+      const requestedName = String(assignment.name || "").trim();
+      const normalizedName = requestedName.toLocaleLowerCase();
+      const account = normalizeTradeAccount(assignment.account);
+      if (!requestedName || !account) {
+        results.push({ name: requestedName, account, status: "invalid" });
+        continue;
+      }
+      const matches = users.filter((user) => user.name.trim().toLocaleLowerCase() === normalizedName);
+      if (matches.length !== 1) {
+        results.push({ name: requestedName, account, status: matches.length ? "ambiguous" : "not_found" });
+        continue;
+      }
+      const user = matches[0];
+      user.tradeAccount = account;
+      user.updatedAt = nowIso();
+      await saveUser(store, user);
+      await audit(store, null, "publisher_assign_trade_account", "user", user.id, { account });
+      results.push({ name: user.name, account, status: "updated" });
+    }
+    return c.json({ results });
+  });
 
   app.put("/api/publisher/private/trades/:account", async (c) => {
     const store = bucket(c);
@@ -680,6 +739,7 @@ export function registerSubscriberRoutes(app: Hono<any>) {
       providerCustomerId: body?.providerCustomerId || null,
       providerSubscriptionId: body?.providerSubscriptionId || null,
       permissions: Array.isArray(body?.permissions) ? body.permissions.filter(validPermission) : [],
+      tradeAccount: normalizeTradeAccount(body?.tradeAccount),
       sessionVersion: 1, lastLoginAt: null, createdAt: timestamp, updatedAt: timestamp,
     };
     await saveUser(store, user);
@@ -707,9 +767,10 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     if (body.providerCustomerId !== undefined) user.providerCustomerId = body.providerCustomerId || null;
     if (body.providerSubscriptionId !== undefined) user.providerSubscriptionId = body.providerSubscriptionId || null;
     if (Array.isArray(body.permissions)) user.permissions = [...new Set((body.permissions as unknown[]).filter((permission): permission is string => typeof permission === "string" && validPermission(permission)))];
+    if (body.tradeAccount !== undefined) user.tradeAccount = normalizeTradeAccount(body.tradeAccount);
     user.updatedAt = nowIso();
     await saveUser(store, user);
-    await audit(store, viewer.id, "update_user", "user", user.id, { status: user.status, subscriptionStatus: user.subscriptionStatus, planCode: user.planCode });
+    await audit(store, viewer.id, "update_user", "user", user.id, { status: user.status, subscriptionStatus: user.subscriptionStatus, planCode: user.planCode, tradeAccount: user.tradeAccount });
     return c.json({ saved: true });
   });
 
