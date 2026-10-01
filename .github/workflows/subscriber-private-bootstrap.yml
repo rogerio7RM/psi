@@ -1,0 +1,98 @@
+name: PrimeSphere migrate subscriber content to protected R2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/subscriber-private-bootstrap.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  migrate-private-content:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      BASE_URL: https://primesphereintelligence.com
+      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate secure publisher access
+        run: |
+          test -n "$PUBLISH_ADMIN_KEY" || (echo "Missing PUBLISH_ADMIN_KEY" && exit 1)
+
+      - name: Upload protected Trades and Educational content
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const base = process.env.BASE_URL;
+          const key = process.env.PUBLISH_ADMIN_KEY;
+
+          const typeFor = (file) => file.endsWith('.json') ? 'application/json'
+            : file.endsWith('.pdf') ? 'application/pdf'
+            : file.endsWith('.webp') ? 'image/webp'
+            : file.endsWith('.png') ? 'image/png'
+            : /\.jpe?g$/i.test(file) ? 'image/jpeg'
+            : 'application/octet-stream';
+
+          async function put(url, file) {
+            const body = fs.readFileSync(file);
+            const response = await fetch(base + url, {
+              method: 'PUT',
+              headers: {
+                'X-Publisher-Key': key,
+                'Content-Type': typeFor(file),
+                'Content-Length': String(body.length),
+              },
+              body,
+            });
+            if (!response.ok) {
+              const text = await response.text().catch(() => '');
+              throw new Error(file + ' -> HTTP ' + response.status + ' ' + text.slice(0, 200));
+            }
+            console.log('uploaded', file);
+          }
+
+          (async () => {
+            const trades = [
+              ['rm', 'public/data/trades.json'],
+              ['eb', 'public/data/trades-eb.json'],
+              ['dc', 'public/data/trades-dc.json'],
+            ];
+            for (const [account, file] of trades) await put('/api/publisher/private/trades/' + account, file);
+
+            const root = 'public/estudos';
+            const stack = [root];
+            while (stack.length) {
+              const current = stack.pop();
+              for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+                const full = path.join(current, entry.name);
+                if (entry.isDirectory()) stack.push(full);
+                else {
+                  const relative = path.relative(root, full).split(path.sep).join('/');
+                  const [slug, ...rest] = relative.split('/');
+                  await put('/api/publisher/private/education/' + slug + '/' + rest.join('/'), full);
+                }
+              }
+            }
+          })().catch((error) => {
+            console.error(error.message);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Verify protected endpoints stay private
+        run: |
+          set -euo pipefail
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/data/trades.json")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/data/trades-eb.json")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/data/trades-dc.json")" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/estudos/matematica-zero-dte/estudo-0-dte.pdf")" = "401"
+          echo 'Protected content migrated and unauthenticated access blocked.'
