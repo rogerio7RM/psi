@@ -15,7 +15,7 @@
       "quantity": 1,
       "strategy": "TA PUT",
       "rawAmount": -188,
-      "status": "unknown"
+      "status": "open"
     }
   ]
 }
