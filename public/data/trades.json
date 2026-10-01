@@ -715,7 +715,7 @@
       "quantity": 1,
       "strategy": "Covered call",
       "rawAmount": -90,
-      "status": "unknown"
+      "status": "open"
     }
   ]
 }
