@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../auth/AuthContext';
 
 type Props = {
   currentPath: string;
@@ -13,6 +14,7 @@ const links = [
 
 export default function SiteHeader({ currentPath }: Props) {
   const [open, setOpen] = useState(false);
+  const { loading, user } = useAuth();
 
   return (
     <header className='psi-header'>
@@ -27,7 +29,11 @@ export default function SiteHeader({ currentPath }: Props) {
           ))}
         </nav>
 
-        <a className='psi-header-cta' href='/#brief-atual'>Brief atual</a>
+        {!loading && (
+          user
+            ? <a className='psi-header-cta' href={user.role === 'admin' ? '/admin' : '/conta'}>{user.role === 'admin' ? 'Admin' : 'Minha conta'}</a>
+            : <a className='psi-header-cta' href='/login'>Entrar</a>
+        )}
 
         <button
           className='psi-menu-button'
@@ -45,9 +51,12 @@ export default function SiteHeader({ currentPath }: Props) {
 
       <nav className={`psi-nav-mobile ${open ? 'is-open' : ''}`} id='psi-mobile-nav' aria-label='Navegação móvel'>
         {links.map(([href, label]) => (
-          <a className={currentPath === href ? 'is-active' : ''} href={href} key={href}>{label}</a>
+          <a className={(currentPath === href || (href !== '/' && currentPath.startsWith(href + '/'))) ? 'is-active' : ''} href={href} key={href}>{label}</a>
         ))}
-        <a className='psi-mobile-brief' href='/#brief-atual'>Ver Brief Atual</a>
+        {!loading && (user
+          ? <a className='psi-mobile-brief' href={user.role === 'admin' ? '/admin' : '/conta'}>{user.role === 'admin' ? 'Administração' : 'Minha conta'}</a>
+          : <a className='psi-mobile-brief' href='/login'>Entrar</a>
+        )}
       </nav>
     </header>
   );
