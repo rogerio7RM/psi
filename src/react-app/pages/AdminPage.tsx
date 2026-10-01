@@ -139,6 +139,7 @@ function AdminContent() {
             <label>E-mail<input type='email' value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} required /></label>
             <label>Senha temporária<input type='password' minLength={12} value={draft.password} onChange={(e) => setDraft({ ...draft, password: e.target.value })} required /></label>
             <label>Plano<select value={draft.planCode} onChange={(e) => setDraft({ ...draft, planCode: e.target.value })}>{plans.filter((plan) => plan.active).map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}</select></label>
+            <label>Carteira de Trades<select value={draft.tradeAccount} onChange={(e) => setDraft({ ...draft, tradeAccount: e.target.value })}><option value=''>Sem carteira privada</option><option value='EB'>EB</option><option value='DC'>DC</option></select></label>
             <label>Tipo<select value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })}><option value='member'>Assinante</option><option value='admin'>Administrador</option></select></label>
             <button type='submit' disabled={creating}>{creating ? 'Criando…' : 'Criar usuário'}</button>
           </form>
@@ -183,6 +184,7 @@ function UserEditor({ user, plans, permissions, onChange, onSave, onReset, toggl
       <div className='subscriber-user-head'><div><strong>{user.name}</strong><span>{user.email}</span></div><span className={'subscriber-status ' + (user.status === 'active' ? 'active' : '')}>{user.status}</span></div>
       <div className='subscriber-user-grid'>
         <label>Plano<select value={user.plan_code || ''} onChange={(e) => onChange({ plan_code: e.target.value || null })}><option value=''>Sem plano</option>{plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}</select></label>
+        <label>Carteira de Trades<select value={user.trade_account || ''} onChange={(e) => onChange({ trade_account: (e.target.value || null) as 'EB' | 'DC' | null })}><option value=''>Sem carteira privada</option><option value='EB'>EB</option><option value='DC'>DC</option></select></label>
         <label>Tipo<select value={user.role} onChange={(e) => onChange({ role: e.target.value })}><option value='member'>Assinante</option><option value='admin'>Administrador</option></select></label>
         <label>Usuário<select value={user.status} onChange={(e) => onChange({ status: e.target.value })}><option value='active'>Ativo</option><option value='suspended'>Suspenso</option></select></label>
         <label>Assinatura<select value={user.subscription_status} onChange={(e) => onChange({ subscription_status: e.target.value })}><option value='active'>Ativa</option><option value='trial'>Trial</option><option value='internal'>Interna</option><option value='past_due'>Pagamento pendente</option><option value='canceled'>Cancelada</option><option value='expired'>Expirada</option></select></label>
