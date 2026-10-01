@@ -96,11 +96,19 @@ function CashChart({ rows }: { rows: Trade[] }) {
 
 export default function TradesPage() {
   const { loading: authLoading, user } = useAuth();
-  const publicRequested = new URLSearchParams(window.location.search).get('view') === 'public';
+  const query = new URLSearchParams(window.location.search);
+  const publicRequested = query.get('view') === 'public';
+  const adminRequested = (query.get('account') || 'RM').trim().toUpperCase();
+  const adminAccount = /^[A-Z0-9_-]{2,20}$/.test(adminRequested) ? adminRequested : 'RM';
   const privateAccount = user?.role === 'admin' ? null : (user?.tradeAccount ?? null);
   const showPrivate = !authLoading && !!privateAccount && !publicRequested;
-  const dataPath = authLoading ? '' : showPrivate ? `/api/content/trades/${privateAccount!.toLowerCase()}` : '/api/content/trades/rm';
-  const accountLabel = showPrivate ? `MINHA CARTEIRA · ${privateAccount}` : 'PÚBLICO · RM';
+  const activeAccount = user?.role === 'admin' ? adminAccount : (showPrivate ? privateAccount! : 'RM');
+  const dataPath = authLoading ? '' : `/api/content/trades/${activeAccount.toLowerCase()}`;
+  const accountLabel = user?.role === 'admin'
+    ? `ADMIN · ${activeAccount}`
+    : showPrivate ? `MINHA CARTEIRA · ${privateAccount}` : 'PÚBLICO · RM';
+  const [adminSelectorOpen, setAdminSelectorOpen] = useState(false);
+  const [adminAccounts, setAdminAccounts] = useState<string[]>(['RM']);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState(false);
   const [term, setTerm] = useState('');
