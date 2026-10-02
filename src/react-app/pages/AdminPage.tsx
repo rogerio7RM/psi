@@ -74,12 +74,12 @@ function AdminContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: user.name,
+          email: user.email,
           role: user.role,
           status: user.status,
           subscriptionStatus: user.subscription_status,
           planCode: user.plan_code,
           accessExpiresAt: user.access_expires_at,
-          permissions: user.permissions,
           tradeAccount: user.trade_account,
         }),
       });
@@ -148,7 +148,7 @@ function AdminContent() {
         <section className='subscriber-card'>
           <div className='subscriber-section-title'><div><span className='subscriber-kicker'>USUÁRIOS</span><h2>{users.length} cadastrados</h2></div></div>
           <div className='subscriber-user-list'>
-            {users.map((user) => <UserEditor key={user.id} user={user} plans={plans} permissions={permissions} onChange={(changes) => patchLocalUser(user.id, changes)} onSave={() => saveUser(user)} onReset={(password) => resetPassword(user, password)} togglePermission={togglePermission} />)}
+            {users.map((user) => <UserEditor key={user.id} user={user} plans={plans} onChange={(changes) => patchLocalUser(user.id, changes)} onSave={() => saveUser(user)} onReset={(password) => resetPassword(user, password)} />)}
           </div>
         </section>
 
@@ -174,15 +174,17 @@ function AdminContent() {
   );
 }
 
-function UserEditor({ user, plans, permissions, onChange, onSave, onReset, togglePermission }: {
-  user: User; plans: Plan[]; permissions: Permission[]; onChange: (changes: Partial<User>) => void;
-  onSave: () => void; onReset: (password: string) => void; togglePermission: (list: string[], code: string) => string[];
+function UserEditor({ user, plans, onChange, onSave, onReset }: {
+  user: User; plans: Plan[]; onChange: (changes: Partial<User>) => void;
+  onSave: () => void; onReset: (password: string) => void;
 }) {
   const [password, setPassword] = useState('');
   return (
     <article className='subscriber-user-card'>
       <div className='subscriber-user-head'><div><strong>{user.name}</strong><span>{user.email}</span></div><span className={'subscriber-status ' + (user.status === 'active' ? 'active' : '')}>{user.status}</span></div>
       <div className='subscriber-user-grid'>
+        <label>Nome<input value={user.name} onChange={(e) => onChange({ name: e.target.value })} required /></label>
+        <label>E-mail<input type='email' value={user.email} onChange={(e) => onChange({ email: e.target.value })} required /></label>
         <label>Plano<select value={user.plan_code || ''} onChange={(e) => onChange({ plan_code: e.target.value || null })}><option value=''>Sem plano</option>{plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}</select></label>
         <label>Carteira de Trades<select value={user.trade_account || ''} onChange={(e) => onChange({ trade_account: (e.target.value || null) as 'EB' | 'DC' | null })}><option value=''>Sem carteira privada</option><option value='EB'>EB</option><option value='DC'>DC</option></select></label>
         <label>Tipo<select value={user.role} onChange={(e) => onChange({ role: e.target.value })}><option value='member'>Assinante</option><option value='admin'>Administrador</option></select></label>
@@ -190,7 +192,6 @@ function UserEditor({ user, plans, permissions, onChange, onSave, onReset, toggl
         <label>Assinatura<select value={user.subscription_status} onChange={(e) => onChange({ subscription_status: e.target.value })}><option value='active'>Ativa</option><option value='trial'>Trial</option><option value='internal'>Interna</option><option value='past_due'>Pagamento pendente</option><option value='canceled'>Cancelada</option><option value='expired'>Expirada</option></select></label>
         <label>Validade<input type='date' value={user.access_expires_at ? user.access_expires_at.slice(0, 10) : ''} onChange={(e) => onChange({ access_expires_at: e.target.value ? e.target.value + 'T23:59:59.999Z' : null })} /></label>
       </div>
-      <div className='subscriber-extra-access'><strong>Permissões adicionais</strong><div className='subscriber-checkboxes'>{permissions.filter((permission) => !permission.code.endsWith('.*')).map((permission) => <label key={permission.code}><input type='checkbox' checked={user.permissions.includes(permission.code)} onChange={() => onChange({ permissions: togglePermission(user.permissions, permission.code) })} />{permission.label}</label>)}</div></div>
       <div className='subscriber-user-actions'><button type='button' onClick={onSave}>Salvar usuário</button><input type='password' placeholder='Nova senha (12+ caracteres)' value={password} onChange={(e) => setPassword(e.target.value)} /><button type='button' className='secondary' onClick={() => { onReset(password); setPassword(''); }}>Redefinir senha</button></div>
       <small>Último login: {user.last_login_at ? new Date(user.last_login_at).toLocaleString('pt-BR') : 'nunca'}</small>
     </article>
