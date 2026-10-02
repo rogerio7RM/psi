@@ -43,11 +43,16 @@ jobs:
             code="${file%.tsx}"
             edition="20${code:0:2}-${code:2:2}-${code:4:2}"
           fi
-          test -f "content/instagram/$edition.json" || { echo "No approved social JSON for $edition"; exit 1; }
           grep -q "Morning Brief" "src/react-app/editions/${edition:2:2}${edition:5:2}${edition:8:2}.tsx"
           echo "edition=$edition" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with: { node-version: "22" }
+      - name: Generate today social JSON from Morning Brief
+        env:
+          EDITION: ${{ steps.resolve.outputs.edition }}
+        run: |
+          code="${EDITION:2:2}${EDITION:5:2}${EDITION:8:2}"
+          node scripts/generate-social-edition.mjs "src/react-app/editions/$code.tsx" ".social/$EDITION.json"
       - run: npm install --no-save --package-lock=false sharp
       - name: Fetch approved backgrounds only
         env:
@@ -57,14 +62,14 @@ jobs:
         run: |
           mkdir -p .social/backgrounds .social/cards
           node <<'NODE'
-          const fs=require("fs"),d=require("./content/instagram/"+process.env.EDITION+".json");
+          const fs=require("fs"),d=JSON.parse(fs.readFileSync(".social/"+process.env.EDITION+".json","utf8"));
           (async()=>{for(const c of d.cards){const n=String(c.background).padStart(2,"0");const r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+c.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw Error("background "+n);fs.writeFileSync(".social/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()));}})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
       - name: Render and strict QA
         env:
           EDITION: ${{ steps.resolve.outputs.edition }}
         run: |
-          node scripts/render-instagram-cards.mjs "content/instagram/$EDITION.json" .social/backgrounds .social/cards
+          node scripts/render-instagram-cards.mjs ".social/$EDITION.json" .social/backgrounds .social/cards
           python3 - <<'PY'
           import glob,struct
           files=sorted(glob.glob(".social/cards/card_*.png"))
@@ -76,7 +81,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: social-assets-${{ steps.resolve.outputs.edition }}
-          path: .social/cards/*.png
+          path: |
+            .social/cards/*.png
+            .social/*.json
           retention-days: 7
 
   stage:
@@ -89,7 +96,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: social-assets-${{ needs.prepare.outputs.edition }}
-          path: cards
+          path: social-assets
       - name: Stage validated assets and caption
         env:
           BASE_URL: https://primesphereintelligence.com
@@ -97,8 +104,8 @@ jobs:
           EDITION: ${{ needs.prepare.outputs.edition }}
         run: |
           node <<'NODE'
-          const fs=require("fs"),d=require("./content/instagram/"+process.env.EDITION+".json"),base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY;
-          (async()=>{for(let i=1;i<=8;i++){const n=String(i).padStart(2,"0"),b=fs.readFileSync("cards/card_"+n+".png");const r=await fetch(base+"/api/publisher/media/"+d.edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png"},body:b});if(!r.ok)throw Error("upload "+n+" HTTP "+r.status)}
+          const fs=require("fs"),d=JSON.parse(fs.readFileSync("social-assets/"+process.env.EDITION+".json","utf8")),base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY;
+          (async()=>{for(let i=1;i<=8;i++){const n=String(i).padStart(2,"0"),b=fs.readFileSync("social-assets/card_"+n+".png");const r=await fetch(base+"/api/publisher/media/"+d.edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png"},body:b});if(!r.ok)throw Error("upload "+n+" HTTP "+r.status)}
           const m=await fetch(base+"/api/publisher/instagram/edition/"+d.edition,{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},body:JSON.stringify({caption:d.caption,approved:true})});if(!m.ok)throw Error("manifest HTTP "+m.status);
           const s=await fetch(base+"/api/publisher/instagram/edition/"+d.edition,{headers:{"X-Publisher-Key":key}});const j=await s.json();console.log(JSON.stringify({ready:j.ready,approved:j.approved,missingCards:j.missingCards,alreadyPublished:j.alreadyPublished}));if(j.missingCards?.length||j.approved!==true)process.exit(1)})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
