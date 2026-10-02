@@ -26,12 +26,12 @@ const short=(s,n=210)=>s.length<=n?s:s.slice(0,n-1).replace(/\s+\S*$/,"")+"…";
 const footer=`${code.slice(4,6)} ${["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"][Number(code.slice(2,4))-1]} 20${code.slice(0,2)} • @portfoliointelligence`;
 const cards=[
  {background:29,eyebrow:"PRIMESPHERE INTELLIGENCE",title:"Wall Street",accent:"ANTES DA ABERTURA",body:short(plain(header),180),footer},
- {background:30,eyebrow:"WALL STREET EM 30 SEGUNDOS",title:"Mercado em foco",accent:"SNAPSHOT",body:short(pairs.slice(0,4).map(x=>x.join(" ")).join(" | ")+" • VIX "+pairs[4][1]+" • 10Y "+pairs[5][1],190),footer:"PrimeSphere Intelligence"},
- {background:31,eyebrow:"AS 3 COISAS DO DIA",title:"O que move o mercado",accent:"FOCO DO MERCADO",body:short(three.map((x,i)=>`${i+1} ${x}`).join(" "),205),footer:"Número → motivo → impacto"},
- {background:32,eyebrow:"PREMARKET MOVERS",title:"Quem está se mexendo",accent:"RADAR",body:short(movers,205),footer:"Catalisadores confirmados no Morning Brief"},
+ {background:30,eyebrow:"WALL STREET EM 30 SEGUNDOS",title:"Mercado em espera",accent:"SNAPSHOT",body:short(pairs.slice(0,4).map(x=>x.join(" ")).join(" | ")+" • VIX "+pairs[4][1]+" • 10Y "+pairs[5][1],190),footer:"PrimeSphere Intelligence"},
+ {background:31,eyebrow:"AS 3 COISAS DO DIA",title:"Dados + juros",accent:"FOCO DO MERCADO",body:short(three.map((x,i)=>`${i+1} ${x}`).join(" "),205),footer:"Número → motivo → impacto"},
+ {background:32,eyebrow:"PREMARKET MOVERS",title:"Quem está se mexendo",accent:"MOVERS",body:short(movers,205),footer:"Catalisadores confirmados no Morning Brief"},
  {background:33,eyebrow:"AGENDA",title:"O relógio do mercado",accent:"HOJE",body:short(agenda,205),footer:"Horários de Madrid"},
  {background:34,eyebrow:"EARNINGS RADAR",title:"Resultados no radar",accent:"EARNINGS",body:short(earnings,200),footer:"PrimeSphere Intelligence"},
- {background:35,eyebrow:"O QUE OBSERVAR",title:"Radar da sessão",accent:"PRÓXIMO PASSO",body:short(watch,200),footer:"PrimeSphere Intelligence"},
+ {background:35,eyebrow:"O QUE OBSERVAR",title:"Radar da sessão",accent:"RADAR",body:short(watch,200),footer:"PrimeSphere Intelligence"},
  {background:36,eyebrow:"PRIMESPHERE INTELLIGENCE",title:"Contexto antes do ruído",accent:"PRIMESPHEREINTELLIGENCE.COM",body:"Acompanhe o Morning Brief completo no site. Conteúdo informativo e educacional; não é recomendação de investimento.",footer:"@portfoliointelligence"}
 ];
 const caption=`Morning Brief PrimeSphere — ${dmY}. ${short(plain(header),300)}\n\nConteúdo informativo e educacional. Não constitui recomendação individual de investimento.\n\n#WallStreet #Mercados #Investimentos #PrimeSphere #PortfolioIntelligence`;
