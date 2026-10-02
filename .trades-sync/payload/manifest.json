@@ -1,10 +1,10 @@
 {
-  "requestId": "excel-20261001T165859Z-30718424",
-  "sourceModifiedAt": "2026-10-01T16:58:59Z",
-  "syncedAt": "2026-10-01T17:01:01Z",
+  "requestId": "excel-20261002T160430Z-1805",
+  "sourceModifiedAt": "2026-10-02T16:04:30Z",
+  "syncedAt": "2026-10-02T16:08:00Z",
   "hashes": {
-    "rm": "307184245c7e57515e16b3de813b2e433bd85d5879f301bcf2c817f10964c614",
-    "eb": "7c6dcd2f23441b2fe83c3e077e553f3b235625c8b422c74279c0f0cb36fe0fc8",
-    "dc": "c3930532a545805fb9009db5cff768fa35b624eed89fd0a1741328f407ca5172"
+    "rm": "de14d491fc6d6a2b25aee7a668df2bff91c8281f5fea8993ef343082e3e6b0aa",
+    "eb": "c30eb7881417442e265786fbc56f0c5fb2d3911b487fad6dd5eab66c691f6dfc",
+    "dc": "efd6c82c165471c02c8633912fe050f5f2fd7f651f3ad2309e4eb659c86cf6b4"
   }
 }
