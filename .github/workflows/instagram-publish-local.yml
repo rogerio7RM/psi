@@ -1,84 +1,10 @@
-name: PrimeSphere publish approved Instagram cards
-
+name: Legacy Instagram workflow (disabled)
 on:
-  push:
-    paths:
-      - ".github/workflows/instagram-publish-local.yml"
-
-permissions:
-  contents: read
-
+  workflow_dispatch:
 jobs:
-  publish:
+  disabled:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      BASE_URL: https://primesphereintelligence.com
-      EDITION: "2026-09-30"
-      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Verify local approved cards
-        shell: bash
-        run: |
-          set -euo pipefail
-          expected=(
-            "0FE3C933E4A750481A36C92C6C02A3EF11DD54FC254E9D2D755844F8A414AC1A"
-            "CE33A4D3FC3FD2689A4F0300DC2A81E0E572E5783AEA4E77649EBCABCFA407A8"
-            "2B14DFDE00BC2395591365A0FE2F368263D1393B550B34C4F5445A66D1EFFDFD"
-            "E519E848A12AF322D004E648ACD355C5038B45EA046DD4367C24751324B63D2F"
-            "A68E1467E1071ED8A39A5D0DB4D0FFD71F61E52EDF37F5382EC26BCC17D2B4D0"
-            "BF89E01BF1F179549807F033065BA87BA036EE49F8B98474F34A744AE147D3A7"
-            "FDF22505369F7BAD9E9A505A6101A203A051A5E75B1C73123B0D14DA6BBD8C33"
-            "34B7C132472C21AF119BF1DF5849B9629AF781E28994B0E8577FC6DDCC14AFF3"
-          )
-          for n in 01 02 03 04 05 06 07 08; do
-            idx=$((10#$n-1))
-            file="tmp/instagram/2026-09-30/card_$n.png"
-            test -f "$file"
-            actual=$(sha256sum "$file" | awk '{print toupper($1)}')
-            test "$actual" = "${expected[$idx]}"
-          done
-          echo "Local card set verified"
-
-      - name: Stage approved cards and caption to R2
-        run: |
-          node <<'NODE'
-          const fs=require("fs");
-          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
-          if(!key) throw new Error("Missing PUBLISH_ADMIN_KEY");
-          const caption="Morning Brief PrimeSphere — 30/09/2026.\n\nInflação veio mais suave que o consenso, enquanto o emprego surpreendeu para cima. Os yields continuam no centro da precificação e a leitura do mercado segue seletiva entre setores e empresas.\n\nTecnologia lidera entre os setores, enquanto HPE se destaca com novo pedido ligado à infraestrutura de IA. Jabil, Moderna e Northrop seguem pressionadas. Depois do fechamento, o foco corporativo passa para a Micron, com atenção a HBM, margens, pricing e guidance para 2027.\n\nPara o investidor brasileiro, USD/BRL e Treasury de 10 anos continuam peças importantes na leitura da exposição a Wall Street.\n\nConteúdo informativo e educacional. Não constitui recomendação individual de investimento.\n\n#WallStreet #Mercados #Investimentos #PrimeSphere #PortfolioIntelligence";
-          (async()=>{
-            for(let i=1;i<=8;i++){
-              const n=String(i).padStart(2,"0");
-              const body=fs.readFileSync("tmp/instagram/2026-09-30/card_"+n+".png");
-              const r=await fetch(base+"/api/publisher/media/"+edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png","Content-Length":String(body.length)},body});
-              if(!r.ok) throw new Error("R2 upload card "+n+" HTTP "+r.status);
-            }
-            const m=await fetch(base+"/api/publisher/instagram/edition/"+edition,{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},body:JSON.stringify({caption,approved:true})});
-            if(!m.ok) throw new Error("Manifest HTTP "+m.status);
-            console.log("R2 staging complete");
-          })().catch(e=>{console.error(e.message);process.exit(1)});
-          NODE
-
-      - name: Verify Meta and publish carousel
-        run: |
-          node <<'NODE'
-          const base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY,edition=process.env.EDITION;
-          (async()=>{
-            const headers={"X-Publisher-Key":key};
-            const s=await fetch(base+"/api/publisher/instagram/status",{headers});
-            const sj=await s.json();
-            console.log("Meta configured="+Boolean(sj.configured)+" authorized="+Boolean(sj.authorized)+" idMatches="+Boolean(sj.idMatches));
-            if(!s.ok||sj.configured!==true||sj.authorized!==true||sj.idMatches!==true) throw new Error("Meta authorization failed");
-            const e=await fetch(base+"/api/publisher/instagram/edition/"+edition,{headers});
-            const ej=await e.json();
-            console.log("Edition ready="+Boolean(ej.ready)+" approved="+Boolean(ej.approved)+" missingCards="+JSON.stringify(ej.missingCards||[])+" alreadyPublished="+Boolean(ej.alreadyPublished));
-            if(!e.ok||ej.ready!==true||ej.approved!==true||(ej.missingCards||[]).length||ej.alreadyPublished===true) throw new Error("Edition readiness failed");
-            const p=await fetch(base+"/api/publisher/instagram/publish/"+edition,{method:"POST",headers});
-            const pj=await p.json();
-            console.log("Publish result published="+Boolean(pj.published)+" mediaId="+(pj.mediaId||"n/a")+" reason="+(pj.reason||"n/a"));
-            if(!p.ok||pj.published!==true||!pj.mediaId) throw new Error("Instagram publish failed");
-          })().catch(e=>{console.error(e.message);process.exit(1)});
-          NODE
+      - run: |
+          echo "DISABLED: replaced by .github/workflows/instagram-staging.yml (PrimeSphere Social Pipeline)."
+          exit 1

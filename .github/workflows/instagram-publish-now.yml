@@ -1,94 +1,10 @@
-name: PrimeSphere Instagram publish bridge
-
+name: Legacy Instagram workflow (disabled)
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/instagram-publish-now.yml"
-
-permissions:
-  contents: read
-
 jobs:
-  publish-instagram:
+  disabled:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
-    env:
-      BASE_URL: https://primesphereintelligence.com
-      EDITION: "2026-09-30"
-      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
-      CARD_01_URL: "https://sdmntprnortheu.oaiusercontent.com/files/00000000-76cc-81f4-a65b-f58d03e01f45/raw?se=2026-09-30T15%3A12%3A15Z&sp=r&sv=2026-02-06&sr=b&scid=b0364d39-8f24-5b63-8aac-dc5889fb8516&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T15%3A07%3A08Z&ske=2026-10-01T15%3A07%3A08Z&sks=b&skv=2026-02-06&sig=Yrv%2BvAGnLR6JkoSiTTHg9qX%2BIqH9%2BvD0K9rIDcA3Ij8%3D"
-      CARD_02_URL: "https://sdmntprukwest.oaiusercontent.com/files/00000000-89ec-8243-b00e-2072abeed52c/raw?se=2026-09-30T15%3A12%3A18Z&sp=r&sv=2026-02-06&sr=b&scid=4900eac2-f3ab-5da6-a89b-a5a0394874fd&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T06%3A39%3A31Z&ske=2026-10-01T06%3A39%3A31Z&sks=b&skv=2026-02-06&sig=HZBDihwcp4c0AnbTiqxoWqPyibcvZS8O7R/izZlhqVQ%3D"
-      CARD_03_URL: "https://sdmntprnortheu.oaiusercontent.com/files/00000000-c1fc-81f4-b99d-a38e6f42bc82/raw?se=2026-09-30T15%3A12%3A21Z&sp=r&sv=2026-02-06&sr=b&scid=4e21e5da-e49d-5c8f-8fde-dfc4a9697d21&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T14%3A24%3A05Z&ske=2026-10-01T14%3A24%3A05Z&sks=b&skv=2026-02-06&sig=n55pEUxSc6Ktq8B%2BTxY/Tem1RXNY2aR1J90n65FZ%2Bsk%3D"
-      CARD_04_URL: "https://sdmntprdenmarkeast.oaiusercontent.com/files/00000000-853c-8210-bdde-b83223b14763/raw?se=2026-09-30T15%3A12%3A25Z&sp=r&sv=2026-02-06&sr=b&scid=ed4dc1c9-5ffa-5382-a0de-46041f6097ff&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T07%3A30%3A53Z&ske=2026-10-01T07%3A30%3A53Z&sks=b&skv=2026-02-06&sig=LZO4DHZbz74BUGp/KZy/6LtczAk0v%2BagPkXQbJa8Uus%3D"
-      CARD_05_URL: "https://sdmntprdenmarkeast.oaiusercontent.com/files/00000000-f4f0-8210-a233-ffe031b8bfdb/raw?se=2026-09-30T15%3A12%3A28Z&sp=r&sv=2026-02-06&sr=b&scid=ae6437c2-8798-572a-9a03-b4f763d1c739&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T09%3A28%3A28Z&ske=2026-10-01T09%3A28%3A28Z&sks=b&skv=2026-02-06&sig=r4x/bwZ%2B7/Kmem6H9lAhOX/nL01FV83HcaAwf939l2I%3D"
-      CARD_06_URL: "https://sdmntprdenmarkeast.oaiusercontent.com/files/00000000-4e1c-8210-8759-4763672d0b03/raw?se=2026-09-30T15%3A12%3A31Z&sp=r&sv=2026-02-06&sr=b&scid=f2823c8f-9214-5d29-b903-9cf9c0ceaeb9&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T06%3A17%3A16Z&ske=2026-10-01T06%3A17%3A16Z&sks=b&skv=2026-02-06&sig=kuG6Q%2B8MMkTgvKqVg0xKDFpZbqdZPV8U9imX2f14yPQ%3D"
-      CARD_07_URL: "https://sdmntprdenmarkeast.oaiusercontent.com/files/00000000-71cc-8210-b46d-9b8d3e284650/raw?se=2026-09-30T15%3A12%3A34Z&sp=r&sv=2026-02-06&sr=b&scid=a2a59790-c7f8-5f7c-a7f9-1bab94273c18&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T04%3A30%3A27Z&ske=2026-10-01T04%3A30%3A27Z&sks=b&skv=2026-02-06&sig=0meSbiiaevcT0dYKMrSrNRW0YYySo60dAIjrzGYFJtc%3D"
-      CARD_08_URL: "https://sdmntprnortheu.oaiusercontent.com/files/00000000-a440-81f4-b43c-a5abac85f8b7/raw?se=2026-09-30T15%3A12%3A37Z&sp=r&sv=2026-02-06&sr=b&scid=83b7a5f5-70d3-5339-a05a-c179bfa2eaf0&skoid=7b771594-2b4f-4e93-93be-fdeeeb59aaf9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-30T04%3A30%3A27Z&ske=2026-10-01T04%3A30%3A27Z&sks=b&skv=2026-02-06&sig=rZiSGaqk%2Bab5Phl8jPwYgApFbSDadZbdgSz93wQChMQ%3D"
-
     steps:
-      - name: Validate secure publisher secret
-        run: |
-          test -n "$PUBLISH_ADMIN_KEY" || (echo "Missing PUBLISH_ADMIN_KEY" && exit 1)
-
-      - name: Download and validate approved cards
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p cards
-          for i in 01 02 03 04 05 06 07 08; do
-            var="CARD_${i}_URL"
-            url="${!var}"
-            curl -fsSL --retry 3 --retry-delay 2 "$url" -o "cards/card_${i}.png"
-            python3 -c 'import struct,sys; p=sys.argv[1]; b=open(p,"rb").read(24); assert b[:8]==b"\\x89PNG\\r\\n\\x1a\\n", p+" is not PNG"; w,h=struct.unpack(">II",b[16:24]); assert (w,h)==(1080,1350), f"{p}: {w}x{h}"' "cards/card_${i}.png"
-          done
-          echo "8 cards validated at 1080x1350"
-
-      - name: Replace cards in R2 and save approved caption
-        run: |
-          node <<'NODE'
-          const fs=require("fs");
-          const base=process.env.BASE_URL, key=process.env.PUBLISH_ADMIN_KEY, edition=process.env.EDITION;
-          const caption=`Morning Brief PrimeSphere — 30/09/2026.
-
-Inflação veio mais suave que o consenso, enquanto o emprego surpreendeu para cima. Os yields continuam no centro da precificação e a leitura do mercado segue seletiva entre setores e empresas.
-
-Tecnologia lidera entre os setores, enquanto HPE se destaca com novo pedido ligado à infraestrutura de IA. Jabil, Moderna e Northrop seguem pressionadas. Depois do fechamento, o foco corporativo passa para a Micron, com atenção a HBM, margens, pricing e guidance para 2027.
-
-Para o investidor brasileiro, USD/BRL e Treasury de 10 anos continuam peças importantes na leitura da exposição a Wall Street.
-
-Conteúdo informativo e educacional. Não constitui recomendação individual de investimento.
-
-#WallStreet #Mercados #Investimentos #PrimeSphere #PortfolioIntelligence`;
-          (async()=>{
-            for(let i=1;i<=8;i++){
-              const n=String(i).padStart(2,"0"), body=fs.readFileSync("cards/card_"+n+".png");
-              const r=await fetch(base+"/api/publisher/media/"+edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png","Content-Length":String(body.length)},body});
-              if(!r.ok) throw new Error("R2 upload card "+n+" HTTP "+r.status);
-            }
-            const m=await fetch(base+"/api/publisher/instagram/edition/"+edition,{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},body:JSON.stringify({caption,approved:true})});
-            if(!m.ok) throw new Error("Manifest HTTP "+m.status);
-            console.log("R2 cards and caption updated");
-          })().catch(e=>{console.error(e.message);process.exit(1)});
-          NODE
-
-      - name: Validate readiness and publish
-        run: |
-          node <<'NODE'
-          const base=process.env.BASE_URL, key=process.env.PUBLISH_ADMIN_KEY, edition=process.env.EDITION;
-          (async()=>{
-            const h={"X-Publisher-Key":key};
-            const s=await fetch(base+"/api/publisher/instagram/status",{headers:h});
-            const sj=await s.json();
-            console.log("Meta authorized="+Boolean(sj.authorized)+"; idMatches="+Boolean(sj.idMatches));
-            if(!s.ok||sj.authorized!==true||sj.idMatches!==true) throw new Error("Meta authorization not ready");
-            const r=await fetch(base+"/api/publisher/instagram/edition/"+edition,{headers:h});
-            const state=await r.json();
-            console.log("Edition ready="+Boolean(state.ready)+"; missingCards="+JSON.stringify(state.missingCards||[])+"; alreadyPublished="+Boolean(state.alreadyPublished));
-            if(!r.ok||state.ready!==true||state.alreadyPublished===true) throw new Error("Edition not ready for publication");
-            const p=await fetch(base+"/api/publisher/instagram/publish/"+edition,{method:"POST",headers:h});
-            const pj=await p.json();
-            console.log("Publish result: published="+Boolean(pj.published)+"; mediaId="+(pj.mediaId||"n/a")+"; reason="+(pj.reason||"n/a"));
-            if(!p.ok||pj.published!==true||!pj.mediaId) throw new Error("Instagram publication failed");
-          })().catch(e=>{console.error(e.message);process.exit(1)});
-          NODE
+      - run: |
+          echo "DISABLED: replaced by .github/workflows/instagram-staging.yml (PrimeSphere Social Pipeline)."
+          exit 1

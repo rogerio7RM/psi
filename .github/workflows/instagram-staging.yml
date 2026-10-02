@@ -1,70 +1,140 @@
-name: PrimeSphere Instagram staging
+name: PrimeSphere Social Pipeline
+
 on:
+  workflow_run:
+    workflows: ["PrimeSphere Cloudflare Auto Deploy"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       edition:
-        description: Edition date (YYYY-MM-DD)
+        description: "Optional YYYY-MM-DD; blank = latest Morning Brief"
         required: false
         default: ""
-  push:
-    branches: [main]
-    paths:
-      - "content/instagram/*.json"
 
 permissions:
   contents: read
 
+concurrency:
+  group: primesphere-social
+  cancel-in-progress: false
+
 jobs:
-  stage:
+  prepare:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      BASE_URL: https://primesphereintelligence.com
-      PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
-      EDITION_INPUT: ${{ github.event_name == 'workflow_dispatch' && inputs.edition || '' }}
+    outputs:
+      edition: ${{ steps.resolve.outputs.edition }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: "22"
-      - name: Resolve edition
+          ref: main
+      - id: resolve
+        shell: bash
+        env:
+          INPUT_EDITION: ${{ inputs.edition }}
         run: |
-          if [ -n "$EDITION_INPUT" ]; then
-            edition="$EDITION_INPUT"
+          set -euo pipefail
+          if [ -n "${INPUT_EDITION:-}" ]; then
+            edition="$INPUT_EDITION"
           else
-            file="$(find content/instagram -maxdepth 1 -type f -name '20??-??-??.json' | sort | tail -1)"
-            test -n "$file" || (echo "No Instagram edition found" && exit 1)
-            edition="$(basename "$file" .json)"
+            file=$(find src/react-app/editions -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{6}\.tsx' -printf '%f\n' | sort | tail -1)
+            test -n "$file"
+            code="${file%.tsx}"
+            edition="20${code:0:2}-${code:2:2}-${code:4:2}"
           fi
-          echo "$edition" | grep -Eq '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$' || (echo "Invalid edition" && exit 1)
-          echo "EDITION=$edition" >> "$GITHUB_ENV"
-          echo "Staging edition $edition"
-      - name: Install renderer
-        run: npm install --no-save --package-lock=false sharp
-      - name: Validate edition
+          test -f "content/instagram/$edition.json" || { echo "No approved social JSON for $edition"; exit 1; }
+          grep -q "Morning Brief" "src/react-app/editions/${edition:2:2}${edition:5:2}${edition:8:2}.tsx"
+          echo "edition=$edition" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install --no-save --package-lock=false sharp
+      - name: Fetch approved backgrounds only
+        env:
+          BASE_URL: https://primesphereintelligence.com
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+          EDITION: ${{ steps.resolve.outputs.edition }}
         run: |
-          test -n "$PUBLISH_ADMIN_KEY" || (echo "Missing PUBLISH_ADMIN_KEY" && exit 1)
-          test -f "content/instagram/$EDITION.json" || (echo "Edition content not found" && exit 1)
-      - name: Download approved backgrounds from R2 through authenticated Worker
-        run: |
-          mkdir -p .staging/backgrounds .staging/cards
+          mkdir -p .social/backgrounds .social/cards
           node <<'NODE'
-          const fs=require("fs"), d=require("./content/instagram/"+process.env.EDITION+".json");
-          (async()=>{for(const c of d.cards){const n=String(c.background).padStart(2,"0");const r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+c.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw new Error("Background "+c.background+" HTTP "+r.status);fs.writeFileSync(".staging/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()));}})().catch(e=>{console.error(e.message);process.exit(1)});
+          const fs=require("fs"),d=require("./content/instagram/"+process.env.EDITION+".json");
+          (async()=>{for(const c of d.cards){const n=String(c.background).padStart(2,"0");const r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+c.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw Error("background "+n);fs.writeFileSync(".social/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()));}})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
-      - name: Render and QA 8 cards
-        run: node scripts/render-instagram-cards.mjs "content/instagram/$EDITION.json" .staging/backgrounds .staging/cards
-      - name: Upload cards and approved caption to R2
+      - name: Render and strict QA
+        env:
+          EDITION: ${{ steps.resolve.outputs.edition }}
         run: |
-          node <<'NODE'
-          const fs=require("fs"), d=require("./content/instagram/"+process.env.EDITION+".json");
-          (async()=>{for(let i=1;i<=8;i++){const n=String(i).padStart(2,"0"),b=fs.readFileSync(".staging/cards/card_"+n+".png");const r=await fetch(process.env.BASE_URL+"/api/publisher/media/"+d.edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY,"Content-Type":"image/png","Content-Length":String(b.length)},body:b});if(!r.ok)throw new Error("Card "+n+" upload HTTP "+r.status);}
-          const r=await fetch(process.env.BASE_URL+"/api/publisher/instagram/edition/"+d.edition,{method:"POST",headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY,"Content-Type":"application/json"},body:JSON.stringify({caption:d.caption,approved:true})});if(!r.ok)throw new Error("Manifest HTTP "+r.status);
-          const s=await fetch(process.env.BASE_URL+"/api/publisher/instagram/edition/"+d.edition,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});const j=await s.json();console.log("STAGING RESULT:",JSON.stringify(j));if(!j.ready)process.exit(1);})().catch(e=>{console.error(e.message);process.exit(1)});
-          NODE
-      - name: Upload QA preview artifact
-        uses: actions/upload-artifact@v4
+          node scripts/render-instagram-cards.mjs "content/instagram/$EDITION.json" .social/backgrounds .social/cards
+          python3 - <<'PY'
+          import glob,struct
+          files=sorted(glob.glob(".social/cards/card_*.png"))
+          assert len(files)==8
+          for p in files:
+            b=open(p,"rb").read(24); assert b[:8]==b"\x89PNG\r\n\x1a\n"; assert struct.unpack(">II",b[16:24])==(1080,1350)
+          print("QA: 8 PNGs 1080x1350")
+          PY
+      - uses: actions/upload-artifact@v4
         with:
-          name: instagram-${{ env.EDITION }}-qa
-          path: .staging/cards/*.png
+          name: social-assets-${{ steps.resolve.outputs.edition }}
+          path: .social/cards/*.png
           retention-days: 7
+
+  stage:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/download-artifact@v4
+        with:
+          name: social-assets-${{ needs.prepare.outputs.edition }}
+          path: cards
+      - name: Stage validated assets and caption
+        env:
+          BASE_URL: https://primesphereintelligence.com
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+          EDITION: ${{ needs.prepare.outputs.edition }}
+        run: |
+          node <<'NODE'
+          const fs=require("fs"),d=require("./content/instagram/"+process.env.EDITION+".json"),base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY;
+          (async()=>{for(let i=1;i<=8;i++){const n=String(i).padStart(2,"0"),b=fs.readFileSync("cards/card_"+n+".png");const r=await fetch(base+"/api/publisher/media/"+d.edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png"},body:b});if(!r.ok)throw Error("upload "+n+" HTTP "+r.status)}
+          const m=await fetch(base+"/api/publisher/instagram/edition/"+d.edition,{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},body:JSON.stringify({caption:d.caption,approved:true})});if(!m.ok)throw Error("manifest HTTP "+m.status);
+          const s=await fetch(base+"/api/publisher/instagram/edition/"+d.edition,{headers:{"X-Publisher-Key":key}});const j=await s.json();console.log(JSON.stringify({ready:j.ready,approved:j.approved,missingCards:j.missingCards,alreadyPublished:j.alreadyPublished}));if(j.missingCards?.length||j.approved!==true)process.exit(1)})().catch(e=>{console.error(e.message);process.exit(1)})
+          NODE
+
+  instagram:
+    needs: [prepare, stage]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Instagram independent publish
+        env:
+          BASE_URL: https://primesphereintelligence.com
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+          EDITION: ${{ needs.prepare.outputs.edition }}
+        run: |
+          node <<'NODE'
+          const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k};
+          (async()=>{let r=await fetch(b+"/api/publisher/instagram/status",{headers:h}),j=await r.json();if(!r.ok||!j.configured||!j.authorized||!j.idMatches)throw Error("Instagram authorization failed");
+          r=await fetch(b+"/api/publisher/instagram/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished){console.log("Instagram SKIPPED already published");return}if(!j.ready)throw Error("Instagram edition not ready");
+          r=await fetch(b+"/api/publisher/instagram/publish/"+e,{method:"POST",headers:h});j=await r.json();console.log("Instagram",JSON.stringify(j));if(!r.ok||!j.published||!j.mediaId)throw Error(j.reason||"Instagram failed")})().catch(e=>{console.error(e.message);process.exit(1)})
+          NODE
+
+  facebook:
+    needs: [prepare, stage]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Facebook independent publish
+        env:
+          BASE_URL: https://primesphereintelligence.com
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+          EDITION: ${{ needs.prepare.outputs.edition }}
+        run: |
+          node <<'NODE'
+          const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k,"Content-Type":"application/json"};
+          (async()=>{let r=await fetch(b+"/api/publisher/facebook/status",{headers:h}),j=await r.json();if(!r.ok||!j.configured||!j.authorized||!j.idMatches||!j.tokenActsAsPage)throw Error("Facebook authorization failed");
+          r=await fetch(b+"/api/publisher/facebook/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished){console.log("Facebook SKIPPED already published");return}if(!j.ready)throw Error("Facebook edition not ready");
+          r=await fetch(b+"/api/publisher/facebook/publish/"+e,{method:"POST",headers:h,body:JSON.stringify({confirmPublish:true})});j=await r.json();console.log("Facebook",JSON.stringify(j));if(!r.ok||!j.published||!j.postId)throw Error(j.reason||"Facebook failed")})().catch(e=>{console.error(e.message);process.exit(1)})
+          NODE
