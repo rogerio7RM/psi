@@ -142,7 +142,7 @@ jobs:
         run: |
           node <<'NODE'
           const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k,"Content-Type":"application/json"};
-          (async()=>{let r=await fetch(b+"/api/publisher/facebook/status",{headers:h}),j=await r.json();if(!r.ok||!j.configured||!j.authorized||!j.idMatches||!j.tokenActsAsPage)throw Error("Facebook authorization failed");
+          (async()=>{let r=await fetch(b+"/api/publisher/facebook/status",{headers:h}),j=await r.json();console.log("Facebook status",JSON.stringify(j));if(!r.ok||!j.configured||!j.authorized||!j.idMatches||!j.tokenActsAsPage)throw Error("Facebook authorization failed");
           r=await fetch(b+"/api/publisher/facebook/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished){console.log("Facebook SKIPPED already published");return}if(!j.ready)throw Error("Facebook edition not ready");
           r=await fetch(b+"/api/publisher/facebook/publish/"+e,{method:"POST",headers:h,body:JSON.stringify({confirmPublish:true})});j=await r.json();console.log("Facebook",JSON.stringify(j));if(!r.ok||!j.published||!j.postId)throw Error(j.reason||"Facebook failed")})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
