@@ -1,0 +1,44 @@
+name: PrimeSphere Social Visual Dry Run
+on:
+  push:
+    branches: ["main", "fix/social-visual-contract"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: Resolve latest Morning Brief
+        run: |
+          file=$(find src/react-app/editions -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{6}\.tsx' -printf '%f\n' | sort | tail -1)
+          code="${file%.tsx}"; edition="20${code:0:2}-${code:2:2}-${code:4:2}"
+          echo "SOURCE=src/react-app/editions/$file" >> "$GITHUB_ENV"
+          echo "EDITION=$edition" >> "$GITHUB_ENV"
+      - run: npm install --no-save --package-lock=false sharp
+      - name: Generate JSON
+        run: node scripts/generate-social-edition.mjs "$SOURCE" ".social/$EDITION.json"
+      - name: Fetch approved backgrounds
+        env:
+          BASE_URL: https://primesphereintelligence.com
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+        run: |
+          mkdir -p .social/backgrounds .social/cards
+          node <<'NODE'
+          const fs=require("fs"),d=JSON.parse(fs.readFileSync(".social/"+process.env.EDITION+".json"));
+          (async()=>{for(const c of d.cards){const n=String(c.background).padStart(2,"0"),r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+c.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw Error("background "+n+" HTTP "+r.status);fs.writeFileSync(".social/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()))}})().catch(e=>{console.error(e);process.exit(1)})
+          NODE
+      - name: Render + autonomous visual QA
+        run: node scripts/render-instagram-cards.mjs ".social/$EDITION.json" .social/backgrounds .social/cards
+      - name: Confirm dry run only
+        run: echo "DRY RUN GREEN — no R2 staging, Instagram or Facebook publication executed."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visual-dry-run-${{ env.EDITION }}
+          path: .social/
+          include-hidden-files: true
+          retention-days: 7
