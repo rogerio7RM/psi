@@ -11,7 +11,7 @@ const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"
 function wrap(s,max=24){const w=String(s).split(/\s+/);let a=[],l="";for(const x of w){if((l+" "+x).trim().length>max&&l){a.push(l);l=x}else l=(l+" "+x).trim()}if(l)a.push(l);return a}
 for (let i=0;i<8;i++){
  const c=data.cards[i], bg=path.join(backgroundsDir,`background_${String(c.background).padStart(2,"0")}.png`);
- const title=wrap(c.title,22), body=wrap(c.body,34);
+ const title=wrap(c.title,22), body=wrap(c.body,34);\n if(i===1 && Array.isArray(c.marketRows)){ if(c.marketRows.length!==10) throw new Error("Slide 2 requires exactly 10 rows"); const allowed=new Set(["POSITIVO","NEUTRO/+","NEUTRO","NEUTRO/-","NEGATIVO"]); if(c.marketRows.some(r=>!allowed.has(r.reading))) throw new Error("Invalid Slide 2 reading"); }
  const svg=`<svg width="1080" height="1350" xmlns="http://www.w3.org/2000/svg">
  <rect width="1080" height="1350" fill="rgba(2,8,23,.28)"/>
  <rect x="70" y="110" width="940" height="1110" rx="30" fill="rgba(2,8,23,.68)"/>
