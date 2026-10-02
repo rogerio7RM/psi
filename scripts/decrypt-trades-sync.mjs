@@ -56,7 +56,7 @@ for (const account of accounts) {
   const plaintext = envelope.algorithm.endsWith("+GZIP") ? gunzipSync(decrypted) : decrypted;
 
   const hash = createHash("sha256").update(plaintext).digest("hex");
-  if (hash !== manifest.hashes?.[account]) {
+  console.log(account.toUpperCase() + " computed sha256=" + hash);\n  if (hash !== manifest.hashes?.[account]) {
     throw new Error("Hash mismatch for " + account);
   }
 
