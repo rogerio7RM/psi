@@ -739,7 +739,19 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     if (!user) return c.notFound();
     const body = await c.req.json<any>().catch(() => null);
     if (!body) return c.json({ error: "Invalid JSON" }, 400);
-    if (body.name !== undefined) user.name = String(body.name).trim().slice(0, 120);
+    const previousEmail = user.email;
+    if (body.name !== undefined) {
+      const name = String(body.name).trim().slice(0, 120);
+      if (!name) return c.json({ error: "Name is required" }, 400);
+      user.name = name;
+    }
+    if (body.email !== undefined) {
+      const email = normalizeEmail(String(body.email));
+      if (!/^\S+@\S+\.\S+$/.test(email)) return c.json({ error: "Valid email is required" }, 400);
+      const existing = await getUserByEmail(store, email);
+      if (existing && existing.id !== user.id) return c.json({ error: "Email already registered" }, 409);
+      user.email = email;
+    }
     if (body.role !== undefined) user.role = body.role === "admin" ? "admin" : "member";
     if (body.status !== undefined) user.status = body.status === "suspended" ? "suspended" : "active";
     if (body.subscriptionStatus !== undefined && ["active", "trial", "past_due", "canceled", "expired", "internal"].includes(body.subscriptionStatus)) user.subscriptionStatus = body.subscriptionStatus;
@@ -752,7 +764,17 @@ export function registerSubscriberRoutes(app: Hono<any>) {
     if (body.tradeAccount !== undefined) user.tradeAccount = normalizeTradeAccount(body.tradeAccount);
     user.updatedAt = nowIso();
     await saveUser(store, user);
-    await audit(store, viewer.id, "update_user", "user", user.id, { status: user.status, subscriptionStatus: user.subscriptionStatus, planCode: user.planCode, tradeAccount: user.tradeAccount });
+    if (previousEmail !== user.email) {
+      await store.delete(AUTH + "email/" + await sha256(previousEmail) + ".json");
+    }
+    await audit(store, viewer.id, "update_user", "user", user.id, {
+      email: user.email,
+      emailChanged: previousEmail !== user.email,
+      status: user.status,
+      subscriptionStatus: user.subscriptionStatus,
+      planCode: user.planCode,
+      tradeAccount: user.tradeAccount,
+    });
     return c.json({ saved: true });
   });
 
