@@ -84,6 +84,7 @@ jobs:
           path: |
             .social/cards/*.png
             .social/*.json
+          include-hidden-files: true
           retention-days: 7
 
   stage:
