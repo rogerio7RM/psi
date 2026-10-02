@@ -1,5 +1,8 @@
 name: Validate Social Pipeline (dry run)
 on:
+  push:
+    branches: ["fix/social-pipeline-autonomous"]
+    paths: [".github/workflows/social-pipeline-dry-run.yml"]
   pull_request:
     branches: [main]
   workflow_dispatch:
