@@ -105,8 +105,8 @@ jobs:
           EDITION: ${{ needs.prepare.outputs.edition }}
         run: |
           node <<'NODE'
-          const fs=require("fs"),d=JSON.parse(fs.readFileSync("social-assets/"+process.env.EDITION+".json","utf8")),base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY;
-          (async()=>{for(let i=1;i<=8;i++){const n=String(i).padStart(2,"0"),b=fs.readFileSync("social-assets/card_"+n+".png");const r=await fetch(base+"/api/publisher/media/"+d.edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png"},body:b});if(!r.ok)throw Error("upload "+n+" HTTP "+r.status)}
+          const fs=require("fs"),d=JSON.parse(fs.readFileSync("social-assets/.social/"+process.env.EDITION+".json","utf8")),base=process.env.BASE_URL,key=process.env.PUBLISH_ADMIN_KEY;
+          (async()=>{for(let i=1;i<=8;i++){const n=String(i).padStart(2,"0"),b=fs.readFileSync("social-assets/.social/cards/card_"+n+".png");const r=await fetch(base+"/api/publisher/media/"+d.edition+"/card_"+n+".png",{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"image/png"},body:b});if(!r.ok)throw Error("upload "+n+" HTTP "+r.status)}
           const m=await fetch(base+"/api/publisher/instagram/edition/"+d.edition,{method:"POST",headers:{"X-Publisher-Key":key,"Content-Type":"application/json"},body:JSON.stringify({caption:d.caption,approved:true})});if(!m.ok)throw Error("manifest HTTP "+m.status);
           const s=await fetch(base+"/api/publisher/instagram/edition/"+d.edition,{headers:{"X-Publisher-Key":key}});const j=await s.json();console.log(JSON.stringify({ready:j.ready,approved:j.approved,missingCards:j.missingCards,alreadyPublished:j.alreadyPublished}));if(j.missingCards?.length||j.approved!==true)process.exit(1)})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
