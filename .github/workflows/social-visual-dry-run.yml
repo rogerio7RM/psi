@@ -1,7 +1,7 @@
 name: PrimeSphere Social Visual Dry Run
 on:
   push:
-    branches: ["fix/social-visual-contract"]
+    branches: ["main", "fix/social-visual-contract"]
   workflow_dispatch:
 permissions:
   contents: read
