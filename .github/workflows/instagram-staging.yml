@@ -107,7 +107,7 @@ jobs:
           assert [p.rsplit('/',1)[-1] for p in files]==[f"card_{i:02d}.png" for i in range(1,9)]
           for p in files:
             b=open(p,"rb").read(24)
-            assert b[:8]==b"\\x89PNG\\r\\n\\x1a\\n"
+            assert b[:8]==bytes.fromhex("89504e470d0a1a0a")
             assert struct.unpack(">II",b[16:24])==(1080,1350)
           import json
           q=json.load(open("social-assets/cards/qa.json"))
