@@ -2,7 +2,7 @@ name: Trades Sync - Generate One-Time Key
 
 on:
   push:
-    branches: [main]
+    branches:\n      - main\n      - 'trades-sync/**'
     paths:
       - '.trades-sync/request.json'
 
@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git pull --rebase origin main
+          target_branch="${GITHUB_REF_NAME}"\n          git pull --rebase origin "$target_branch"
           mkdir -p .trades-sync/public
           cp /tmp/trades-sync-public.pem ".trades-sync/public/$REQUEST_ID.pem"
           git config user.name 'github-actions[bot]'
@@ -55,4 +55,4 @@ jobs:
           git add ".trades-sync/public/$REQUEST_ID.pem"
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "chore(trades-sync): publish one-time encryption key [skip deploy]"
-          git push origin HEAD:main
+          git push origin "HEAD:$target_branch"
