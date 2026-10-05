@@ -11,9 +11,9 @@ const splitItems=s=>String(s).split(/(?=\b(?:\d{1,2}:\d{2}|Macro:|Earnings:|Fed:
 const agendaItems=splitItems(sec("Agenda do dia"));
 const brasilText=sec("Brasil → EUA"), brasilParts=brasilText.split(/(?<=[.!?])\s+/).filter(Boolean);
 const brasilBlocks=[
- {title:"CÂMBIO",text:short(brasilParts.slice(0,2).join(" "),180)},
- {title:"JUROS",text:short(brasilParts.slice(2,4).join(" ")||brasilText,180)},
- {title:"LEITURA DO DIA",text:short(brasilParts.slice(4).join(" ")||brasilText,190)}
+ {title:"CÂMBIO",text:brasilParts.slice(0,2).join(" ").slice(0,180)},
+ {title:"JUROS",text:(brasilParts.slice(2,4).join(" ")||brasilText).slice(0,180)},
+ {title:"LEITURA DO DIA",text:(brasilParts.slice(4).join(" ")||brasilText).slice(0,190)}
 ];
 const drivers=boxes.filter(b=>/^0[123]\s*·/.test(b.title)).slice(0,3);if(drivers.length!==3)throw Error("Need exactly 3 drivers");
 const short=(s,n)=>s.length<=n?s:s.slice(0,n-1).replace(/\s+\S*$/,"")+"…",mon=["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"],footer=`${code.slice(4,6)} ${mon[+code.slice(2,4)-1]} 20${code.slice(0,2)} • @portfoliointelligence`;
