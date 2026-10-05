@@ -111,12 +111,14 @@ jobs:
             assert struct.unpack(">II",b[16:24])==(1080,1350)
           import json
           q=json.load(open("social-assets/cards/qa.json"))
-          assert q["passed"] is True and q["templateVersion"]=="primesphere-approved-v2"
+          assert q["passed"] is True and q["templateVersion"]=="primesphere-editorial-v3"
           assert q["slides"]==8 and q["width"]==1080 and q["height"]==1350
-          assert q["minBodyFont"]>=28 and q["minTableFont"]>=22
+          assert q["minBodyFont"]>=24 and q["minTableFont"]>=22
           assert q["slide2Columns"]==["Ticker","Preço (US$)","Variação","Leitura"] and q["slide2Rows"]==10
           assert q["marketPulseBlocks"]==3
-          print("HARD QA PASS: approved visual/content contract + 8 PNGs 1080x1350")
+          assert q["colorSemantics"]["positive"]=="#38e58c" and q["colorSemantics"]["negative"]=="#ff5b63"
+          assert q["agendaStructured"] is True and q["brazilStructured"] is True
+          print("HARD QA PASS: editorial v3 + market colors + structured agenda/Brazil + 8 PNGs 1080x1350")
           PY
       - name: Stage validated assets and caption
         env:
