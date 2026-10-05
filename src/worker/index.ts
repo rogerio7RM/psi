@@ -319,13 +319,14 @@ async function metaDuplicateForEdition(env: PublisherEnv, edition: string, expec
   }
   return { verified: duplicateFound || reachedEarlierDate || !next, duplicateFound };
 }
-async function publishDaily(env: PublisherEnv, origin: string, edition: string) {
+async function publishDaily(env: PublisherEnv, origin: string, edition: string, forceRepublish = false) {
+  if (forceRepublish && env.INSTAGRAM_MEDIA) { await env.INSTAGRAM_MEDIA.delete(`${edition}/published.json`); await env.INSTAGRAM_MEDIA.delete(`${edition}/publishing.json`); }
   const state = await dailyReadiness(env, edition);
   if (!state.ready || !state.caption || !env.INSTAGRAM_ACCESS_TOKEN || !env.INSTAGRAM_USER_ID || !env.INSTAGRAM_MEDIA)
     return { published: false, reason: "Edition not ready, already published, or Instagram not configured" };
   const duplicate = await metaDuplicateForEdition(env, edition, state.caption);
-  if (!duplicate.verified) return { published: false, reason: "Meta duplicate check incomplete; publication blocked" };
-  if (duplicate.duplicateFound) return { published: false, reason: "Equivalent Instagram edition already exists; publication blocked" };
+  if (!forceRepublish && !duplicate.verified) return { published: false, reason: "Meta duplicate check incomplete; publication blocked" };
+  if (!forceRepublish && duplicate.duplicateFound) return { published: false, reason: "Equivalent Instagram edition already exists; publication blocked" };
   // An in-progress marker prevents an automatic retry after an ambiguous Meta response.
   const marker = `${edition}/publishing.json`;
   if (await env.INSTAGRAM_MEDIA.head(marker)) return { published: false, reason: "Publishing already attempted; manual review required" };
@@ -352,7 +353,9 @@ app.post("/api/publisher/instagram/publish/:edition", async (c) => {
   const edition = c.req.param("edition");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(edition)) return c.json({ error: "Invalid edition" }, 400);
   try {
-    const result = await publishDaily(c.env, new URL(c.req.url).origin, edition);
+    let payload: { confirmRepublish?: boolean; correctionReason?: string } = {}; try { payload = await c.req.json(); } catch {}
+    const forceRepublish = payload.confirmRepublish === true && payload.correctionReason === "visual-qa-correction";
+    const result = await publishDaily(c.env, new URL(c.req.url).origin, edition, forceRepublish);
     return c.json(result, result.published ? 200 : 409);
   } catch {
     return c.json({ published: false, reason: "Instagram publication failed; review Worker logs before retrying" }, 502);
@@ -412,21 +415,23 @@ app.post("/api/publisher/facebook/publish/:edition", async (c) => {
   const token = c.env.FACEBOOK_PAGE_ACCESS_TOKEN;
   const pageId = c.env.FACEBOOK_PAGE_ID;
   if (!token || !pageId) return c.json({ published: false, reason: "Facebook Page not configured" }, 503);
-  let payload: { confirmPublish?: boolean; allowLocalOnlyDuplicateCheck?: boolean } = {};
+  let payload: { confirmPublish?: boolean; allowLocalOnlyDuplicateCheck?: boolean; confirmRepublish?: boolean; correctionReason?: string } = {};
   try { payload = await c.req.json(); } catch {}
   if (payload.confirmPublish !== true) return c.json({ published: false, reason: "Explicit confirmPublish required" }, 400);
+  const forceRepublish = payload.confirmRepublish === true && payload.correctionReason === "visual-qa-correction";
   let stage = "preflight";
   let publicPostCreated = false;
   const marker = `${edition}/facebook-publishing.json`;
   try {
+    if (forceRepublish && c.env.INSTAGRAM_MEDIA) { await c.env.INSTAGRAM_MEDIA.delete(`${edition}/facebook-published.json`); await c.env.INSTAGRAM_MEDIA.delete(`${edition}/facebook-publishing.json`); }
     const state = await facebookReadiness(c.env, edition);
     if (!state.ready || !state.caption || !c.env.INSTAGRAM_MEDIA)
       return c.json({ published: false, reason: "Edition not ready or Facebook edition already published" }, 409);
 
     const duplicate = await facebookDuplicateForEdition(c.env, edition);
-    if (duplicate.duplicateFound)
+    if (!forceRepublish && duplicate.duplicateFound)
       return c.json({ published: false, reason: "Equivalent Facebook edition already exists; publication blocked" }, 409);
-    if (!duplicate.verified && payload.allowLocalOnlyDuplicateCheck !== true)
+    if (!forceRepublish && !duplicate.verified && payload.allowLocalOnlyDuplicateCheck !== true)
       return c.json({ published: false, reason: "Facebook duplicate check incomplete; publication blocked" }, 409);
 
     if (await c.env.INSTAGRAM_MEDIA.head(marker))

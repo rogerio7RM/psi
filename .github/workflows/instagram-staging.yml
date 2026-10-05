@@ -13,6 +13,11 @@ on:
         description: "Optional YYYY-MM-DD; blank = latest Morning Brief"
         required: false
         default: ""
+      force_republish:
+        description: "Explicit correction republish; manual use only"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -100,7 +105,14 @@ jobs:
             b=open(p,"rb").read(24)
             assert b[:8]==b"\\x89PNG\\r\\n\\x1a\\n"
             assert struct.unpack(">II",b[16:24])==(1080,1350)
-          print("QA PASS: exactly 8 PNGs 1080x1350")
+          import json
+          q=json.load(open("social-assets/cards/qa.json"))
+          assert q["passed"] is True and q["templateVersion"]=="primesphere-approved-v2"
+          assert q["slides"]==8 and q["width"]==1080 and q["height"]==1350
+          assert q["minBodyFont"]>=28 and q["minTableFont"]>=22
+          assert q["slide2Columns"]==["Ticker","Preço (US$)","Variação","Leitura"] and q["slide2Rows"]==10
+          assert q["marketPulseBlocks"]==3
+          print("HARD QA PASS: approved visual/content contract + 8 PNGs 1080x1350")
           PY
       - name: Stage validated assets and caption
         env:
@@ -125,12 +137,13 @@ jobs:
           BASE_URL: https://primesphereintelligence.com
           PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
           EDITION: ${{ needs.prepare.outputs.edition }}
+          FORCE_REPUBLISH: ${{ inputs.force_republish || false }}
         run: |
           node <<'NODE'
-          const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k};
+          const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k,"Content-Type":"application/json"},force=process.env.FORCE_REPUBLISH==="true";
           (async()=>{let r=await fetch(b+"/api/publisher/instagram/status",{headers:h}),j=await r.json();if(!r.ok||!j.configured||!j.authorized||!j.idMatches)throw Error("Instagram authorization failed");
-          r=await fetch(b+"/api/publisher/instagram/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished){console.log("Instagram SKIPPED already published");return}if(!j.ready)throw Error("Instagram edition not ready");
-          r=await fetch(b+"/api/publisher/instagram/publish/"+e,{method:"POST",headers:h});j=await r.json();console.log("Instagram",JSON.stringify(j));if(!r.ok||!j.published||!j.mediaId){if(j.reason==="Equivalent Instagram edition already exists; publication blocked"){console.log("Instagram SKIPPED equivalent edition already exists");return}throw Error(j.reason||"Instagram failed")}})().catch(e=>{console.error(e.message);process.exit(1)})
+          r=await fetch(b+"/api/publisher/instagram/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished&&!force){console.log("Instagram SKIPPED already published");return}if(!j.ready&&!force)throw Error("Instagram edition not ready");
+          r=await fetch(b+"/api/publisher/instagram/publish/"+e,{method:"POST",headers:h,body:JSON.stringify(force?{confirmRepublish:true,correctionReason:"visual-qa-correction"}:{})});j=await r.json();console.log("Instagram",JSON.stringify(j));if(!r.ok||!j.published||!j.mediaId){if(j.reason==="Equivalent Instagram edition already exists; publication blocked"){console.log("Instagram SKIPPED equivalent edition already exists");return}throw Error(j.reason||"Instagram failed")}})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
 
   facebook:
@@ -143,10 +156,11 @@ jobs:
           BASE_URL: https://primesphereintelligence.com
           PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
           EDITION: ${{ needs.prepare.outputs.edition }}
+          FORCE_REPUBLISH: ${{ inputs.force_republish || false }}
         run: |
           node <<'NODE'
-          const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k,"Content-Type":"application/json"};
+          const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k,"Content-Type":"application/json"},force=process.env.FORCE_REPUBLISH==="true";
           (async()=>{let r=await fetch(b+"/api/publisher/facebook/status",{headers:h}),j=await r.json();console.log("Facebook status",JSON.stringify(j));if(!r.ok||!j.configured||!j.authorized||!j.idMatches||!j.tokenActsAsPage)throw Error("Facebook authorization failed");
-          r=await fetch(b+"/api/publisher/facebook/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished){console.log("Facebook SKIPPED already published");return}if(!j.ready)throw Error("Facebook edition not ready");
-          r=await fetch(b+"/api/publisher/facebook/publish/"+e,{method:"POST",headers:h,body:JSON.stringify({confirmPublish:true})});j=await r.json();console.log("Facebook",JSON.stringify(j));if(!r.ok||!j.published||!j.postId)throw Error(j.reason||"Facebook failed")})().catch(e=>{console.error(e.message);process.exit(1)})
+          r=await fetch(b+"/api/publisher/facebook/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished&&!force){console.log("Facebook SKIPPED already published");return}if(!j.ready&&!force)throw Error("Facebook edition not ready");
+          r=await fetch(b+"/api/publisher/facebook/publish/"+e,{method:"POST",headers:h,body:JSON.stringify(force?{confirmPublish:true,confirmRepublish:true,correctionReason:"visual-qa-correction"}:{confirmPublish:true})});j=await r.json();console.log("Facebook",JSON.stringify(j));if(!r.ok||!j.published||!j.postId)throw Error(j.reason||"Facebook failed")})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
