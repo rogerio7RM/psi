@@ -4,6 +4,9 @@ on:
   workflow_run:
     workflows: ["PrimeSphere Cloudflare Auto Deploy"]
     types: [completed]
+  push:
+    branches: ["fix/social-task2-20261005"]
+    paths: [".github/workflows/instagram-staging.yml"]
   workflow_dispatch:
     inputs:
       edition:
@@ -20,7 +23,7 @@ concurrency:
 
 jobs:
   prepare:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
