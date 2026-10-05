@@ -21,9 +21,13 @@ jobs:
       - id: e
         shell: bash
         run: |
-          file=$(find content/instagram -maxdepth 1 -type f -name '20??-??-??.json' | sort | tail -1)
-          test -n "$file"
-          echo "edition=$(basename "$file" .json)" >> "$GITHUB_OUTPUT"
+          source=$(find src/react-app/editions -maxdepth 1 -type f -name '??????.tsx' | sort | tail -1)
+          test -n "$source"
+          code=$(basename "$source" .tsx)
+          edition="20${code:0:2}-${code:2:2}-${code:4:2}"
+          mkdir -p .dry
+          node scripts/generate-social-edition.mjs "$source" ".dry/$edition.json"
+          echo "edition=$edition" >> "$GITHUB_OUTPUT"
       - name: Fetch approved backgrounds
         env:
           BASE_URL: https://primesphereintelligence.com
@@ -33,14 +37,14 @@ jobs:
           test -n "$PUBLISH_ADMIN_KEY"
           mkdir -p .dry/backgrounds .dry/cards
           node <<'NODE'
-          const fs=require("fs"),d=require("./content/instagram/"+process.env.EDITION+".json");
+          const fs=require("fs"),d=require("./.dry/"+process.env.EDITION+".json");
           (async()=>{for(const c of d.cards){const n=String(c.background).padStart(2,"0"),r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+c.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw Error("background "+n+" HTTP "+r.status);fs.writeFileSync(".dry/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()))}})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
       - name: Render and QA only
         env:
           EDITION: ${{ steps.e.outputs.edition }}
         run: |
-          node scripts/render-instagram-cards.mjs "content/instagram/$EDITION.json" .dry/backgrounds .dry/cards
+          node scripts/render-instagram-cards.mjs ".dry/$EDITION.json" .dry/backgrounds .dry/cards
           python3 - <<'PY'
           import glob,struct
           f=sorted(glob.glob(".dry/cards/card_*.png")); assert len(f)==8
