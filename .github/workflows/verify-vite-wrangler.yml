@@ -3,6 +3,8 @@ name: Validar PrimeSphere (sem publicar)
 on:
   push:
     branches: [main, migration/primesphere-vite-wrangler]
+    paths-ignore:
+      - "src/react-app/editions/*-afterclose.tsx"
   pull_request:
     branches: [main]
   workflow_dispatch:
