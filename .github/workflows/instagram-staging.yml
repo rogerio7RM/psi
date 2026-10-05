@@ -33,6 +33,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       edition: ${{ steps.resolve.outputs.edition }}
+      force: ${{ steps.resolve.outputs.force }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,6 +54,9 @@ jobs:
           fi
           grep -q "Morning Brief" "src/react-app/editions/${edition:2:2}${edition:5:2}${edition:8:2}.tsx"
           echo "edition=$edition" >> "$GITHUB_OUTPUT"
+          force=false
+          if [ -f ".social-force-republish" ] && grep -qx "$edition" ".social-force-republish"; then force=true; fi
+          echo "force=$force" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with: { node-version: "22" }
       - name: Generate today social JSON from Morning Brief
@@ -137,7 +141,7 @@ jobs:
           BASE_URL: https://primesphereintelligence.com
           PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
           EDITION: ${{ needs.prepare.outputs.edition }}
-          FORCE_REPUBLISH: ${{ inputs.force_republish || false }}
+          FORCE_REPUBLISH: ${{ needs.prepare.outputs.force == 'true' || inputs.force_republish || false }}
         run: |
           node <<'NODE'
           const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k,"Content-Type":"application/json"},force=process.env.FORCE_REPUBLISH==="true";
@@ -156,7 +160,7 @@ jobs:
           BASE_URL: https://primesphereintelligence.com
           PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
           EDITION: ${{ needs.prepare.outputs.edition }}
-          FORCE_REPUBLISH: ${{ inputs.force_republish || false }}
+          FORCE_REPUBLISH: ${{ needs.prepare.outputs.force == 'true' || inputs.force_republish || false }}
         run: |
           node <<'NODE'
           const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k,"Content-Type":"application/json"},force=process.env.FORCE_REPUBLISH==="true";
