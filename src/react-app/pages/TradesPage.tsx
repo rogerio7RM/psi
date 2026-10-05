@@ -154,8 +154,9 @@ export default function TradesPage() {
   const inflow = rows.reduce((total, row) => total + Math.max(0, -row.rawAmount), 0);
   const outflow = rows.reduce((total, row) => total + Math.max(0, row.rawAmount), 0);
   const net = inflow - outflow;
-  const winningEntries = rows.filter(row => row.rawAmount < 0).length;
-  const hitRate = rows.length ? (winningEntries / rows.length) * 100 : 0;
+  const closedEntries = rows.filter(row => row.status === 'closed');
+  const winningEntries = closedEntries.filter(row => row.rawAmount < 0).length;
+  const hitRate = closedEntries.length ? (winningEntries / closedEntries.length) * 100 : 0;
   const undated = rows.filter(row => !row.date).length;
   const assets = useMemo(() => {
     const counts = new Map<string, number>();
@@ -220,7 +221,7 @@ export default function TradesPage() {
             <div className='trades-metric'><div className='trades-metric-label'>Entradas recebidas <span>＋</span></div><strong className='trades-green'>{showCash(inflow)}</strong><small>{rows.filter(row => row.rawAmount < 0).length} lançamentos de crédito</small></div>
             <div className='trades-metric'><div className='trades-metric-label'>Custos pagos <span>↗</span></div><strong className='trades-red'>{showCash(-outflow)}</strong><small>{rows.filter(row => row.rawAmount > 0).length} lançamentos de débito</small></div>
             <div className='trades-metric'><div className='trades-metric-label'>Lançamentos <span>▦</span></div><strong>{number.format(rows.length)}</strong><small>{rows.filter(row => row.status === 'closed').length} CLOSED · {rows.filter(row => row.status === 'open').length} OPEN</small></div>
-            <div className='trades-metric'><div className='trades-metric-label'>HIT Rate <span>％</span></div><strong className='trades-green'>{number.format(hitRate)}%</strong><small>{winningEntries} de {rows.length} lançamentos com entrada de capital</small></div>
+            <div className='trades-metric'><div className='trades-metric-label'>HIT Rate <span>％</span></div><strong className='trades-green'>{number.format(hitRate)}%</strong><small>{winningEntries} de {closedEntries.length} operações CLOSED com entrada de capital</small></div>
           </section>
           <section className='trades-overview'>
             <div className='trades-panel chart-panel'><div className='trades-panel-heading'><div><h2>Evolução do caixa</h2><p>Fluxo acumulado dos registros com data</p></div><span className='trades-pill muted'>HISTÓRICO</span></div><div className='trades-chart-number'>{showCash(rows.filter(row => row.date).reduce((a, row) => a - row.rawAmount, 0))} <small>Com data</small></div><CashChart rows={rows} /><div className='trades-chart-note'><strong>Leitura do gráfico:</strong> representa movimentações registradas, não rentabilidade ou P&amp;L realizado. {undated ? String(undated) + ' lançamentos sem data não entram nesta curva.' : ''}</div></div>
