@@ -300,7 +300,7 @@ async function dailyReadiness(env: PublisherEnv, edition: string) {
   return { ready: !!metadata?.approved && metadata.edition === edition && !!metadata.caption && !missing.length && !published,
     approved: !!metadata?.approved, missingCards: missing, alreadyPublished: !!published, caption: metadata?.caption };
 }
-async function metaDuplicateForEdition(env: PublisherEnv, edition: string) {
+async function metaDuplicateForEdition(env: PublisherEnv, edition: string, expectedCaption: string) {
   const token = env.INSTAGRAM_ACCESS_TOKEN;
   if (!token) return { verified: false, duplicateFound: false };
   let next: string | null = `${GRAPH}/me/media?fields=id,caption,timestamp,permalink,media_type&limit=50`;
@@ -312,7 +312,7 @@ async function metaDuplicateForEdition(env: PublisherEnv, edition: string) {
     for (const media of data.data || []) {
       const day = media.timestamp?.slice(0,10);
       if (day && day < edition) reachedEarlierDate = true;
-      if (day === edition && /wall street|antes da abertura|primesphere|portfolio intelligence/i.test(media.caption || "")) duplicateFound = true;
+      if (day === edition) { const norm=(s:string)=>s.toLowerCase().replace(/\s+/g," ").trim(); if (norm(media.caption || "") === norm(expectedCaption)) duplicateFound = true; }
     }
     next = data.paging?.next || null; pages++;
     if (reachedEarlierDate || duplicateFound) break;
@@ -323,7 +323,7 @@ async function publishDaily(env: PublisherEnv, origin: string, edition: string) 
   const state = await dailyReadiness(env, edition);
   if (!state.ready || !state.caption || !env.INSTAGRAM_ACCESS_TOKEN || !env.INSTAGRAM_USER_ID || !env.INSTAGRAM_MEDIA)
     return { published: false, reason: "Edition not ready, already published, or Instagram not configured" };
-  const duplicate = await metaDuplicateForEdition(env, edition);
+  const duplicate = await metaDuplicateForEdition(env, edition, state.caption);
   if (!duplicate.verified) return { published: false, reason: "Meta duplicate check incomplete; publication blocked" };
   if (duplicate.duplicateFound) return { published: false, reason: "Equivalent Instagram edition already exists; publication blocked" };
   // An in-progress marker prevents an automatic retry after an ambiguous Meta response.
