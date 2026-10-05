@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths-ignore:
       - '.trades-sync/**'
+      - '.github/workflows/instagram-staging.yml'
   workflow_dispatch:
 concurrency:
   group: primesphere-production
