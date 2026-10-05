@@ -2,6 +2,11 @@ name: PrimeSphere Social Visual Dry Run
 on:
   push:
     branches: ["main", "fix/social-visual-contract"]
+    paths:
+      - "src/react-app/editions/[0-9][0-9][0-9][0-9][0-9][0-9].tsx"
+      - "scripts/generate-social-edition.mjs"
+      - "scripts/render-social-cards.mjs"
+      - ".github/workflows/social-visual-dry-run.yml"
   workflow_dispatch:
 permissions:
   contents: read
