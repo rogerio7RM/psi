@@ -3,7 +3,6 @@ name: Trades Sync - Generate One-Time Key
 on:
   push:
     branches:
-      - main
       - 'trades-sync/**'
     paths:
       - '.trades-sync/request.json'
