@@ -57,35 +57,10 @@ jobs:
           code="${EDITION:2:2}${EDITION:5:2}${EDITION:8:2}"
           node scripts/generate-social-edition.mjs "src/react-app/editions/$code.tsx" ".social/$EDITION.json"
       - run: npm install --no-save --package-lock=false sharp
-      - name: Fetch approved backgrounds only
-        env:
-          BASE_URL: https://primesphereintelligence.com
-          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
-          EDITION: ${{ steps.resolve.outputs.edition }}
-        run: |
-          mkdir -p .social/backgrounds .social/cards
-          node <<'NODE'
-          const fs=require("fs"),d=JSON.parse(fs.readFileSync(".social/"+process.env.EDITION+".json","utf8"));
-          (async()=>{for(const c of d.cards){const n=String(c.background).padStart(2,"0");const r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+c.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw Error("background "+n);fs.writeFileSync(".social/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()));}})().catch(e=>{console.error(e.message);process.exit(1)})
-          NODE
-      - name: Render and strict QA
-        env:
-          EDITION: ${{ steps.resolve.outputs.edition }}
-        run: |
-          node scripts/render-instagram-cards.mjs ".social/$EDITION.json" .social/backgrounds .social/cards
-          python3 - <<'PY'
-          import glob,struct
-          files=sorted(glob.glob(".social/cards/card_*.png"))
-          assert len(files)==8
-          for p in files:
-            b=open(p,"rb").read(24); assert b[:8]==b"\x89PNG\r\n\x1a\n"; assert struct.unpack(">II",b[16:24])==(1080,1350)
-          print("QA: 8 PNGs 1080x1350")
-          PY
       - uses: actions/upload-artifact@v4
         with:
           name: social-assets-${{ steps.resolve.outputs.edition }}
           path: |
-            .social/cards/*.png
             .social/*.json
           include-hidden-files: true
           retention-days: 7
@@ -101,6 +76,32 @@ jobs:
         with:
           name: social-assets-${{ needs.prepare.outputs.edition }}
           path: social-assets
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install --no-save --package-lock=false sharp
+      - name: Fetch approved backgrounds, render and strict QA
+        env:
+          BASE_URL: https://primesphereintelligence.com
+          PUBLISH_ADMIN_KEY: ${{ secrets.PUBLISH_ADMIN_KEY }}
+          EDITION: ${{ needs.prepare.outputs.edition }}
+        run: |
+          mkdir -p social-assets/backgrounds social-assets/cards
+          node <<'NODE'
+          const fs=require("fs"),d=JSON.parse(fs.readFileSync("social-assets/"+process.env.EDITION+".json","utf8"));
+          (async()=>{for(const card of d.cards){const n=String(card.background).padStart(2,"0");const r=await fetch(process.env.BASE_URL+"/api/publisher/background/"+card.background,{headers:{"X-Publisher-Key":process.env.PUBLISH_ADMIN_KEY}});if(!r.ok)throw Error("background "+n+" HTTP "+r.status);fs.writeFileSync("social-assets/backgrounds/background_"+n+".png",Buffer.from(await r.arrayBuffer()));}})().catch(e=>{console.error(e.message);process.exit(1)})
+          NODE
+          node scripts/render-instagram-cards.mjs "social-assets/$EDITION.json" social-assets/backgrounds social-assets/cards
+          python3 - <<'PY'
+          import glob,struct
+          files=sorted(glob.glob("social-assets/cards/card_*.png"))
+          assert len(files)==8
+          assert [p.rsplit('/',1)[-1] for p in files]==[f"card_{i:02d}.png" for i in range(1,9)]
+          for p in files:
+            b=open(p,"rb").read(24)
+            assert b[:8]==b"\\x89PNG\\r\\n\\x1a\\n"
+            assert struct.unpack(">II",b[16:24])==(1080,1350)
+          print("QA PASS: exactly 8 PNGs 1080x1350")
+          PY
       - name: Stage validated assets and caption
         env:
           BASE_URL: https://primesphereintelligence.com
@@ -129,7 +130,7 @@ jobs:
           const b=process.env.BASE_URL,k=process.env.PUBLISH_ADMIN_KEY,e=process.env.EDITION,h={"X-Publisher-Key":k};
           (async()=>{let r=await fetch(b+"/api/publisher/instagram/status",{headers:h}),j=await r.json();if(!r.ok||!j.configured||!j.authorized||!j.idMatches)throw Error("Instagram authorization failed");
           r=await fetch(b+"/api/publisher/instagram/edition/"+e,{headers:h});j=await r.json();if(j.alreadyPublished){console.log("Instagram SKIPPED already published");return}if(!j.ready)throw Error("Instagram edition not ready");
-          r=await fetch(b+"/api/publisher/instagram/publish/"+e,{method:"POST",headers:h});j=await r.json();console.log("Instagram",JSON.stringify(j));if(!r.ok||!j.published||!j.mediaId)throw Error(j.reason||"Instagram failed")})().catch(e=>{console.error(e.message);process.exit(1)})
+          r=await fetch(b+"/api/publisher/instagram/publish/"+e,{method:"POST",headers:h});j=await r.json();console.log("Instagram",JSON.stringify(j));if(!r.ok||!j.published||!j.mediaId){if(j.reason==="Equivalent Instagram edition already exists; publication blocked"){console.log("Instagram SKIPPED equivalent edition already exists");return}throw Error(j.reason||"Instagram failed")}})().catch(e=>{console.error(e.message);process.exit(1)})
           NODE
 
   facebook:
