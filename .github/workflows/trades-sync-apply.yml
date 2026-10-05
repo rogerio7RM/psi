@@ -2,7 +2,8 @@ name: Trades Sync - Apply Excel Snapshot
 
 on:
   push:
-    branches:\n      - main
+    branches:
+      - main
     paths:
       - '.trades-sync/payload/manifest.json'
 
