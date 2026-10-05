@@ -1,10 +1,1 @@
-{
-  "requestId": "excel-20261002T160430Z-1805",
-  "sourceModifiedAt": "2026-10-02T16:04:30Z",
-  "syncedAt": "2026-10-02T16:08:00Z",
-  "hashes": {
-    "rm": "6a854d87be45325b204581e5b23ae609a8fb44db52a30144e0fdab19dfcb39e6",
-    "eb": "c30eb7881417442e265786fbc56f0c5fb2d3911b487fad6dd5eab66c691f6dfc",
-    "dc": "c3539bbf8e54bb0a64103be492b6e442ab5fcad56b74663120f5535bcd18a314"
-  }
-}
+{"requestId":"excel-20261005-live-002","source":"PrimeSphere/Operacoes Logbook.xlsx","sourceModifiedAt":"2026-10-05T16:33:14Z","syncedAt":"2026-10-05T17:50:00Z","hashes":{"rm":"d92cf77a6a8ab67eb5f40d0abbfdf65882c605fcac48e1260f35199eef50fe01","eb":"6facd23ae2148f50b93ae03cb9231db95a724f4c8c46fafd35f4183143b3f203","dc":"3083112df5a86900c2a3a1bcb86dbb280922d941b96fe55945e0474807fb3a33"}}
