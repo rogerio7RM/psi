@@ -5,6 +5,11 @@ on:
     paths: [".github/workflows/social-pipeline-dry-run.yml"]
   pull_request:
     branches: [main]
+    paths:
+      - "content/instagram/**"
+      - "scripts/render-instagram-cards.mjs"
+      - ".github/workflows/social-pipeline-dry-run.yml"
+      - ".github/workflows/social-visual-dry-run.yml"
   workflow_dispatch:
 permissions:
   contents: read
