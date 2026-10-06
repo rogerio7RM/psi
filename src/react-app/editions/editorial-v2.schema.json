@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PrimeSphere Editorial Edition V2",
+  "type": "object",
+  "required": ["schemaVersion","date","kind","label","title","updatedAtMadrid","summary","markets","drivers","sections","agenda","sources"],
+  "properties": {
+    "schemaVersion": {"const": 2},
+    "date": {"type":"string","pattern":"^[0-9]{6}$"},
+    "kind": {"enum":["morning","afterclose"]}
+  }
+}
