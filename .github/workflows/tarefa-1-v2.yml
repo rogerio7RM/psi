@@ -20,15 +20,12 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: npm }
       - run: npm ci
-      - name: Require V2 secrets
+      - name: Require V2 secret
         shell: bash
-        run: |
-          test -n "${{ secrets.OPENAI_API_KEY }}"
-          test -n "${{ secrets.BIGDATA_API_KEY }}"
+        run: test -n "${{ secrets.OPENAI_API_KEY }}"
       - name: Generate Morning Brief V2
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
         run: node scripts/generate-editorial-v2.mjs morning
       - name: Validate edition
         shell: bash
