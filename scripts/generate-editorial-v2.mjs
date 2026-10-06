@@ -10,7 +10,7 @@ const get=t=>parts.find(p=>p.type===t)?.value;
 const iso=`${get('year')}-${get('month')}-${get('day')}`;
 const code=iso.slice(2).replaceAll('-','');
 
-const bigHeaders={Authorization:`Bearer ${process.env.BIGDATA_API_KEY}`,'Content-Type':'application/json'};
+const bigHeaders={'X-API-KEY':process.env.BIGDATA_API_KEY,'Content-Type':'application/json'};
 async function big(path,body){
  const base=process.env.BIGDATA_API_BASE_URL || 'https://api.bigdata.com';
  const r=await fetch(base+path,{method:'POST',headers:bigHeaders,body:JSON.stringify(body)});
