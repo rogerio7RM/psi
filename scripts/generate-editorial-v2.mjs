@@ -72,7 +72,16 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   }
   if(apiError) throw new Error('Bigdata workflow stream error: '+apiError);
   if(!answer.trim()) throw new Error('Bigdata workflow returned no research answer');
-  return {answer:answer.trim(),sources:[...new Set(sources)]};
+  // Bigdata can emit a very large research stream. The editor only needs a compact,
+  // factual source pack; cap what is sent to OpenAI to keep TPM/cost predictable.
+  const MAX_RESEARCH_CHARS=120000;
+  const MAX_SOURCES=80;
+  const compactAnswer=answer.trim().slice(0,MAX_RESEARCH_CHARS);
+  const compactSources=[...new Set(sources)].slice(0,MAX_SOURCES);
+  if(answer.trim().length>MAX_RESEARCH_CHARS){
+    console.log('Bigdata research compacted from',answer.trim().length,'to',compactAnswer.length,'characters');
+  }
+  return {answer:compactAnswer,sources:compactSources};
 }
 
 const research=await bigdataResearch();
