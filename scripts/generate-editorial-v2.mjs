@@ -107,6 +107,14 @@ const edition=JSON.parse(raw);
 edition.schemaVersion=2;
 edition.date=code;
 edition.kind=kind;
+// Structural metadata is deterministic and must never depend on model compliance.
+edition.label=kind==='morning'?'Morning Brief':'After Market';
+edition.title=typeof edition.title==='string' && edition.title.trim()
+  ? edition.title.trim()
+  : (kind==='morning'?'Morning Brief — PrimeSphere Intelligence':'After Market — PrimeSphere Intelligence');
+edition.updatedAtMadrid=typeof edition.updatedAtMadrid==='string' && edition.updatedAtMadrid.trim()
+  ? edition.updatedAtMadrid
+  : new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()).replace(' ','T');
 const suffix=kind==='afterclose'?'-afterclose':'';
 await fs.writeFile(`src/react-app/editions/${code}${suffix}.json`,JSON.stringify(edition,null,2)+'\n');
 console.log('Generated',code,kind,'from Bigdata Research Workflow');
