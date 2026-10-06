@@ -1,0 +1,49 @@
+name: Tarefa 3 V2 - After Market
+on:
+  schedule:
+    - cron: '30 20 * * 1-5'
+  workflow_dispatch:
+concurrency:
+  group: tarefa-3-v2
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  afterclose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: Europe/Madrid
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: npm ci
+      - name: Require V2 secrets
+        shell: bash
+        run: |
+          test -n "${{ secrets.OPENAI_API_KEY }}"
+          test -n "${{ secrets.BIGDATA_API_KEY }}"
+      - name: Generate After Market V2
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
+        run: node scripts/generate-editorial-v2.mjs afterclose
+      - name: Validate edition
+        shell: bash
+        run: |
+          code=$(TZ=Europe/Madrid date +%y%m%d)
+          node scripts/validate-editorial.mjs "src/react-app/editions/$code-afterclose.json"
+          npm run build
+      - name: Commit validated edition
+        shell: bash
+        run: |
+          code=$(TZ=Europe/Madrid date +%y%m%d)
+          git config user.name "PrimeSphere Editorial Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "src/react-app/editions/$code-afterclose.json"
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish After Market V2 $code"
+          git pull --rebase origin main
+          git push origin HEAD:main
