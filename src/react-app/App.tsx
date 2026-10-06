@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import type { ComponentType } from 'react';
+import EditorialEditionView from './components/EditorialEditionView';
+import type { EditorialEdition } from './components/EditorialEditionView';
 import SiteFooter from './components/SiteFooter';
 import SiteHeader from './components/SiteHeader';
 import HomeIntro from './components/HomeIntro';
@@ -17,9 +19,11 @@ type RegisteredEdition = {
   priority: number;
   label: string;
 };
+type JsonEditionModule = { default: EditorialEdition };
 
 const modules = import.meta.glob<EditionModule>('./editions/*.tsx', { eager: true });
 const editions = new Map<string, RegisteredEdition>();
+const jsonModules = import.meta.glob<JsonEditionModule>('./editions/*.json', { eager: true });
 
 for (const [path, module] of Object.entries(modules)) {
   const match = path.match(/\/(\d{6})(?:-(afterclose|final))?\.tsx$/);
@@ -29,6 +33,19 @@ for (const [path, module] of Object.entries(modules)) {
   const label = variant === 'afterclose' ? 'After Close' : variant === 'final' ? 'Final Pré-Market' : 'Morning Brief';
   const previous = editions.get(date);
   if (!previous || previous.priority < priority) editions.set(date, { component: module.default, priority, label });
+}
+
+for (const [path, module] of Object.entries(jsonModules)) {
+  const match = path.match(/\/(\d{6})(?:-(afterclose))?\.json$/);
+  if (!match || module.default.schemaVersion !== 2) continue;
+  const [, date, variant] = match;
+  const data = module.default;
+  if (data.date !== date) continue;
+  const priority = variant === 'afterclose' || data.kind === 'afterclose' ? 30 : 20;
+  const label = data.kind === 'afterclose' ? 'After Close' : 'Morning Brief';
+  const component = () => <EditorialEditionView edition={data} />;
+  const previous = editions.get(date);
+  if (!previous || previous.priority < priority) editions.set(date, { component, priority, label });
 }
 
 const dates = [...editions.keys()].sort();
