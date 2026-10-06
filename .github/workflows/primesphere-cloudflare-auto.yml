@@ -35,7 +35,15 @@ jobs:
           test -s dist/client/index.html
           latest_date=$(find src/react-app/editions -maxdepth 1 -type f -printf '%f\n' | sed -nE 's/^([0-9]{6})(-afterclose|-final)?\.tsx$/\1/p' | sort | tail -1)
           test -n "$latest_date"
-          if test -f "src/react-app/editions/${latest_date}-afterclose.tsx"; then
+          if test -f "src/react-app/editions/${latest_date}-afterclose.json"; then
+            latest_file="${latest_date}-afterclose.json"
+            expected_label='After Close'
+            node scripts/validate-editorial.mjs "src/react-app/editions/$latest_file"
+          elif test -f "src/react-app/editions/${latest_date}.json"; then
+            latest_file="${latest_date}.json"
+            expected_label='Morning Brief'
+            node scripts/validate-editorial.mjs "src/react-app/editions/$latest_file"
+          elif test -f "src/react-app/editions/${latest_date}-afterclose.tsx"; then
             latest_file="${latest_date}-afterclose.tsx"
             expected_label='AFTER CLOSE'
           elif test -f "src/react-app/editions/${latest_date}-final.tsx"; then
