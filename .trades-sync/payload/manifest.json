@@ -1,1 +1,8 @@
-{"requestId":"excel-20261005-live-002","source":"PrimeSphere/Operacoes Logbook.xlsx","sourceModifiedAt":"2026-10-05T16:33:14Z","syncedAt":"2026-10-05T17:50:00Z","hashes":{"rm":"d92cf77a6a8ab67eb5f40d0abbfdf65882c605fcac48e1260f35199eef50fe01","eb":"6facd23ae2148f50b93ae03cb9231db95a724f4c8c46fafd35f4183143b3f203","dc":"3083112df5a86900c2a3a1bcb86dbb280922d941b96fe55945e0474807fb3a33"}}
+{
+  "requestId": "excel-20261007-live-001",
+  "hashes": {
+    "rm": "32bc24cab5fc084598b303fda9fbb85b034be9a76b4b595e05151301a84ae934",
+    "eb": "fb782c1e4cd909069719efe0f1a2d1b5b593f4b9d0fc230d4913a2fbddb4fbe8",
+    "dc": "0e180636c200913d41eb9b526dc5930527aa81ca29b62639062b8c3370fff138"
+  }
+}
