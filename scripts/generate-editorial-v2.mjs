@@ -74,8 +74,8 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   if(!answer.trim()) throw new Error('Bigdata workflow returned no research answer');
   // Bigdata can emit a very large research stream. The editor only needs a compact,
   // factual source pack; cap what is sent to OpenAI to keep TPM/cost predictable.
-  const MAX_RESEARCH_CHARS=120000;
-  const MAX_SOURCES=80;
+  const MAX_RESEARCH_CHARS=24000;
+  const MAX_SOURCES=30;
   const compactAnswer=answer.trim().slice(0,MAX_RESEARCH_CHARS);
   const compactSources=[...new Set(sources)].slice(0,MAX_SOURCES);
   if(answer.trim().length>MAX_RESEARCH_CHARS){
@@ -86,16 +86,35 @@ Return a concise research pack for another model to edit; do not fabricate or fi
 
 const research=await bigdataResearch();
 
+const editorialSchema={
+  type:'object',
+  additionalProperties:false,
+  required:['summary','markets','drivers','sections','agenda','sources'],
+  properties:{
+    summary:{type:'string'},
+    markets:{type:'array',minItems:4,maxItems:12,items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:'string'}}}},
+    drivers:{type:'array',minItems:3,maxItems:3,items:{type:'object',additionalProperties:false,required:['title','number','reason','impact'],properties:{title:{type:'string'},number:{type:'string'},reason:{type:'string'},impact:{type:'string'}}}},
+    sections:{type:'array',minItems:4,maxItems:8,items:{type:'object',additionalProperties:false,required:['title','items'],properties:{title:{type:'string'},items:{type:'array',minItems:1,maxItems:8,items:{type:'string'}}}}},
+    agenda:{type:'array',maxItems:12,items:{type:'object',additionalProperties:false,required:['name','officialDate','timeNewYork','timeMadrid','status','consensus','previous','result'],properties:{name:{type:'string'},officialDate:{type:'string'},timeNewYork:{type:'string'},timeMadrid:{type:'string'},status:{type:'string',enum:['FUTURO','JÁ DIVULGADO']},consensus:{type:'string'},previous:{type:'string'},result:{type:'string'}}}},
+    sources:{type:'array',minItems:2,maxItems:30,items:{type:'string'}}
+  }
+};
 const system=`You are PrimeSphere Intelligence's financial editor. Return ONLY valid JSON matching Editorial Edition V2. Audience: Brazilians following US markets. Never invent data. Use only the supplied Bigdata research pack. Edition date must be ${iso}. For economic agenda include ONLY events whose official date is exactly ${iso}; require New York time, Madrid conversion, status, consensus and previous. If any is missing or ambiguous, exclude it. For released events require result. Exactly 3 drivers using NÚMERO/MOTIVO/IMPACTO. kind=${kind}. schemaVersion=2. date=${code}. Required sections for morning: Market Pulse, Premarket Movers, Earnings Radar, Market Themes, Brasil → EUA, O que observar hoje. Required sections for afterclose: Market Pulse, Destaques do fechamento, Earnings Radar, Market Themes, Brasil → EUA, O que observar amanhã. sources must contain at least two identifiable source names/references from the supplied research. updatedAtMadrid must be a real Europe/Madrid timestamp. Do not silently convert stale or previous-session data into current data.`;
 
 const user=JSON.stringify({date:iso,kind,bigdataResearch:research});
+const estimatedInputTokens=Math.ceil((system.length+user.length)/4);
+const MAX_ESTIMATED_INPUT_TOKENS=12000;
+if(estimatedInputTokens>MAX_ESTIMATED_INPUT_TOKENS){
+  throw new Error(`OpenAI cost guard: estimated input ${estimatedInputTokens} tokens exceeds ${MAX_ESTIMATED_INPUT_TOKENS}; request not sent`);
+}
+console.log('OpenAI cost guard: estimated input tokens',estimatedInputTokens,'model',process.env.OPENAI_MODEL||'gpt-5.6-luna');
 const r=await fetch('https://api.openai.com/v1/responses',{
   method:'POST',
   headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},
   body:JSON.stringify({
-    model:process.env.OPENAI_MODEL||'gpt-5.6',
+    model:process.env.OPENAI_MODEL||'gpt-5.6-luna',
     input:[{role:'system',content:system},{role:'user',content:user}],
-    text:{format:{type:'json_object'}},
+    text:{format:{type:'json_schema',name:'prime_sphere_editorial_v2',strict:true,schema:editorialSchema}},
     store:false
   })
 });
@@ -109,12 +128,8 @@ edition.date=code;
 edition.kind=kind;
 // Structural metadata is deterministic and must never depend on model compliance.
 edition.label=kind==='morning'?'Morning Brief':'After Market';
-edition.title=typeof edition.title==='string' && edition.title.trim()
-  ? edition.title.trim()
-  : (kind==='morning'?'Morning Brief — PrimeSphere Intelligence':'After Market — PrimeSphere Intelligence');
-edition.updatedAtMadrid=typeof edition.updatedAtMadrid==='string' && edition.updatedAtMadrid.trim()
-  ? edition.updatedAtMadrid
-  : new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()).replace(' ','T');
+edition.title=kind==='morning'?'Morning Brief — PrimeSphere Intelligence':'After Market — PrimeSphere Intelligence';
+edition.updatedAtMadrid=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()).replace(' ','T');
 const suffix=kind==='afterclose'?'-afterclose':'';
 await fs.writeFile(`src/react-app/editions/${code}${suffix}.json`,JSON.stringify(edition,null,2)+'\n');
 console.log('Generated',code,kind,'from Bigdata Research Workflow');
