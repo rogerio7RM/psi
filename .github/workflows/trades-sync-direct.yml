@@ -1,0 +1,95 @@
+name: Trades Sync - Direct OneDrive to R2
+
+on:
+  schedule:
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trades-sync-direct
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      MS_GRAPH_CLIENT_ID: ${{ secrets.MS_GRAPH_CLIENT_ID }}
+      MS_GRAPH_REFRESH_TOKEN: ${{ secrets.MS_GRAPH_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID MS_GRAPH_CLIENT_ID MS_GRAPH_REFRESH_TOKEN; do
+            test -n "${!name:-}" || { echo "::error::Missing secret $name"; exit 1; }
+          done
+      - run: python -m pip install --disable-pip-version-check openpyxl==3.1.5
+      - run: npm ci --no-audit --no-fund
+      - name: Read OneDrive Excel and create private snapshots
+        run: python scripts/trades-sync-direct.py
+      - name: Compare existing R2 snapshots before publishing
+        id: compare
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed=0
+          for a in rm eb dc; do
+            if ! npx wrangler r2 object get "primesphere-instagram/subscriber/trades/$a.json" --remote --file "/tmp/trades-old-$a.json"; then
+              changed=1
+              continue
+            fi
+            if ! python - "$a" <<'PY'
+import json,sys
+a=sys.argv[1]
+old=json.load(open("/tmp/trades-old-"+a+".json"))
+new=json.load(open("/tmp/trades-direct/"+a+".json"))
+for k in ("source","sourceModifiedAt","account","rows"):
+    if old.get(k)!=new.get(k): sys.exit(1)
+PY
+            then changed=1; fi
+          done
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+      - name: Publish all snapshots to private R2
+        if: steps.compare.outputs.changed == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for a in rm eb dc; do
+            npx wrangler r2 object put "primesphere-instagram/subscriber/trades/$a.json" --remote --file "/tmp/trades-direct/$a.json" --content-type application/json
+          done
+      - name: Verify private R2 byte-for-byte
+        if: steps.compare.outputs.changed == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for a in rm eb dc; do
+            npx wrangler r2 object get "primesphere-instagram/subscriber/trades/$a.json" --remote --file "/tmp/trades-verify-$a.json"
+            cmp "/tmp/trades-direct/$a.json" "/tmp/trades-verify-$a.json"
+          done
+      - name: Verify site access and published RM
+        if: steps.compare.outputs.changed == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 4 --retry-delay 3 "https://primesphereintelligence.com/api/content/trades/rm?sync=$GITHUB_RUN_ID" -o /tmp/trades-live-rm.json
+          cmp /tmp/trades-direct/rm.json /tmp/trades-live-rm.json
+          test "$(curl -s -o /dev/null -w '%{http_code}' https://primesphereintelligence.com/api/content/trades/eb)" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' https://primesphereintelligence.com/api/content/trades/dc)" = "401"
+      - name: Summary
+        shell: bash
+        run: |
+          if [ "${{ steps.compare.outputs.changed }}" = 1 ]; then echo "Trades synced and verified" >> "$GITHUB_STEP_SUMMARY"; else echo "Excel unchanged; R2 snapshots already current" >> "$GITHUB_STEP_SUMMARY"; fi
