@@ -1,8 +1,6 @@
 name: Trades Sync - Direct OneDrive to R2
 
 on:
-  schedule:
-    - cron: '30 21 * * 1-5'
   workflow_dispatch:
 
 permissions:
