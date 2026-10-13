@@ -3,7 +3,8 @@ name: Trades Sync - Direct OneDrive to R2
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 20,21 * * 1-5'
+    - cron: '30 20 * * 1-5'
+    - cron: '30 21 * * 1-5'
 
 permissions:
   contents: read
@@ -26,7 +27,11 @@ jobs:
         id: window
         shell: bash
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$(TZ=America/New_York date +%H:%M)" = "16:30" ]; then
+          ny_offset="$(TZ=America/New_York date +%z)"
+          slot="${{ github.event.schedule }}"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || \
+             { [ "$slot" = "30 20 * * 1-5" ] && [ "$ny_offset" = "-0400" ]; } || \
+             { [ "$slot" = "30 21 * * 1-5" ] && [ "$ny_offset" = "-0500" ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
