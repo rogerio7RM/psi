@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 2,
+  "date": "261013",
+  "kind": "morning",
+  "label": "Morning Brief · 13/10/2026 · Edição histórica",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "Referência: pré-abertura de 13/10/2026 · horários de observação distintos",
+  "summary": "Segundo o levantamento Bigdata, os futuros americanos divergiam: Nasdaq 100 pressionado por semicondutores, Dow sustentado por bancos e saúde. Edição de demonstração do site, baseada exclusivamente no Bigdata, sem conciliação externa.",
+  "markets": [
+    {
+      "name": "S&P 500 futuro (ES)",
+      "value": "-0,13%"
+    },
+    {
+      "name": "Nasdaq 100 futuro (NQ)",
+      "value": "-0,59%"
+    },
+    {
+      "name": "Dow futuro (YM)",
+      "value": "+0,18%"
+    },
+    {
+      "name": "VIX · faixa Bigdata",
+      "value": "15,25–15,50"
+    },
+    {
+      "name": "WTI · faixa Bigdata",
+      "value": "US$ 92,54–93,27"
+    },
+    {
+      "name": "Ouro spot",
+      "value": "US$ 4.184,28"
+    },
+    {
+      "name": "USD/BRL · faixa Bigdata",
+      "value": "4,9879–4,9880"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "Bancos e resultados",
+      "number": "ES -0,13% · NQ -0,59% · YM +0,18% (06h54 ET, Bigdata)",
+      "reason": "O levantamento Bigdata apontou resultados favoráveis de Goldman Sachs e Citigroup e destaque positivo de UnitedHealth.",
+      "impact": "Bancos e saúde davam sustentação ao Dow, em contraste com tecnologia."
+    },
+    {
+      "title": "Semicondutores sob pressão",
+      "number": "Micron -2,3% · Marvell -2,1% (observações Bigdata)",
+      "reason": "Avanços anunciados pela chinesa CXMT e preocupações com custos de expansão da infraestrutura de IA.",
+      "impact": "Pressão sobre fabricantes de memória e ações ligadas a chips, com reflexos no Nasdaq."
+    },
+    {
+      "title": "Inflação e juros no radar",
+      "number": "CPI 14/10 · PPI 15/10 · 08h30 ET",
+      "reason": "O mercado aguardava os próximos indicadores de inflação dos Estados Unidos.",
+      "impact": "Juros, dólar e ativos de risco permaneciam sensíveis aos dados futuros."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "Futuros em direções opostas: S&P 500 -0,13%, Nasdaq 100 -0,59% e Dow +0,18%, segundo Bigdata às 06h54 ET.",
+        "VIX entre 15,25 e 15,50; WTI entre US$ 92,54 e US$ 93,27/barril; ouro à vista em US$ 4.184,28/onça.",
+        "As faixas representam observações em horários diferentes, não um snapshot sincronizado."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "Positivos (observações Bigdata): Goldman Sachs +3,3% a +4,1%; UnitedHealth +2,8% a +4,5%; Citigroup +1,5% a +2,0%.",
+        "Negativos (observações Bigdata): Micron -2,3%; Marvell -2,1%; Western Digital -3,6% a -4,0%; Domino's Pizza -3,4% a -4,0%.",
+        "Os percentuais não constituem um ranking simultâneo."
+      ]
+    },
+    {
+      "title": "Agenda e Earnings Radar",
+      "items": [
+        "13/10: balanços dos grandes bancos americanos e índice NFIB de otimismo das pequenas empresas, indicado pelo Bigdata em 97,90.",
+        "14/10, 08h30 ET: CPI de setembro dos EUA. 15/10, 08h30 ET: PPI de setembro.",
+        "Os indicadores de 14 e 15/10 são próximos catalisadores, não resultados publicados em 13/10."
+      ]
+    },
+    {
+      "title": "Brasil → Wall Street",
+      "items": [
+        "Segundo o Bigdata, a reabertura do mercado brasileiro após o feriado trouxe atenção ao dólar, petróleo e tecnologia americana.",
+        "USD/BRL na faixa de 4,9879 a 4,9880 em observações de pré-mercado.",
+        "Juros americanos, commodities e resultados corporativos seguiam no radar de investidores brasileiros."
+      ]
+    },
+    {
+      "title": "O que observar",
+      "items": [
+        "Reação de semicondutores e do Nasdaq aos avanços tecnológicos da CXMT.",
+        "Bancos, saúde e dispersão setorial na abertura americana.",
+        "Expectativas para CPI e PPI nos dias seguintes."
+      ]
+    },
+    {
+      "title": "Nota editorial · Protótipo",
+      "items": [
+        "Edição histórica de demonstração, baseada exclusivamente no pacote de pesquisa Bigdata.com.",
+        "Sem auditoria externa; preços e percentuais são observações históricas, em horários distintos, não cotações em tempo real."
+      ]
+    }
+  ],
+  "agenda": [],
+  "sources": [
+    "Bigdata.com — Morning Research, 13/10/2026",
+    "Bigdata.com — levantamento de pré-mercado e referências da edição histórica"
+  ]
+}
