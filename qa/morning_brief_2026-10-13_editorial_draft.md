@@ -1,34 +1,44 @@
 # Morning Brief | 13 de outubro de 2026
-**Edição histórica — rascunho editorial, NÃO PUBLICAR**
-**Corte editorial: 13h30 UTC / 09h30 ET**
+
+**PrimeSphere Intelligence — edição histórica**  
+**Fonte dos dados: Bigdata.com | Pré-abertura dos EUA**
 
 ## Wall Street em 30 segundos
-O pré-mercado americano apresentou desempenho misto: futuros do Dow Jones indicavam avanço, enquanto Nasdaq e S&P 500 mostravam fraqueza, em meio à pressão sobre ações de semicondutores e à divulgação de balanços dos grandes bancos. As fontes consultadas não fornecem uma fotografia simultânea, suficientemente auditável, dos contratos e horários; por isso, esta edição não publica percentuais consolidados dos índices.
+Segundo o levantamento Bigdata, às **06h54 ET**, o futuro do **S&P 500 (ES)** recuava **0,13%**, o **Nasdaq 100 (NQ)** caía **0,59%** e o **Dow Jones (YM)** avançava **0,18%**. Bancos e saúde davam sustentação ao Dow, enquanto semicondutores pressionavam o Nasdaq.
 
-## Três vetores
-**1. Semicondutores e inteligência artificial.** A notícia de avanços tecnológicos da fabricante chinesa CXMT pressionou ações relacionadas a memória e chips. A cautela com tecnologia contrastou com o interesse pelos resultados do setor financeiro.
+## Três drivers
+**Balanços:** Goldman Sachs, Citigroup e UnitedHealth estavam entre os destaques positivos do levantamento Bigdata. A leitura era de sustentação para setores fora da tecnologia.
 
-**2. Bancos abrem a temporada de balanços.** O JPMorgan divulgou lucro líquido reportado de aproximadamente US$ 15,3 bilhões, lucro diluído reportado de US$ 5,57 por ação e receita GAAP de aproximadamente US$ 50,2 bilhões. O lucro ajustado por ação, excluindo item significativo, foi de US$ 5,75 — métrica distinta do EPS reportado. Investidores também acompanharam Goldman Sachs, Wells Fargo e Citigroup.
+**Semicondutores:** os avanços anunciados pela chinesa CXMT e preocupações com custos da infraestrutura de IA pressionavam ações de memória e chips, incluindo Micron, AMD e Nvidia.
 
-**3. Inflação no radar.** O CPI de setembro está agendado para quarta-feira, 14 de outubro, às 08h30 ET; o PPI, para quinta-feira, 15 de outubro, no mesmo horário. Não são divulgações de 13 de outubro.
+**Inflação e juros:** investidores aguardavam o CPI americano de **14/10** e o PPI de **15/10**, ambos previstos para **08h30 ET**.
 
 ## Market Pulse
-**Leitura qualitativa, sem cotação consolidada:** aversão a risco concentrada em tecnologia; temporada de resultados bancários como contrapeso; petróleo, ouro e juros relevantes para o debate sobre inflação. As observações de ouro à vista e futuro de dezembro registradas às 06h24 e 08h58 UTC são candidatas de fontes secundárias e não equivalem a um snapshot certificado. VIX, WTI, Brent, GLD e índices aguardam validação contratual e temporal.
+| Indicador | Referência Bigdata | Leitura |
+|---|---:|---|
+| Futuro S&P 500 | -0,13% | Pressão moderada |
+| Futuro Nasdaq 100 | -0,59% | Tecnologia mais fraca |
+| Futuro Dow Jones | +0,18% | Apoio de bancos e saúde |
+| VIX | 15,25–15,50 | Faixa reportada |
+| WTI | US$ 92,54–93,27/barril | Faixa reportada |
+| Ouro à vista | US$ 4.184,28/onça | Observação spot |
 
-## Premarket Movers — radar, não ranking
-**Micron e SanDisk:** reportagens do pré-mercado apontaram pressão vendedora relacionada ao setor de memória; sem percentuais certificados nesta edição.
-**UnitedHealth:** balanço e revisão de projeções atraíram atenção dos investidores; sem percentual certificado.
-**Goldman Sachs, JPMorgan, Wells Fargo e Citigroup:** movimentos associados aos balanços; sem ranking de valorização/desvalorização por falta de snapshot homogêneo.
+*As faixas e preços são observações do material Bigdata em horários diferentes; não constituem um snapshot sincronizado.*
 
-## Agenda e earnings
-- **13/10:** resultados dos grandes bancos americanos, incluindo JPMorgan, Goldman Sachs, Wells Fargo e Citigroup.
-- **14/10, 08h30 ET:** CPI dos EUA referente a setembro.
-- **15/10, 08h30 ET:** PPI dos EUA referente a setembro.
+## Radar de pré-mercado
+**Positivos:** Goldman Sachs **+3,3% a +4,1%**; UnitedHealth **+2,8% a +4,5%**; Citigroup **+1,5% a +2,0%**.
 
-## Fontes de apoio
-- JPMorgan / SEC, comunicado 3T26: https://www.sec.gov/Archives/edgar/data/19617/000162828026065582/a3q26erfexhibit991narrative.htm
-- BLS, calendário oficial de outubro: https://www.bls.gov/schedule/2026/10_sched_list.htm
-- Investopedia, panorama do pré-mercado de 13/10: https://www.investopedia.com/5-things-to-know-before-the-stock-market-opens-on-tuesday-october-13-2026-12171477
-- WSJ, pressão sobre futuros Nasdaq e ações de chips: https://www.wsj.com/finance/stocks/nasdaq-futures-fall-as-global-ai-selloff-intensifies-fe149717
+**Negativos:** Micron **-2,3%**; Marvell **-2,1%**; Western Digital **-3,6% a -4,0%**; Domino's Pizza **-3,4% a -4,0%**.
 
-**QA editorial:** NÃO PUBLICAR. Ainda faltam snapshots certificados de índices, VIX, petróleo e movers; fonte secundária não substitui feed primário, e o horário exato de cada preço precisa ser auditado.
+*Variações extraídas do levantamento Bigdata; não representam um ranking simultâneo.*
+
+## Agenda
+- **13/10:** balanços de grandes bancos e NFIB Small Business Optimism, indicado pelo Bigdata em **97,90**.
+- **14/10, 08h30 ET:** CPI americano de setembro.
+- **15/10, 08h30 ET:** PPI americano de setembro.
+
+## Brasil e Wall Street
+Segundo o Bigdata, a reabertura do mercado brasileiro após o feriado colocou em foco câmbio, commodities e resultados americanos. O USD/BRL apareceu entre **4,9879 e 4,9880** nas observações de pré-mercado.
+
+---
+**Nota editorial:** edição baseada exclusivamente no material Bigdata.com, sem conciliação externa. Cotações históricas, não preços em tempo real. Conteúdo informativo, não recomendação de investimento.
