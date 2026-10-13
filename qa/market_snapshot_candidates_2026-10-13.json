@@ -1,0 +1,80 @@
+{
+  "edition_date": "2026-10-13",
+  "kind": "morning",
+  "cutoff_utc": "2026-10-13T13:30:00Z",
+  "snapshots": [
+    {
+      "instrument": "Gold spot",
+      "symbol": "XAU/USD",
+      "price": 4188.27,
+      "unit": "USD/troy_oz",
+      "observed_at_utc": "2026-10-13T06:24:00Z",
+      "source_url": "https://www.marketscreener.com/news/gold-eases-on-firm-dollar-spotlight-on-us-inflation-data-ce785dddda8bf52c",
+      "source_type": "newswire_syndication",
+      "contract_or_basis": "spot",
+      "independent_verification": "Reuters-syndicated observation; not independently confirmed by primary market feed"
+    },
+    {
+      "instrument": "Gold futures December 2026",
+      "symbol": "GC",
+      "price": 4212.5,
+      "unit": "USD/troy_oz",
+      "observed_at_utc": "2026-10-13T06:24:00Z",
+      "source_url": "https://www.marketscreener.com/news/gold-eases-on-firm-dollar-spotlight-on-us-inflation-data-ce785dddda8bf52c",
+      "source_type": "newswire_syndication",
+      "contract_or_basis": "December 2026 futures; contract symbol not established by source",
+      "independent_verification": "Reuters-syndicated observation; no primary exchange quote"
+    },
+    {
+      "instrument": "Gold spot",
+      "symbol": "XAU/USD",
+      "price": 4186.91,
+      "unit": "USD/troy_oz",
+      "observed_at_utc": "2026-10-13T08:58:00Z",
+      "source_url": "https://in.marketscreener.com/news/gold-gains-as-oil-dollar-retreat-investors-brace-for-us-inflation-test-ce785ddddc8df22c",
+      "source_type": "newswire_syndication",
+      "contract_or_basis": "spot",
+      "independent_verification": "Reuters-syndicated second observation, 08:58 UTC; not primary exchange feed"
+    },
+    {
+      "instrument": "Gold futures December 2026",
+      "symbol": "GC",
+      "price": 4211.3,
+      "unit": "USD/troy_oz",
+      "observed_at_utc": "2026-10-13T08:58:00Z",
+      "source_url": "https://in.marketscreener.com/news/gold-gains-as-oil-dollar-retreat-investors-brace-for-us-inflation-test-ce785ddddc8df22c",
+      "source_type": "newswire_syndication",
+      "contract_or_basis": "December 2026 futures, Reuters news observation",
+      "independent_verification": "Reuters-syndicated second observation; contract code and exchange not confirmed"
+    }
+  ],
+  "excluded": [
+    {
+      "instrument": "WTI",
+      "reason": "News report does not establish exchange contract and exact observation timestamp together"
+    },
+    {
+      "instrument": "Brent",
+      "reason": "News report does not establish exchange contract and exact observation timestamp together"
+    },
+    {
+      "instrument": "S&P 500 futures / Nasdaq futures / Dow futures",
+      "reason": "No independently verified contract-specific price and UTC observation"
+    },
+    {
+      "instrument": "VIX",
+      "reason": "No as-of-cutoff primary source observation"
+    },
+    {
+      "instrument": "GLD",
+      "reason": "No as-of-cutoff ETF quote"
+    }
+  ],
+  "publication_allowed": false,
+  "editorial_notes": [
+    "Two different Reuters observations at 06:24 and 08:58 UTC are consistent with moving prices, not a conflicting same-time quote.",
+    "Neither observation alone establishes a complete synchronized cross-asset market snapshot.",
+    "News syndication does not meet the strict exchange/official_provider/licensed_vendor source type, so CI must flag these candidates.",
+    "Reuters reports with 13:44 GMT or 18:15 GMT observations are AFTER the 13:30 UTC cutoff and excluded."
+  ]
+}
