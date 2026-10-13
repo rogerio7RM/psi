@@ -26,7 +26,7 @@ def request(url, data=None, token=None):
 
 def get_token():
     cid = os.environ["MS_GRAPH_CLIENT_ID"]
-    refresh = os.environ["MS_GRAPH_REFRESH_TOKEN"]
+    refresh = pathlib.Path("/tmp/trades-graph-refresh-token").read_text(encoding="utf-8").strip() if pathlib.Path("/tmp/trades-graph-refresh-token").exists() else os.environ["MS_GRAPH_REFRESH_TOKEN"]
     body = urllib.parse.urlencode({
         "client_id":cid, "grant_type":"refresh_token", "refresh_token":refresh,
         "scope":"offline_access Files.Read"
