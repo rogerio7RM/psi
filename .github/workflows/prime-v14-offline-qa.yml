@@ -20,6 +20,7 @@ on:
       - "scripts/prime_market_snapshots.py"
       - "tests/test_prime_market_snapshots.py"
       - "qa/market_snapshot_candidates_2026-10-13.json"
+      - "scripts/prime_market_reconcile.py"
       - ".github/workflows/prime-v14-offline-qa.yml"
 permissions:
   contents: read
@@ -52,6 +53,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_prime_market_snapshots.py' -v
       - name: Audit real timestamped quote candidates (expected to remain blocked)
         run: python scripts/prime_market_snapshots.py qa/market_snapshot_candidates_2026-10-13.json --out qa-output
+      - name: Reconcile real market candidates by instrument and time
+        run: python scripts/prime_market_reconcile.py qa/market_snapshot_candidates_2026-10-13.json --out qa-output
       - name: Run synthetic audit (real dataset intentionally not in public repository)
         run: python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
       - name: Run V15 synthetic evidence triage
