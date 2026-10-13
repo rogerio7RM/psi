@@ -45,9 +45,14 @@ def json_value(v):
 
 token = get_token()
 base = "https://graph.microsoft.com/v1.0/drives/" + DRIVE + "/items/" + ITEM
-meta = json.loads(request(base + "?$select=id,name,lastModifiedDateTime,eTag",token=token))
+meta = json.loads(request(base,token=token))
 if meta.get("name") != "Operacoes Logbook.xlsx": raise ValueError("Unexpected source file")
-raw = request(base + "/content",token=token)
+# Microsoft Graph returns a short-lived, preauthenticated download URL.
+# Do not forward the Graph bearer token to the storage download host.
+download_url = meta.get("@microsoft.graph.downloadUrl")
+if not download_url or not download_url.startswith("https://"):
+    raise ValueError("Microsoft Graph did not return a secure download URL")
+raw = request(download_url)
 wb = load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
 needed = {"SECRET FLAG","Data","ATIVO","STRIKE","QTDD","OPERACAO","VALOR","OBS","RM","EB","DC"}
 sheet = None
