@@ -12,6 +12,12 @@ class GateTests(unittest.TestCase):
         fact={"metric":"WTI","value":92.5,"source":"https://example.com","observation_period":"instant",
               "observed_at_utc":"2026-10-13T12:00:00Z","instrument":"CLZ26","unit":"USD/bbl","reviewed_by":"editor"}
         self.assertFalse(assess({"facts":[fact]})["publication_allowed"])
+    def test_editorial_approval_without_independent_verification_blocks(self):
+        fact={"metric":"WTI","value":92.5,"source":"https://example.com","observation_period":"instant",
+              "observed_at_utc":"2026-10-13T12:00:00Z","instrument":"CLZ26","unit":"USD/bbl","reviewed_by":"editor"}
+        result=assess({"facts":[fact],"editorial_approval":True,"manual_review_complete":True})
+        self.assertFalse(result["publication_allowed"])
+        self.assertIn("INDEPENDENT_VERIFICATION_REQUIRED",[i["reason"] for i in result["issues"]])
     def test_automated_review_blocks(self):
         fact={"metric":"WTI","value":92.5,"source":"https://example.com","observation_period":"instant",
               "observed_at_utc":"2026-10-13T12:00:00Z","instrument":"CLZ26","unit":"USD/bbl","reviewed_by":"automated"}
