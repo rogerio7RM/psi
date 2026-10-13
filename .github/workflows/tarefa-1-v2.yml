@@ -3,13 +3,37 @@ on:
   schedule:
     - cron: '30 10 * * 1-5'
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publicar a edicao? Deixe false para apenas validar a configuracao sem chamar APIs.'
+        type: boolean
+        required: true
+        default: false
 concurrency:
   group: tarefa-1-v2
   cancel-in-progress: false
 permissions:
   contents: write
 jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check isolated editorial configuration without exposing credentials
+        env:
+          BIGDATA_READY: ${{ secrets.BIGDATA_EDITORIAL_API_KEY != '' }}
+          OPENAI_READY: ${{ secrets.OPENAI_EDITORIAL_API_KEY != '' }}
+          AUTOMATION_ENABLED: ${{ vars.PRIME_EDITORIAL_AUTOMATION_ENABLED }}
+        shell: bash
+        run: |
+          echo "Bigdata editorial credential configured: $BIGDATA_READY"
+          echo "OpenAI editorial credential configured: $OPENAI_READY"
+          echo "Automatic publication enabled: ${AUTOMATION_ENABLED:-false}"
+          if [[ "$BIGDATA_READY" != "true" || "$OPENAI_READY" != "true" ]]; then
+            echo "::notice::Add both dedicated editorial secrets before enabling publication."
+          fi
   morning:
+    needs: readiness
+    if: ${{ (github.event_name == 'schedule' && vars.PRIME_EDITORIAL_AUTOMATION_ENABLED == 'true') || (github.event_name == 'workflow_dispatch' && inputs.publish == true) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -20,15 +44,18 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: npm }
       - run: npm ci
-      - name: Require V2 secrets
+      - name: Require dedicated editorial credentials
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_EDITORIAL_API_KEY }}
+          BIGDATA_API_KEY: ${{ secrets.BIGDATA_EDITORIAL_API_KEY }}
         shell: bash
         run: |
-          test -n "${{ secrets.OPENAI_API_KEY }}"
-          test -n "${{ secrets.BIGDATA_API_KEY }}"
-      - name: Generate Morning Brief V2
+          test -n "$OPENAI_API_KEY" || { echo "::error::OPENAI_EDITORIAL_API_KEY missing"; exit 1; }
+          test -n "$BIGDATA_API_KEY" || { echo "::error::BIGDATA_EDITORIAL_API_KEY missing"; exit 1; }
+      - name: Generate Morning Brief from Bigdata
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_EDITORIAL_API_KEY }}
+          BIGDATA_API_KEY: ${{ secrets.BIGDATA_EDITORIAL_API_KEY }}
         run: node scripts/generate-editorial-v2.mjs morning
       - name: Validate edition
         shell: bash
