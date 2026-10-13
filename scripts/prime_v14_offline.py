@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 def content_time_risks(body, cutoff):
     """Flag explicit ET observations after the cutoff; never treat them as certified facts."""
     risks = []
-    pattern = r"\\b(1[0-2]|0?[1-9]):([0-5][0-9])\\s*(a\\.?m\\.?|p\\.?m\\.?)\\s*(?:ET|Eastern Time)\\b"
+    pattern = r"\b(1[0-2]|0?[1-9]):([0-5][0-9])\s*(a\.?m\.?|p\.?m\.?)\s*(?:ET|Eastern Time)\b"
     for m in re.finditer(pattern, body, re.IGNORECASE):
         hour = int(m.group(1)) % 12 + (12 if m.group(3).lower().startswith("p") else 0)
         local = cutoff.astimezone(ZoneInfo("America/New_York")).replace(hour=hour, minute=int(m.group(2)), second=0, microsecond=0)
