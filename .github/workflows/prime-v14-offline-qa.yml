@@ -7,6 +7,8 @@ on:
       - "tests/test_prime_v14_offline.py"
       - "scripts/prime_v15_evidence.py"
       - "tests/test_prime_v15_evidence.py"
+      - "scripts/prime_v16_verify.py"
+      - "tests/test_prime_v16_verify.py"
       - ".github/workflows/prime-v14-offline-qa.yml"
 permissions:
   contents: read
@@ -23,10 +25,14 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_prime_v14_offline.py' -v
       - name: V15 evidence triage tests
         run: python -m unittest discover -s tests -p 'test_prime_v15_evidence.py' -v
+      - name: V16 conservative verification tests
+        run: python -m unittest discover -s tests -p 'test_prime_v16_verify.py' -v
       - name: Run synthetic audit (real dataset intentionally not in public repository)
         run: python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
       - name: Run V15 synthetic evidence triage
         run: python scripts/prime_v15_evidence.py tests/fixtures/prime_v14_synthetic.json --out qa-output
+      - name: Run V16 synthetic source triage
+        run: python scripts/prime_v16_verify.py tests/fixtures/prime_v14_synthetic.json --out qa-output
       - name: Enforce fail-closed publication gate
         run: |
           python - <<'PY'
