@@ -19,9 +19,12 @@ def assess(data):
             issues.append({"index":index,"reason":"INVALID_SOURCE_URL"})
     # No implicit publication even with complete evidence: separate explicit approval is required.
     approved = bool(data.get("editorial_approval") is True and data.get("manual_review_complete") is True)
-    allowed = bool(data["facts"]) and not issues and approved
+    independently_verified = bool(data.get("independent_source_verification") is True)
+    if not independently_verified:
+        issues.append({"reason":"INDEPENDENT_VERIFICATION_REQUIRED"})
+    allowed = bool(data["facts"]) and not issues and approved and independently_verified
     return {"version":"V20","facts_received":len(data["facts"]),
-            "issues":issues,"manual_approval":approved,"publication_allowed":allowed,
+            "issues":issues,"manual_approval":approved,"independent_verification":independently_verified,"publication_allowed":allowed,
             "note":"V20 checks evidence metadata, not factual truth; external primary-source verification remains mandatory."}
 def main():
     p=argparse.ArgumentParser()
