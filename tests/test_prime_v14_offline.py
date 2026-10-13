@@ -29,6 +29,20 @@ class OfflineAuditTests(unittest.TestCase):
         result = module.audit({"date": "2026-10-13", "sources": [src, src]})
         self.assertEqual(len(result["sources"]), 1)
 
+    def test_source_body_can_reveal_post_cutoff_observation(self):
+        src = {"ts": "2026-10-13T12:00:00+00:00",
+               "text": "At 10:30 a.m. ET, stocks were trading higher."}
+        result = module.audit({"date": "2026-10-13", "sources": [src]})
+        self.assertEqual(result["sources"][0]["time_status"], "PRE_CUTOFF_SOURCE_UNVERIFIED")
+        self.assertEqual(len(result["sources"][0]["content_time_risks"]), 1)
+        self.assertFalse(result["publication_allowed"])
+
+    def test_before_cutoff_et_time_not_flagged(self):
+        src = {"ts": "2026-10-13T12:00:00+00:00",
+               "text": "At 9:00 a.m. ET, stocks were trading higher."}
+        result = module.audit({"date": "2026-10-13", "sources": [src]})
+        self.assertEqual(result["sources"][0]["content_time_risks"], [])
+
     def test_invalid_input_fails(self):
         with self.assertRaises(ValueError):
             module.audit({"date": "2026-10-13", "sources": "bad"})
