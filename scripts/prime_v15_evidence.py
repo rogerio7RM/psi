@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from prime_v14_offline import audit
 
-NUM = re.compile(r"(?<![\\w])(?:[$€£]\\s*)?-?\\d[\\d,]*(?:\\.\\d+)?\\s*(?:%|bps|bp|million|billion|trillion)?", re.I)
+NUM = re.compile(r"(?<![\w])(?:[$€£]\s*)?-?\d[\d,]*(?:\.\d+)?\s*(?:%|bps|bp|million|billion|trillion)?", re.I)
 STOP = {"2026", "2025", "2024", "13", "10", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}
 def numeric_tokens(text):
     return {re.sub(r"\\s+", "", m.group()).lower() for m in NUM.finditer(text) if re.sub(r"\\s+", "", m.group()).lower() not in STOP and len(re.sub(r"\\s+", "", m.group())) >= 3}
