@@ -19,15 +19,8 @@ jobs:
           python-version: "3.12"
       - name: Unit tests (offline, no paid API)
         run: python -m unittest discover -s tests -p 'test_prime_v14_offline.py' -v
-      - name: Run audit if local dataset exists in repository
-        shell: bash
-        run: |
-          if [ -f qa/fixtures/bigdata_raw_morning.json ]; then
-            python scripts/prime_v14_offline.py qa/fixtures/bigdata_raw_morning.json --out qa-output
-          else
-            echo 'Dataset not committed; only synthetic unit tests were run.'
-            python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
-          fi
+      - name: Run synthetic audit (real dataset intentionally not in public repository)
+        run: python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
       - name: Enforce fail-closed publication gate
         run: |
           python - <<'PY'
