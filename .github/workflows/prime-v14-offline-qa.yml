@@ -15,6 +15,8 @@ on:
       - "tests/test_prime_v21_manifest.py"
       - "tests/test_prime_public_evidence.py"
       - "qa/public_evidence_2026-10-13.json"
+      - "scripts/prime_morning_readiness.py"
+      - "tests/test_prime_morning_readiness.py"
       - ".github/workflows/prime-v14-offline-qa.yml"
 permissions:
   contents: read
@@ -39,6 +41,10 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_prime_v21_manifest.py' -v
       - name: Public evidence registry checks
         run: python -m unittest discover -s tests -p 'test_prime_public_evidence.py' -v
+      - name: Morning Brief readiness tests
+        run: python -m unittest discover -s tests -p 'test_prime_morning_readiness.py' -v
+      - name: Generate real public evidence readiness report
+        run: python scripts/prime_morning_readiness.py qa/public_evidence_2026-10-13.json --out qa-output
       - name: Run synthetic audit (real dataset intentionally not in public repository)
         run: python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
       - name: Run V15 synthetic evidence triage
