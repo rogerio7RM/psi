@@ -50,15 +50,9 @@ jobs:
               changed=1
               continue
             fi
-            if ! python - "$a" <<'PY'
-import json,sys
-a=sys.argv[1]
-old=json.load(open("/tmp/trades-old-"+a+".json"))
-new=json.load(open("/tmp/trades-direct/"+a+".json"))
-for k in ("source","sourceModifiedAt","account","rows"):
-    if old.get(k)!=new.get(k): sys.exit(1)
-PY
-            then changed=1; fi
+            if ! python -c 'import json,sys; a=sys.argv[1]; old=json.load(open("/tmp/trades-old-"+a+".json")); new=json.load(open("/tmp/trades-direct/"+a+".json")); sys.exit(0 if all(old.get(k)==new.get(k) for k in ("source","sourceModifiedAt","account","rows")) else 1)' "$a"; then
+            changed=1
+          fi
           done
           echo "changed=$changed" >> "$GITHUB_OUTPUT"
       - name: Publish all snapshots to private R2
