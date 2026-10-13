@@ -35,6 +35,14 @@
       "source": "https://www.sec.gov/Archives/edgar/data/19617/000162828026065582/a3q26erfexhibit991narrative.htm",
       "type": "sec_exhibit_99_1",
       "status": "PRIMARY_SOURCE_MATCHED"
+    },
+    {
+      "id": "JPM-3Q26-SEC-FILING-TIME",
+      "claim": "SEC 8-K accepted 2026-10-13 06:30:38 ET, before Morning Brief cutoff",
+      "source": "https://www.sec.gov/Archives/edgar/data/19617/000162828026065582/0001628280-26-065582-index.htm",
+      "type": "sec_filing_index",
+      "status": "PRIMARY_SOURCE_MATCHED",
+      "source_acceptance_local": "2026-10-13 06:30:38 ET"
     }
   ],
   "blocked_sections": [
@@ -56,5 +64,10 @@
     }
   ],
   "editorial_approval": false,
-  "manual_review_complete": false
+  "manual_review_complete": false,
+  "editorial_notes": [
+    "SEC filing acceptance confirms the earnings document existed before cutoff, not that any market quote is current.",
+    "Do not infer premarket stock moves from issuer results.",
+    "Do not publish CPI/PPI as released on October 13; they are upcoming events."
+  ]
 }
