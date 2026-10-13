@@ -18,9 +18,9 @@ export type EditorialEdition = {
 const Box=({title,children}:{title:string;children:ReactNode})=><section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"><h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-cyan-400">{title}</h2><div className="space-y-3 text-base leading-7 text-slate-200">{children}</div></section>;
 
 // Highlight signed percentage movements without changing any market data.
-const SignedPercentages=({value}:{value:string})=><>{value.split(/([+-]\\s?\\d+(?:[.,]\\d+)?\\s?%)/g).map((part,i)=>/^[+]\\s?\\d/.test(part)
+const SignedPercentages=({value}:{value:string})=><>{value.split(/([+-]\s?\d+(?:[.,]\d+)?\s?%)/g).map((part,i)=>/^[+]\s?\d/.test(part)
   ? <span key={i} className="text-emerald-400">{part}</span>
-  : /^-\\s?\\d/.test(part)
+  : /^-\s?\d/.test(part)
     ? <span key={i} className="text-red-400">{part}</span>
     : part)}</>;
 
