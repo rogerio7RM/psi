@@ -4,8 +4,21 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import re
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from urllib.parse import urlparse
+
+def content_time_risks(body, cutoff):
+    """Flag explicit ET observations after the cutoff; never treat them as certified facts."""
+    risks = []
+    pattern = r"\\b(1[0-2]|0?[1-9]):([0-5][0-9])\\s*(a\\.?m\\.?|p\\.?m\\.?)\\s*(?:ET|Eastern Time)\\b"
+    for m in re.finditer(pattern, body, re.IGNORECASE):
+        hour = int(m.group(1)) % 12 + (12 if m.group(3).lower().startswith("p") else 0)
+        local = cutoff.astimezone(ZoneInfo("America/New_York")).replace(hour=hour, minute=int(m.group(2)), second=0, microsecond=0)
+        if local.astimezone(dt.timezone.utc) > cutoff:
+            risks.append({"mention": m.group(0), "reason": "POSSIBLE_POST_CUTOFF_OBSERVATION"})
+    return risks
 
 def audit(data):
     if not isinstance(data, dict) or not isinstance(data.get("sources"), list):
@@ -35,7 +48,7 @@ def audit(data):
                         "url": url, "domain": urlparse(url).hostname or "",
                         "timestamp": raw_ts, "time_status": status,
                         "excerpt": body[:1000], "sha256": digest,
-                        "certified": False})
+                        "certified": False, "content_time_risks": content_time_risks(body, cutoff)})
     return {"version": "V14-CI", "date": data["date"], "kind": data.get("kind"),
             "sources": sources, "certified_facts": [], "certified_count": 0,
             "qa_status": "REVIEW_REQUIRED", "publication_allowed": False,
