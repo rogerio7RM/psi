@@ -9,6 +9,8 @@ on:
       - "tests/test_prime_v15_evidence.py"
       - "scripts/prime_v16_verify.py"
       - "tests/test_prime_v16_verify.py"
+      - "scripts/prime_v20_gate.py"
+      - "tests/test_prime_v20_gate.py"
       - ".github/workflows/prime-v14-offline-qa.yml"
 permissions:
   contents: read
@@ -27,6 +29,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_prime_v15_evidence.py' -v
       - name: V16 conservative verification tests
         run: python -m unittest discover -s tests -p 'test_prime_v16_verify.py' -v
+      - name: V20 editorial gate tests
+        run: python -m unittest discover -s tests -p 'test_prime_v20_gate.py' -v
       - name: Run synthetic audit (real dataset intentionally not in public repository)
         run: python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
       - name: Run V15 synthetic evidence triage
