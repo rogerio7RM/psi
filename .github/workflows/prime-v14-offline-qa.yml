@@ -21,6 +21,7 @@ on:
       - "tests/test_prime_market_snapshots.py"
       - "qa/market_snapshot_candidates_2026-10-13.json"
       - "scripts/prime_market_reconcile.py"
+      - "qa/morning_brief_2026-10-13_editorial_draft.md"
       - ".github/workflows/prime-v14-offline-qa.yml"
 permissions:
   contents: read
@@ -55,6 +56,9 @@ jobs:
         run: python scripts/prime_market_snapshots.py qa/market_snapshot_candidates_2026-10-13.json --out qa-output
       - name: Reconcile real market candidates by instrument and time
         run: python scripts/prime_market_reconcile.py qa/market_snapshot_candidates_2026-10-13.json --out qa-output
+      - name: Ensure historical editorial draft remains explicitly unpublished
+        run: |
+          python -c "from pathlib import Path; p=Path('qa/morning_brief_2026-10-13_editorial_draft.md').read_text(encoding='utf-8'); assert 'NÃO PUBLICAR' in p and 'Corte editorial' in p"
       - name: Run synthetic audit (real dataset intentionally not in public repository)
         run: python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
       - name: Run V15 synthetic evidence triage
