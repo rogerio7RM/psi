@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-13",
+  "kind": "morning",
+  "sources": [
+    {
+      "hd": "Synthetic test only",
+      "url": "https://example.org/synthetic",
+      "ts": "2026-10-13T12:00:00+00:00",
+      "text": "Synthetic test data; not a market fact."
+    }
+  ]
+}
