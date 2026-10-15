@@ -102,7 +102,7 @@ if(local){
       signal:controller.signal,
       body:JSON.stringify({
         model:process.env.OLLAMA_MODEL||'qwen2.5:7b',
-        stream:false,
+        stream:true,
         format:'json',
         keep_alive:'10m',
         options:{temperature:0.1,num_ctx:8192,num_predict:5500},
@@ -113,8 +113,35 @@ if(local){
       })
     });
     if(!r.ok) throw new Error('Ollama request failed '+r.status+' '+await r.text());
-    const data=await r.json();
-    raw=data.message?.content;
+    // Streaming returns HTTP headers immediately, avoiding Node's default
+    // headers timeout while CPU-only Ollama generates a long JSON edition.
+    const reader=r.body?.getReader();
+    if(!reader) throw new Error('Ollama returned no response stream');
+    const decoder=new TextDecoder();
+    let pending='';
+    let completed=false;
+    let content='';
+    const consume=(line)=>{
+      if(!line.trim()) return;
+      const part=JSON.parse(line);
+      if(part.error) throw new Error('Ollama stream error: '+part.error);
+      content+=part.message?.content||'';
+      if(part.done) completed=true;
+    };
+    while(true){
+      const {value,done}=await reader.read();
+      if(done) break;
+      pending+=decoder.decode(value,{stream:true});
+      let end;
+      while((end=pending.indexOf('\\n'))!==-1){
+        consume(pending.slice(0,end));
+        pending=pending.slice(end+1);
+      }
+    }
+    pending+=decoder.decode();
+    if(pending.trim()) consume(pending);
+    if(!completed) throw new Error('Ollama stream ended before completion');
+    raw=content;
     if(!raw) throw new Error('Ollama returned no JSON');
   }finally{clearTimeout(timeout);}
 }else{
