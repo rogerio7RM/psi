@@ -50,10 +50,13 @@ jobs:
           npm run build
           if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
           Copy-Item $path editorial-dry-run.json
-      - name: Save edition for human review
+      - name: Save generated JSON even if validation fails
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: ollama-editorial-v2-${{ inputs.edition }}
-          path: editorial-dry-run.json
-          if-no-files-found: error
+          path: |
+            editorial-dry-run.json
+            src/react-app/editions/*.json
+          if-no-files-found: warn
           retention-days: 7
