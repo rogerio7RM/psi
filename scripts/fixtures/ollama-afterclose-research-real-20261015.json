@@ -1,0 +1,12 @@
+{
+  "type": "HISTORICAL_AFTERCLOSE_LIMITED_SOURCE_PACK",
+  "date": "2026-10-15",
+  "asOf": "2026-10-15 09:12 America/New_York (premarket-only snapshot; NOT closing data)",
+  "answer": "PROTÓTIPO HISTÓRICO AFTER MARKET 15/10/2026 — PESQUISA LIMITADA. NÃO HÁ DADOS VERIFICADOS DO FECHAMENTO DE WALL STREET NESTE PACOTE. Os fatos abaixo são do PRÉ-MERCADO e não podem ser tratados como fechamento. A edição deve deixar claro no título, resumo e na seção Destaques do fechamento que não há fechamento verificado, sem atribuir alta, queda ou percentuais a índices à vista. Reuters 15/10 às 09:12 ET: futuros Dow +0,40%, S&P 500 -0,27%, Nasdaq -1,18%; CoreWeave caía mais de 3% no pré-mercado após recuo de 15% na quarta-feira; receios com dívida e juros pressionavam IA; VIX alcançara máxima de duas semanas (sem nível verificado); TSMC anunciou sexto lucro trimestral recorde consecutivo e tom cauteloso para 2027. Reuters: pedidos iniciais de seguro-desemprego da semana encerrada 10/10 foram 199.000, aumento de 1.000; pedidos continuados caíram 4.000 para 1,71 milhão. BLS: PPI setembro/2026 estava agendado para 15/10 08:30 ET; não há resultado do PPI confirmado neste pacote. NY Fed: calendário oficial incluía pedidos iniciais, vendas no varejo, Empire State e Philadelphia Fed às 08:30 ET; sem valores de consenso/anterior verificados, deixar agenda estruturada vazia. USD/BRL não verificado. Para O que observar amanhã: NÃO inventar eventos de 16/10, declarar que agenda do dia seguinte não foi verificada. Para Market Pulse e Destaques do fechamento: não afirmar direção ou valor de fechamento. Para Earnings Radar: comentar TSMC como resultado conhecido, não dizer que ninguém reportou. Para Brasil → EUA: discutir implicações possíveis de juros e dólar sem cotação ou movimento inventado. Cada seção deve ser distinta e honesta quanto às lacunas. Este é um teste de comportamento sob fontes insuficientes, não um relatório de fechamento real.",
+  "sources": [
+    "Reuters — US stocks, 15 Oct 2026 09:12 ET: https://www.fidelity.com/news/article/us-markets/202610150912RTRSNEWSCOMBINED_L4N4610ZX_1",
+    "BLS — calendário oficial de outubro 2026: https://www.bls.gov/schedule/2026/10_sched.htm",
+    "Federal Reserve Bank of New York — calendário econômico outubro 2026: https://www.newyorkfed.org/research/calendars/i-oct26.html",
+    "Reuters — weekly jobless claims 15 Oct 2026: https://www.reuters.com/world/us/us-weekly-jobless-claims-rise-marginally-amid-low-layoffs-2026-10-15/"
+  ]
+}
