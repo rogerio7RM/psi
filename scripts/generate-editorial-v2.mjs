@@ -92,7 +92,18 @@ const research=process.env.EDITORIAL_RESEARCH_FILE
 
 const system=`You are PrimeSphere Intelligence's financial editor. Return ONLY valid JSON matching Editorial Edition V2. Audience: Brazilians following US markets. WRITE ALL HUMAN-READABLE EDITORIAL TEXT EXCLUSIVELY IN NATURAL BRAZILIAN PORTUGUESE (pt-BR), including title, summary, driver reason/impact, section content and agenda names. Preserve proper nouns, market tickers, product labels and mandatory section names. Never invent data. Use only the supplied Bigdata research pack. Edition date must be ${iso}. For economic agenda include ONLY events whose official date is exactly ${iso}; require New York time, Madrid conversion, status, consensus and previous. If any is missing or ambiguous, exclude it. For released events require result. Exactly 3 drivers; JSON property names MUST be number, reason, impact (English keys), while their string VALUES MUST be Brazilian Portuguese. Never translate JSON keys. kind=${kind}. schemaVersion=2. date=${code}. Required sections for morning: Market Pulse, Premarket Movers, Earnings Radar, Market Themes, Brasil → EUA, O que observar hoje. Required sections for afterclose: Market Pulse, Destaques do fechamento, Earnings Radar, Market Themes, Brasil → EUA, O que observar amanhã. sources must contain at least two identifiable source names/references from the supplied research. updatedAtMadrid must be a real Europe/Madrid timestamp. If historical offline research is used, date the edition to that historical date and explicitly state in the title and summary that it is a TESTE HISTÓRICO, not a live edition. Do not silently convert stale or previous-session data into current data. If the supplied pack is synthetic or unverified, explicitly mark the title and summary as TESTE SINTÉTICO, never invent numerical index values, prices, percentages, earnings, releases or sources, and do not suggest actual market direction. For markets without verified values, use null for numeric fields rather than invented numbers. Do not turn methodological QA themes into actual market events.`;
 
-const user=JSON.stringify({date:iso,kind,bigdataResearch:research});
+const editorialGuidance=[
+  'PROTÓTIPO EDITORIAL: priorize clareza e precisão factual, sem exigir perfeição estilística.',
+  'Distinguir explicitamente FUTUROS de índices à vista em markets, summary e Market Pulse; não atribuir variação de futuros ao índice à vista.',
+  'Nunca afirmar que nenhuma empresa divulgou resultados se o pacote citar resultados de alguma empresa.',
+  'Distinguir calendário já publicado de indicador ainda não divulgado. Nunca dizer que se aguarda o calendário se o calendário já está disponível.',
+  'Separar a hora do recorte da pesquisa da hora de geração. Evitar afirmações no presente/futuro incompatíveis com o recorte temporal.',
+  'Não declarar como atual uma notícia histórica. Para pacote histórico, título e resumo devem conter TESTE HISTÓRICO.',
+  'Em cada seção: 1 fato específico do pacote e 1 implicação ou limitação verificável; evitar frases repetidas e generalidades.',
+  'Não criar consenso, cotações, dados de fechamento, números, resultados, fontes ou datas ausentes.',
+  'Incluir todas as fontes relevantes do pacote, sem inventar outras. Se agenda estruturada carecer de campos obrigatórios, mantê-la vazia.'
+].join(' ');
+const user=JSON.stringify({date:iso,kind,bigdataResearch:research,editorialGuidance});
 let raw;
 if(local){
   const endpoint=process.env.OLLAMA_URL||'http://127.0.0.1:11434';
@@ -186,6 +197,16 @@ if(Array.isArray(edition.drivers)){
     delete normalized.número;delete normalized.numero;delete normalized.motivo;delete normalized.razão;delete normalized.impacto;
     return normalized;
   });
+}
+// Historical prototype labeling is deterministic and must not depend on Qwen wording.
+if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && process.env.EDITORIAL_SYNTHETIC_TEST!=='true'){
+  if(!/TESTE HISTÓRICO/i.test(edition.title||'')) edition.title='TESTE HISTÓRICO — '+(edition.title||'Morning Brief');
+  if(!/TESTE HISTÓRICO/i.test(edition.summary||'')) edition.summary='TESTE HISTÓRICO (não é boletim ao vivo). '+(edition.summary||'');
+}
+// Keep all source references from a verified local research pack instead of
+// letting the model silently drop sources supporting factual claims.
+if(process.env.EDITORIAL_RESEARCH_FILE && Array.isArray(research.sources)){
+  edition.sources=[...new Set(research.sources.filter(s=>typeof s==='string'&&s.trim()))];
 }
 edition.schemaVersion=2;
 edition.date=code;
