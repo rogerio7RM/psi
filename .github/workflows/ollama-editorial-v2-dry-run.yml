@@ -9,6 +9,13 @@ on:
           - morning
           - afterclose
         default: morning
+      research:
+        description: 'Offline source pack (no paid APIs)'
+        type: choice
+        options:
+          - synthetic
+          - historical-20261015
+        default: historical-20261015
 permissions:
   contents: read
 jobs:
@@ -21,11 +28,12 @@ jobs:
     env:
       EDITORIAL_PROVIDER: ollama
       EDITORIAL_STRICT_QA: 'true'
-      EDITORIAL_SYNTHETIC_TEST: 'true'
+      EDITORIAL_SYNTHETIC_TEST: ${{ inputs.research == 'synthetic' && 'true' || 'false' }}
+      EDITORIAL_TEST_DATE: ${{ inputs.research == 'historical-20261015' && '2026-10-15' || '' }}
       OLLAMA_MODEL: qwen2.5:7b
       OLLAMA_URL: http://127.0.0.1:11434
       BIGDATA_API_KEY: ''
-      EDITORIAL_RESEARCH_FILE: scripts/fixtures/ollama-editorial-research.json
+      EDITORIAL_RESEARCH_FILE: ${{ inputs.research == 'historical-20261015' && 'scripts/fixtures/ollama-editorial-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research.json' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,14 +50,14 @@ jobs:
       - name: Preserve raw generated JSON for debugging
         if: ${{ always() }}
         run: |
-          $code = node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))"
+          $code = if ($env:EDITORIAL_TEST_DATE) { $env:EDITORIAL_TEST_DATE.Substring(2).Replace('-','') } else { node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))" }
           $suffix = if ("${{ inputs.edition }}" -eq 'afterclose') { '-afterclose' } else { '' }
           $path = "src/react-app/editions/$code$suffix.json"
           if (Test-Path $path) { Copy-Item $path editorial-dry-run.json -Force; Write-Host "Saved $path for artifact upload" }
           else { Write-Warning "No generated edition at $path" }
       - name: Validate V2 and build (no publishing)
         run: |
-          $code = node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))"
+          $code = if ($env:EDITORIAL_TEST_DATE) { $env:EDITORIAL_TEST_DATE.Substring(2).Replace('-','') } else { node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))" }
           $suffix = if ("${{ inputs.edition }}" -eq 'afterclose') { '-afterclose' } else { '' }
           $path = "src/react-app/editions/$code$suffix.json"
           if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
