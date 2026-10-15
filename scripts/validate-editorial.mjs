@@ -21,4 +21,18 @@ for(const [i,e] of x.agenda.entries()){
  if(!['FUTURO','JÁ DIVULGADO'].includes(e.status)) fail('agenda['+i+'] invalid status');
  if(e.status==='JÁ DIVULGADO' && (!e.result||!String(e.result).trim())) fail('released event requires result');
 }
+if(process.env.EDITORIAL_STRICT_QA==='true'){
+ const editorial=[x.title,x.summary,...x.drivers.flatMap(d=>[d.reason,d.impact]),...x.sections.map(s=>s.content)].filter(v=>typeof v==='string');
+ const englishPatterns=[/\\bthis edition is based on\\b/i,/\\bno real market events\\b/i,/\\bsynthetic data (indicates|suggests)\\b/i,/\\btoday, investors should\\b/i,/\\bmarket monitoring techniques\\b/i,/\\bverification of synthetic data\\b/i,/\\bmethodological testing\\b/i,/\\bno earnings reports are expected\\b/i];
+ for(const t of editorial) if(englishPatterns.some(p=>p.test(t))) fail('English editorial text detected in strict QA');
+ if(process.env.EDITORIAL_SYNTHETIC_TEST==='true'){
+  if(!/teste sint[eé]tico/i.test(x.title+' '+x.summary)) fail('synthetic edition must be prominently labeled TESTE SINTÉTICO');
+  for(const [i,m] of x.markets.entries()){
+   for(const [key,value] of Object.entries(m)){
+    if(key!=='name' && typeof value==='number') fail('synthetic markets['+i+'] has invented numeric value '+key);
+   }
+  }
+  if(x.agenda.length) fail('synthetic test agenda must be empty');
+ }
+}
 console.log('Editorial V2 valid:',file,x.kind,x.date);
