@@ -1,0 +1,31 @@
+name: PrimeSphere - Ollama Local Smoke Test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ollama-smoke:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 30
+    steps:
+      - name: Check Ollama and local editorial JSON (no paid APIs, no publication)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $base = 'http://127.0.0.1:11434'
+          $tags = Invoke-RestMethod -Uri "$base/api/tags" -Method Get -TimeoutSec 30
+          if (-not ($tags.models | Where-Object { $_.name -eq 'qwen2.5:7b' })) { throw 'qwen2.5:7b not installed' }
+          $body = @{
+            model = 'qwen2.5:7b'
+            stream = $false
+            format = 'json'
+            options = @{ temperature = 0.1; num_ctx = 4096; num_predict = 450 }
+            prompt = 'Responda somente JSON valido em portugues brasileiro com as chaves titulo, resumo e drivers. drivers deve ser um array de exatamente 3 objetos, cada um com numero, motivo, impacto. Nao invente cotacoes: use nao informado.'
+          } | ConvertTo-Json -Depth 8
+          $response = Invoke-RestMethod -Uri "$base/api/generate" -Method Post -Body $body -ContentType 'application/json' -TimeoutSec 1500
+          $edition = $response.response | ConvertFrom-Json
+          if (-not $edition.titulo -or -not $edition.resumo -or $edition.drivers.Count -ne 3) { throw 'Local JSON failed structural check' }
+          foreach ($driver in $edition.drivers) {
+            if (-not $driver.numero -or -not $driver.motivo -or -not $driver.impacto) { throw 'Driver incomplete' }
+          }
+          Write-Host 'LOCAL OLLAMA SMOKE PASS: JSON structure accepted; no paid APIs called; nothing published.'
