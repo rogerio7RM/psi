@@ -22,20 +22,20 @@ jobs:
       EDITORIAL_PROVIDER: ollama
       OLLAMA_MODEL: qwen2.5:7b
       OLLAMA_URL: http://127.0.0.1:11434
-      BIGDATA_API_KEY: ${{ secrets.BIGDATA_EDITORIAL_API_KEY }}
+      BIGDATA_API_KEY: ''
+      EDITORIAL_RESEARCH_FILE: scripts/fixtures/ollama-editorial-research.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - name: Check research credential and local Ollama
+      - name: Check local Ollama only (no paid APIs)
         run: |
-          if (-not $env:BIGDATA_API_KEY) { throw 'BIGDATA_EDITORIAL_API_KEY missing' }
           $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
           if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Local Ollama model unavailable' }
       - run: npm ci
-      - name: Generate local V2 edition from Bigdata research
+      - name: Generate local V2 edition from offline research fixture
         run: node scripts/generate-editorial-v2.mjs "${{ inputs.edition }}"
       - name: Validate V2 and build (no publishing)
         run: |
