@@ -2,7 +2,8 @@ import fs from 'node:fs/promises';
 
 const kind=process.argv[2];
 if(!['morning','afterclose'].includes(kind)) throw new Error('kind must be morning or afterclose');
-if(!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY missing');
+const local=process.env.EDITORIAL_PROVIDER==='ollama';
+if(!local && !process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY missing');
 if(!process.env.BIGDATA_API_KEY) throw new Error('BIGDATA_API_KEY missing');
 
 const now=new Date();
@@ -74,7 +75,7 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   if(!answer.trim()) throw new Error('Bigdata workflow returned no research answer');
   // Bigdata can emit a very large research stream. The editor only needs a compact,
   // factual source pack; cap what is sent to OpenAI to keep TPM/cost predictable.
-  const MAX_RESEARCH_CHARS=120000;
+  const MAX_RESEARCH_CHARS=local?18000:120000;
   const MAX_SOURCES=80;
   const compactAnswer=answer.trim().slice(0,MAX_RESEARCH_CHARS);
   const compactSources=[...new Set(sources)].slice(0,MAX_SOURCES);
@@ -89,20 +90,49 @@ const research=await bigdataResearch();
 const system=`You are PrimeSphere Intelligence's financial editor. Return ONLY valid JSON matching Editorial Edition V2. Audience: Brazilians following US markets. Never invent data. Use only the supplied Bigdata research pack. Edition date must be ${iso}. For economic agenda include ONLY events whose official date is exactly ${iso}; require New York time, Madrid conversion, status, consensus and previous. If any is missing or ambiguous, exclude it. For released events require result. Exactly 3 drivers using NÚMERO/MOTIVO/IMPACTO. kind=${kind}. schemaVersion=2. date=${code}. Required sections for morning: Market Pulse, Premarket Movers, Earnings Radar, Market Themes, Brasil → EUA, O que observar hoje. Required sections for afterclose: Market Pulse, Destaques do fechamento, Earnings Radar, Market Themes, Brasil → EUA, O que observar amanhã. sources must contain at least two identifiable source names/references from the supplied research. updatedAtMadrid must be a real Europe/Madrid timestamp. Do not silently convert stale or previous-session data into current data.`;
 
 const user=JSON.stringify({date:iso,kind,bigdataResearch:research});
-const r=await fetch('https://api.openai.com/v1/responses',{
-  method:'POST',
-  headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},
-  body:JSON.stringify({
-    model:process.env.OPENAI_MODEL||'gpt-5.6',
-    input:[{role:'system',content:system},{role:'user',content:user}],
-    text:{format:{type:'json_object'}},
-    store:false
-  })
-});
-if(!r.ok) throw new Error('OpenAI request failed '+r.status+' '+await r.text());
-const data=await r.json();
-const raw=data.output_text ?? data.output?.flatMap(o=>o.content||[]).find(c=>c.type==='output_text')?.text;
-if(!raw) throw new Error('OpenAI returned no JSON');
+let raw;
+if(local){
+  const endpoint=process.env.OLLAMA_URL||'http://127.0.0.1:11434';
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),24*60*1000);
+  try{
+    const r=await fetch(endpoint+'/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      signal:controller.signal,
+      body:JSON.stringify({
+        model:process.env.OLLAMA_MODEL||'qwen2.5:7b',
+        stream:false,
+        format:'json',
+        keep_alive:'10m',
+        options:{temperature:0.1,num_ctx:8192,num_predict:5500},
+        messages:[
+          {role:'system',content:system+' Output JSON keys: schemaVersion,date,kind,label,title,updatedAtMadrid,summary,markets,drivers,sections,agenda,sources. markets must be an array of at least 4 items; drivers exactly 3; sections at least 4; agenda an array, empty if unverified; sources at least 2. Each driver must contain a number, reason and impact. Keep claims tied to the provided research.'},
+          {role:'user',content:user}
+        ]
+      })
+    });
+    if(!r.ok) throw new Error('Ollama request failed '+r.status+' '+await r.text());
+    const data=await r.json();
+    raw=data.message?.content;
+    if(!raw) throw new Error('Ollama returned no JSON');
+  }finally{clearTimeout(timeout);}
+}else{
+  const r=await fetch('https://api.openai.com/v1/responses',{
+    method:'POST',
+    headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:process.env.OPENAI_MODEL||'gpt-5.6',
+      input:[{role:'system',content:system},{role:'user',content:user}],
+      text:{format:{type:'json_object'}},
+      store:false
+    })
+  });
+  if(!r.ok) throw new Error('OpenAI request failed '+r.status+' '+await r.text());
+  const data=await r.json();
+  raw=data.output_text ?? data.output?.flatMap(o=>o.content||[]).find(c=>c.type==='output_text')?.text;
+  if(!raw) throw new Error('OpenAI returned no JSON');
+}
 const edition=JSON.parse(raw);
 edition.schemaVersion=2;
 edition.date=code;
@@ -117,4 +147,4 @@ edition.updatedAtMadrid=typeof edition.updatedAtMadrid==='string' && edition.upd
   : new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()).replace(' ','T');
 const suffix=kind==='afterclose'?'-afterclose':'';
 await fs.writeFile(`src/react-app/editions/${code}${suffix}.json`,JSON.stringify(edition,null,2)+'\n');
-console.log('Generated',code,kind,'from Bigdata Research Workflow');
+console.log('Generated',code,kind,'from Bigdata Research Workflow via',local?'local Ollama':'OpenAI');
