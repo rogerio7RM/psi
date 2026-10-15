@@ -1,0 +1,57 @@
+name: PrimeSphere - Ollama Editorial V2 Dry Run
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: 'Edition to generate locally (no publication)'
+        type: choice
+        options:
+          - morning
+          - afterclose
+        default: morning
+permissions:
+  contents: read
+jobs:
+  editorial-dry-run:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: powershell
+    env:
+      EDITORIAL_PROVIDER: ollama
+      OLLAMA_MODEL: qwen2.5:7b
+      OLLAMA_URL: http://127.0.0.1:11434
+      BIGDATA_API_KEY: ${{ secrets.BIGDATA_EDITORIAL_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check research credential and local Ollama
+        run: |
+          if (-not $env:BIGDATA_API_KEY) { throw 'BIGDATA_EDITORIAL_API_KEY missing' }
+          $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
+          if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Local Ollama model unavailable' }
+      - run: npm ci
+      - name: Generate local V2 edition from Bigdata research
+        run: node scripts/generate-editorial-v2.mjs "${{ inputs.edition }}"
+      - name: Validate V2 and build (no publishing)
+        run: |
+          $code = node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))"
+          $suffix = if ("${{ inputs.edition }}" -eq 'afterclose') { '-afterclose' } else { '' }
+          $path = "src/react-app/editions/$code$suffix.json"
+          if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
+          node scripts/validate-editorial.mjs $path
+          if ($LASTEXITCODE -ne 0) { throw 'Editorial validation failed' }
+          npm run build
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+          Copy-Item $path editorial-dry-run.json
+      - name: Save edition for human review
+        uses: actions/upload-artifact@v4
+        with:
+          name: ollama-editorial-v2-${{ inputs.edition }}
+          path: editorial-dry-run.json
+          if-no-files-found: error
+          retention-days: 7
