@@ -4,7 +4,7 @@ const kind=process.argv[2];
 if(!['morning','afterclose'].includes(kind)) throw new Error('kind must be morning or afterclose');
 const local=process.env.EDITORIAL_PROVIDER==='ollama';
 if(!local && !process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY missing');
-if(!process.env.BIGDATA_API_KEY) throw new Error('BIGDATA_API_KEY missing');
+if(!process.env.EDITORIAL_RESEARCH_FILE && !process.env.BIGDATA_API_KEY) throw new Error('BIGDATA_API_KEY missing');
 
 const now=new Date();
 const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
@@ -85,7 +85,9 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   return {answer:compactAnswer,sources:compactSources};
 }
 
-const research=await bigdataResearch();
+const research=process.env.EDITORIAL_RESEARCH_FILE
+  ? JSON.parse(await fs.readFile(process.env.EDITORIAL_RESEARCH_FILE,'utf8'))
+  : await bigdataResearch();
 
 const system=`You are PrimeSphere Intelligence's financial editor. Return ONLY valid JSON matching Editorial Edition V2. Audience: Brazilians following US markets. Never invent data. Use only the supplied Bigdata research pack. Edition date must be ${iso}. For economic agenda include ONLY events whose official date is exactly ${iso}; require New York time, Madrid conversion, status, consensus and previous. If any is missing or ambiguous, exclude it. For released events require result. Exactly 3 drivers using NÚMERO/MOTIVO/IMPACTO. kind=${kind}. schemaVersion=2. date=${code}. Required sections for morning: Market Pulse, Premarket Movers, Earnings Radar, Market Themes, Brasil → EUA, O que observar hoje. Required sections for afterclose: Market Pulse, Destaques do fechamento, Earnings Radar, Market Themes, Brasil → EUA, O que observar amanhã. sources must contain at least two identifiable source names/references from the supplied research. updatedAtMadrid must be a real Europe/Madrid timestamp. Do not silently convert stale or previous-session data into current data.`;
 
