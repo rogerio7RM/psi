@@ -39,6 +39,14 @@ jobs:
       - run: npm ci
       - name: Generate local V2 edition from offline research fixture
         run: node scripts/generate-editorial-v2.mjs "${{ inputs.edition }}"
+      - name: Preserve raw generated JSON for debugging
+        if: ${{ always() }}
+        run: |
+          $code = node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))"
+          $suffix = if ("${{ inputs.edition }}" -eq 'afterclose') { '-afterclose' } else { '' }
+          $path = "src/react-app/editions/$code$suffix.json"
+          if (Test-Path $path) { Copy-Item $path editorial-dry-run.json -Force; Write-Host "Saved $path for artifact upload" }
+          else { Write-Warning "No generated edition at $path" }
       - name: Validate V2 and build (no publishing)
         run: |
           $code = node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))"
@@ -49,14 +57,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Editorial validation failed' }
           npm run build
           if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
-          Copy-Item $path editorial-dry-run.json
       - name: Save generated JSON even if validation fails
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: ollama-editorial-v2-${{ inputs.edition }}
-          path: |
-            editorial-dry-run.json
-            src/react-app/editions/*.json
-          if-no-files-found: warn
+          path: editorial-dry-run.json
+          if-no-files-found: error
           retention-days: 7
