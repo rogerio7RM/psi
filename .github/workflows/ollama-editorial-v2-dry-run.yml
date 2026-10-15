@@ -20,6 +20,8 @@ jobs:
         shell: powershell
     env:
       EDITORIAL_PROVIDER: ollama
+      EDITORIAL_STRICT_QA: 'true'
+      EDITORIAL_SYNTHETIC_TEST: 'true'
       OLLAMA_MODEL: qwen2.5:7b
       OLLAMA_URL: http://127.0.0.1:11434
       BIGDATA_API_KEY: ''
