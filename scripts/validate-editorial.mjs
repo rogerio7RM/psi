@@ -25,7 +25,7 @@ const requiredSections=x.kind==='morning'
  ? ['Market Pulse','Premarket Movers','Earnings Radar','Market Themes','Brasil → EUA','O que observar hoje']
  : ['Market Pulse','Destaques do fechamento','Earnings Radar','Market Themes','Brasil → EUA','O que observar amanhã'];
 const names=x.sections.map(s=>s?.name);
-for(const name of requiredSections) if(names.filter(n=>n===name).length!==1) fail('missing or duplicated required section: '+name);
+for(const name of requiredSections) if(names.filter(n=>n===name).length!==1) fail('missing or duplicated required section: '+name+'; received section names: '+JSON.stringify(names));
 for(const [i,d] of x.drivers.entries()){
  if(!d||!Number.isInteger(d.number)||d.number!==i+1) fail('drivers['+i+'] must use numeric key number='+String(i+1));
  for(const k of ['reason','impact']) if(typeof d[k]!=='string'||!d[k].trim()) fail('drivers['+i+'] missing '+k);
