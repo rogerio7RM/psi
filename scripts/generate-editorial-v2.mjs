@@ -13,12 +13,13 @@ const iso=`${get('year')}-${get('month')}-${get('day')}`;
 const code=iso.slice(2).replaceAll('-','');
 
 async function bigdataResearch(){
+  if(process.env.BIGDATA_PAID_RESEARCH_ENABLED!=='true') throw new Error('Paid Bigdata research disabled. Set BIGDATA_PAID_RESEARCH_ENABLED=true explicitly.');
   const phase=kind==='morning'
     ? 'before the regular US cash session: emphasize current/pre-market conditions and what matters for today'
     : 'after the regular US cash session: emphasize the completed close, what moved and what matters next';
 
-  const prompt=`Build a factual source pack for PrimeSphere Intelligence for ${iso}, ${phase}.
-Use current financial/premium sources available to Bigdata and do not invent missing values.
+  const prompt=`Build a SHORT, focused factual source pack for PrimeSphere Intelligence for ${iso}, ${phase}.
+Use the smallest number of necessary sources and do not invent missing values. Do not search regulatory filings, earnings transcripts, corporate fundamentals, podcasts or premium news unless essential to a top driver. Do not repeat queries. Maximum 3 market drivers, 5 verified agenda items, 5 earnings items and 6 sources. Keep research concise.
 Cover:
 1) US market snapshot: S&P 500, Nasdaq-100, Dow, Russell 2000, VIX, US 10Y Treasury, WTI, gold, Bitcoin and USD/BRL. Clearly distinguish futures/pre-market from completed cash-session data.
 2) The most important market drivers with numbers, catalyst/reason and likely market impact.
@@ -34,17 +35,14 @@ Return a concise research pack for another model to edit; do not fabricate or fi
       name:`PrimeSphere Editorial Source Pack ${kind}`,
       prompt,
       research_plan:{
-        title:'PrimeSphere daily market research',
+        title:'Focused PrimeSphere daily research',
         steps:[
-          {description:'Verify US market state and collect the required cross-asset snapshot'},
-          {description:'Verify the exact-date US economic and corporate calendars'},
-          {description:'Identify the three strongest market drivers and relevant movers/themes'},
-          {description:'Cross-check facts and provide source references'}
+          {description:'In one concise pass verify cross-asset market snapshot, three drivers, exact-date economic agenda and relevant earnings with source references; omit unavailable data'}
         ]
       }
     },
     input:{},
-    model_name:'pro'
+    model_name:process.env.BIGDATA_MODEL||'base'
   };
 
   const r=await fetch('https://agents.bigdata.com/v1/workflow/execute',{
@@ -75,8 +73,8 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   if(!answer.trim()) throw new Error('Bigdata workflow returned no research answer');
   // Bigdata can emit a very large research stream. The editor only needs a compact,
   // factual source pack; cap what is sent to OpenAI to keep TPM/cost predictable.
-  const MAX_RESEARCH_CHARS=local?18000:120000;
-  const MAX_SOURCES=80;
+  const MAX_RESEARCH_CHARS=local?12000:20000;
+  const MAX_SOURCES=12;
   const compactAnswer=answer.trim().slice(0,MAX_RESEARCH_CHARS);
   const compactSources=[...new Set(sources)].slice(0,MAX_SOURCES);
   if(answer.trim().length>MAX_RESEARCH_CHARS){
