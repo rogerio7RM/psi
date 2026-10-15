@@ -12,7 +12,7 @@ const get=t=>parts.find(p=>p.type===t)?.value;
 const iso=process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE
   ? process.env.EDITORIAL_TEST_DATE
   : `${get('year')}-${get('month')}-${get('day')}`;
-if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(iso)) throw new Error('Invalid EDITORIAL_TEST_DATE');
+if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) throw new Error('Invalid EDITORIAL_TEST_DATE: '+iso);
 const code=iso.slice(2).replaceAll('-','');
 
 async function bigdataResearch(){
