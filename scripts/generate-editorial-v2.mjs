@@ -133,7 +133,7 @@ if(local){
       if(done) break;
       pending+=decoder.decode(value,{stream:true});
       let end;
-      while((end=pending.indexOf('\\n'))!==-1){
+      while((end=pending.indexOf('\n'))!==-1){
         consume(pending.slice(0,end));
         pending=pending.slice(end+1);
       }
