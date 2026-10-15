@@ -1,0 +1,7 @@
+{
+  "answer": "OFFLINE SYNTHETIC TEST DATA ONLY. All numerical market values, catalysts and agenda are UNVERIFIED and MUST NOT be presented as real news. This fixture exists exclusively to test JSON schema generation, validation and local Qwen performance. Markets: S&P 500, Nasdaq 100, Dow Jones, Russell 2000, VIX, US 10Y, WTI, gold, Bitcoin and USD/BRL: values not supplied. No economic calendar events verified for the edition date: agenda must be empty. No verified earnings events. Produce exactly 3 editorial drivers about data verification, market monitoring and risk management; explicitly label each as a methodological topic, not an actual market move. Never assert any price, percent, or release event.",
+  "sources": [
+    "PrimeSphere local synthetic test fixture (not a financial source)",
+    "PrimeSphere local editorial QA methodology (not a financial source)"
+  ]
+}
