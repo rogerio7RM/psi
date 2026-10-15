@@ -101,6 +101,8 @@ const editorialGuidance=[
   'Não declarar como atual uma notícia histórica. Para pacote histórico, título e resumo devem conter TESTE HISTÓRICO.',
   'Em cada seção: 1 fato específico do pacote e 1 implicação ou limitação verificável; evitar frases repetidas e generalidades.',
   'Não criar consenso, cotações, dados de fechamento, números, resultados, fontes ou datas ausentes.',
+  'Afterclose: só descrever fechamento quando houver dados de fechamento verificados; pré-mercado não é fechamento.',
+  'Afterclose: sem agenda verificada do dia seguinte, declarar lacuna e não inventar eventos.',
   'Incluir todas as fontes relevantes do pacote, sem inventar outras. Se agenda estruturada carecer de campos obrigatórios, mantê-la vazia.'
 ].join(' ');
 const user=JSON.stringify({date:iso,kind,bigdataResearch:research,editorialGuidance});

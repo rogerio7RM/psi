@@ -33,7 +33,7 @@ jobs:
       OLLAMA_MODEL: qwen2.5:7b
       OLLAMA_URL: http://127.0.0.1:11434
       BIGDATA_API_KEY: ''
-      EDITORIAL_RESEARCH_FILE: ${{ inputs.research == 'historical-20261015' && 'scripts/fixtures/ollama-editorial-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research.json' }}
+      EDITORIAL_RESEARCH_FILE: ${{ inputs.research == 'historical-20261015' && (inputs.edition == 'afterclose' && 'scripts/fixtures/ollama-afterclose-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research-real-20261015.json') || 'scripts/fixtures/ollama-editorial-research.json' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
