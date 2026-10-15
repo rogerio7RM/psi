@@ -161,6 +161,29 @@ if(local){
   if(!raw) throw new Error('OpenAI returned no JSON');
 }
 const edition=JSON.parse(raw);
+// Normalize only explicit, unambiguous structural aliases; never invent content.
+if(Array.isArray(edition.sections)){
+  edition.sections=edition.sections.map((section,i)=>{
+    if(!section||typeof section!=='object'||Array.isArray(section)) return section;
+    const name=section.name??section.nome??section.title??section.titulo??section.título;
+    const content=section.content??section.conteudo??section.conteúdo??section.text??section.texto;
+    const normalized={...section};
+    if(typeof name==='string'&&name.trim()) normalized.name=name.trim();
+    if(typeof content==='string'&&content.trim()) normalized.content=content.trim();
+    return normalized;
+  });
+}
+if(Array.isArray(edition.drivers)){
+  edition.drivers=edition.drivers.map(d=>{
+    if(!d||typeof d!=='object'||Array.isArray(d)) return d;
+    const normalized={...d};
+    if(normalized.number==null && (d.número!=null||d.numero!=null)) normalized.number=d.número??d.numero;
+    if(normalized.reason==null && (d.motivo!=null||d.razão!=null)) normalized.reason=d.motivo??d.razão;
+    if(normalized.impact==null && d.impacto!=null) normalized.impact=d.impacto;
+    delete normalized.número;delete normalized.numero;delete normalized.motivo;delete normalized.razão;delete normalized.impacto;
+    return normalized;
+  });
+}
 edition.schemaVersion=2;
 edition.date=code;
 edition.kind=kind;
