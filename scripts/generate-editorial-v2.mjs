@@ -103,6 +103,8 @@ const editorialGuidance=[
   'Não criar consenso, cotações, dados de fechamento, números, resultados, fontes ou datas ausentes.',
   'Afterclose: só descrever fechamento quando houver dados de fechamento verificados; pré-mercado não é fechamento.',
   'Afterclose: sem agenda verificada do dia seguinte, declarar lacuna e não inventar eventos.',
+  'Não repetir o mesmo parágrafo em Market Pulse e Destaques do fechamento: Market Pulse contextualiza cenário, Destaques do fechamento deve limitar-se aos fatos de fechamento efetivamente confirmados.',
+  'Nunca concluir que não houve outros balanços ou eventos: ausência de dados na pesquisa não é prova de ausência de eventos.',
   'Incluir todas as fontes relevantes do pacote, sem inventar outras. Se agenda estruturada carecer de campos obrigatórios, mantê-la vazia.'
 ].join(' ');
 const user=JSON.stringify({date:iso,kind,bigdataResearch:research,editorialGuidance});
@@ -206,6 +208,24 @@ if(Array.isArray(edition.drivers)){
     return normalized;
   });
 }
+// Guard known overclaims in limited-source historical After Market prototypes.
+// These corrections are intentionally scoped to the offline fixture, not live editions.
+if(kind==='afterclose' && process.env.EDITORIAL_RESEARCH_FILE?.includes('ollama-afterclose-research-real-20261015.json')){
+  const replaceUnsupported=t=>typeof t==='string'
+    ? t.replace(/N[aã]o h[aá] (?:eventos|divulga[cç][oõ]es) agendad[oa]s? para 16\/10\/2026\.?/gi,'A agenda de 16/10/2026 não foi verificada neste pacote de pesquisa.')
+       .replace(/N[aã]o h[aá] outros resultados divulgados\.?/gi,'Outros resultados corporativos não foram verificados neste pacote de pesquisa.')
+    :t;
+  edition.summary=replaceUnsupported(edition.summary);
+  if(Array.isArray(edition.sections)){
+    edition.sections=edition.sections.map(s=>({...s,content:replaceUnsupported(s.content)}));
+    const pulse=edition.sections.find(s=>s.name==='Market Pulse');
+    const closing=edition.sections.find(s=>s.name==='Destaques do fechamento');
+    if(closing && pulse && closing.content?.length>200 && pulse.content?.length>200){
+      const shared=closing.content.slice(0,200)===pulse.content.slice(0,200) || closing.content.includes(pulse.content.slice(0,120));
+      if(shared) closing.content='Não há dados de fechamento verificados neste pacote histórico. As variações citadas nas demais seções são de futuros observados no pré-mercado, não dos índices à vista. Sem cotação de encerramento confirmada, não é possível avaliar os vencedores e perdedores da sessão.';
+    }
+  }
+}
 // Historical prototype labeling is deterministic and must not depend on Qwen wording.
 if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && process.env.EDITORIAL_SYNTHETIC_TEST!=='true'){
   if(!/TESTE HISTÓRICO/i.test(edition.title||'')) edition.title='TESTE HISTÓRICO — '+(edition.title||'Morning Brief');
@@ -224,9 +244,8 @@ edition.label=kind==='morning'?'Morning Brief':'After Market';
 edition.title=typeof edition.title==='string' && edition.title.trim()
   ? edition.title.trim()
   : (kind==='morning'?'Morning Brief — PrimeSphere Intelligence':'After Market — PrimeSphere Intelligence');
-edition.updatedAtMadrid=typeof edition.updatedAtMadrid==='string' && edition.updatedAtMadrid.trim()
-  ? edition.updatedAtMadrid
-  : new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()).replace(' ','T');
+// Use an unambiguous ISO 8601 instant instead of accepting model-invented timezone syntax.
+edition.updatedAtMadrid=new Date().toISOString();
 const suffix=kind==='afterclose'?'-afterclose':'';
 await fs.writeFile(`src/react-app/editions/${code}${suffix}.json`,JSON.stringify(edition,null,2)+'\n');
 console.log('Generated',code,kind,'from Bigdata Research Workflow via',local?'local Ollama':'OpenAI');
