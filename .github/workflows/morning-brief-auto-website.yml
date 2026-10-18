@@ -20,9 +20,8 @@ jobs:
       EDITORIAL_STRICT_QA: 'true'
       OLLAMA_MODEL: qwen2.5:7b
       OLLAMA_URL: http://127.0.0.1:11434
-      BIGDATA_API_KEY: ''
-      EDITORIAL_RESEARCH_FILE: live-research-morning.json
-      RESEARCH_URL: ${{ secrets.MORNING_RESEARCH_URL }}
+      BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
+      BIGDATA_PAID_RESEARCH_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,13 +29,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Require live research feed (never publish fixture)
+      - name: Require configured Bigdata API key
         run: |
-          if (-not $env:RESEARCH_URL) { throw 'MORNING_RESEARCH_URL is not configured. Live publishing is blocked.' }
-          if (-not $env:RESEARCH_URL.StartsWith('https://')) { throw 'MORNING_RESEARCH_URL must use HTTPS.' }
-          Invoke-WebRequest -Uri $env:RESEARCH_URL -OutFile $env:EDITORIAL_RESEARCH_FILE -TimeoutSec 45
-          node scripts/validate-live-research.mjs $env:EDITORIAL_RESEARCH_FILE morning
-          if ($LASTEXITCODE -ne 0) { throw 'Live research gate rejected source pack.' }
+          if (-not $env:BIGDATA_API_KEY) { throw 'BIGDATA_API_KEY is not configured.' }
       - name: Check local Ollama
         run: |
           $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
@@ -67,4 +62,6 @@ jobs:
             git commit -m "Publish validated Morning Brief: $env:EDITION_PATH"
             git -c http.extraheader="AUTHORIZATION: basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN")))" push origin HEAD:main
             if ($LASTEXITCODE -ne 0) { throw 'Git push failed; edition not published' }
+            gh workflow run primesphere-cloudflare-auto.yml --ref main
+            if ($LASTEXITCODE -ne 0) { throw 'Could not dispatch Cloudflare deploy' }
           } else { Write-Host 'No changes to publish' }
