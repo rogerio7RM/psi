@@ -190,13 +190,19 @@ if(Array.isArray(edition.sections)){
   });
 }
 if(Array.isArray(edition.drivers)){
-  edition.drivers=edition.drivers.map(d=>{
+  edition.drivers=edition.drivers.map((d,i)=>{
     if(!d||typeof d!=='object'||Array.isArray(d)) return d;
     const normalized={...d};
     if(normalized.number==null && (d.número!=null||d.numero!=null)) normalized.number=d.número??d.numero;
+    // Normalize only unambiguous numeric representations, not arbitrary text.
+    // Array order is authoritative for the three numbered editorial drivers.
+    if(typeof normalized.number==='string' && /^[1-3]$/.test(normalized.number.trim())) normalized.number=Number(normalized.number.trim());
     if(normalized.reason==null && (d.motivo!=null||d.razão!=null)) normalized.reason=d.motivo??d.razão;
     if(normalized.impact==null && d.impacto!=null) normalized.impact=d.impacto;
     delete normalized.número;delete normalized.numero;delete normalized.motivo;delete normalized.razão;delete normalized.impacto;
+    // The schema uses sequential driver identifiers, not model-authored rankings.
+    // Preserve substantive reason/impact text for independent validation.
+    normalized.number=i+1;
     return normalized;
   });
 }
