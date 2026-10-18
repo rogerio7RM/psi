@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 2,
+  "date": "261015",
+  "kind": "morning",
+  "label": "Morning Brief",
+  "title": "TESTE HISTÓRICO — Mercado americano em pré-mercado: pressão sobre empresas de IA e cautela com juros",
+  "updatedAtMadrid": "2026-10-18T16:54:00.233Z",
+  "summary": "TESTE HISTÓRICO (não é boletim ao vivo). No pré-mercado, os futuros do Dow Jones e S&P 500 indicam uma abertura mista, com o Dow em alta e o S&P 500 em baixa. O Nasdaq, no entanto, apresenta uma queda significativa. A pressão sobre as empresas de inteligência artificial (IA) continua, com a CoreWeave recuando mais de 3% após uma queda de 15% na quarta-feira. O VIX atingiu seu nível mais alto em duas semanas. A TSMC, por outro lado, divulgou um lucro trimestral recorde, mas adotou um tom cauteloso para 2027. O calendário econômico agendou a divulgação do PPI de setembro, que será divulgado na quinta-feira, e outros indicadores importantes. O mercado brasileiro acompanha de perto a situação, com o dólar e os juros domésticos sendo observados atentamente.",
+  "markets": [
+    {
+      "index": "Dow Jones",
+      "change": "+0,40%",
+      "status": "FUTURO"
+    },
+    {
+      "index": "S&P 500",
+      "change": "-0,27%",
+      "status": "FUTURO"
+    },
+    {
+      "index": "Nasdaq",
+      "change": "-1,18%",
+      "status": "FUTURO"
+    },
+    {
+      "index": "VIX",
+      "change": "Máximo de duas semanas",
+      "status": "FUTURO"
+    }
+  ],
+  "drivers": [
+    {
+      "number": 1,
+      "reason": "Pressão sobre empresas de IA e juros",
+      "impact": "As empresas de IA estão enfrentando pressão, com a CoreWeave recuando mais de 3% no pré-mercado, após uma queda de 15% na quarta-feira. O VIX atingiu seu nível mais alto em duas semanas, refletindo preocupações com a volatilidade."
+    },
+    {
+      "number": 2,
+      "reason": "Agenda de inflação PPI",
+      "impact": "O PPI de setembro de 2026 será divulgado na quinta-feira, às 08:30 horário de Nova York (14:30 Madrid). O mercado está atento às implicações para os juros."
+    },
+    {
+      "number": 3,
+      "reason": "Pedidos de seguro-desemprego",
+      "impact": "Os pedidos iniciais de seguro-desemprego subiram 1.000 para 199.000, quinto período consecutivo abaixo de 200.000. Os pedidos continuados caíram 4.000 para 1,71 milhão, indicando uma tendência positiva no mercado de trabalho."
+    }
+  ],
+  "sections": [
+    {
+      "name": "Market Pulse",
+      "content": "No pré-mercado, os futuros do Dow Jones e S&P 500 indicam uma abertura mista, com o Dow em alta e o S&P 500 em baixa. O Nasdaq, no entanto, apresenta uma queda significativa. A pressão sobre as empresas de inteligência artificial (IA) continua, com a CoreWeave recuando mais de 3% após uma queda de 15% na quarta-feira. O VIX atingiu seu nível mais alto em duas semanas. O mercado brasileiro acompanha de perto a situação, com o dólar e os juros domésticos sendo observados atentamente."
+    },
+    {
+      "name": "Premarket Movers",
+      "content": "A CoreWeave lidera as perdas no pré-mercado, recuando mais de 3% após uma queda de 15% na quarta-feira. O VIX atingiu seu nível mais alto em duas semanas, refletindo preocupações com a volatilidade. A TSMC divulgou um lucro trimestral recorde, mas adotou um tom cauteloso para 2027."
+    },
+    {
+      "name": "Earnings Radar",
+      "content": "A TSMC divulgou um lucro trimestral recorde pelo sexto trimestre consecutivo, mas adotou um tom cauteloso para 2027. A CoreWeave recuou mais de 3% no pré-mercado, após uma queda de 15% na quarta-feira."
+    },
+    {
+      "name": "Market Themes",
+      "content": "O mercado está atento às implicações da pressão sobre as empresas de IA e a volatilidade refletida no VIX. O PPI de setembro de 2026 será divulgado na quinta-feira, às 08:30 horário de Nova York (14:30 Madrid). O mercado brasileiro acompanha de perto a situação, com o dólar e os juros domésticos sendo observados atentamente."
+    },
+    {
+      "name": "Brasil → EUA",
+      "content": "O mercado brasileiro acompanha de perto a situação nos EUA, com o dólar e os juros domésticos sendo observados atentamente. As empresas brasileiras que operam no mercado americano também estão sendo impactadas pela volatilidade."
+    },
+    {
+      "name": "O que observar hoje",
+      "content": "O PPI de setembro de 2026 será divulgado na quinta-feira, às 08:30 horário de Nova York (14:30 Madrid). O mercado brasileiro acompanha de perto a situação, com o dólar e os juros domésticos sendo observados atentamente."
+    }
+  ],
+  "agenda": [],
+  "sources": [
+    "Reuters — US stocks, 15 Oct 2026 09:12 ET: https://www.fidelity.com/news/article/us-markets/202610150912RTRSNEWSCOMBINED_L4N4610ZX_1",
+    "BLS — calendário oficial de outubro 2026: https://www.bls.gov/schedule/2026/10_sched.htm",
+    "Federal Reserve Bank of New York — calendário econômico outubro 2026: https://www.newyorkfed.org/research/calendars/i-oct26.html",
+    "Reuters — weekly jobless claims 15 Oct 2026: https://www.reuters.com/world/us/us-weekly-jobless-claims-rise-marginally-amid-low-layoffs-2026-10-15/"
+  ]
+}
