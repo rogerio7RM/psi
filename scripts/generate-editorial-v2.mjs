@@ -226,6 +226,25 @@ if(kind==='afterclose' && process.env.EDITORIAL_RESEARCH_FILE?.includes('ollama-
     }
   }
 }
+// Prototype-only editorial safeguards for the historical afterclose fixture.
+if(kind==='afterclose' && process.env.EDITORIAL_RESEARCH_FILE?.includes('ollama-afterclose-research-real-20261015.json')){
+  const safeText=t=>typeof t==='string'
+    ? t.replace(/(?:O d[oó]lar americano|O USD\/BRL|A moeda americana) n[aã]o (?:teve|apresentou|registrou) (?:movimento|varia[cç][aã]o) (?:not[aá]vel|relevante|significativ[ao]) (?:contra|frente a[oà]) (?:o )?real\.?/gi,'Não há cotação USD/BRL verificada neste pacote.')
+       .replace(/N[aã]o h[aá] outros balan[cç]os divulgados\.?/gi,'Não há dados verificados sobre outros balanços neste pacote.')
+       .replace(/N[aã]o inventar eventos de 16\/10\/2026\.?/gi,'A agenda de 16/10/2026 não foi confirmada pelas fontes disponíveis.')
+    :t;
+  edition.summary=safeText(edition.summary);
+  if(Array.isArray(edition.sections)){
+    edition.sections=edition.sections.map(s=>({...s,content:safeText(s.content)}));
+    const pulse=edition.sections.find(s=>s.name==='Market Pulse');
+    if(pulse && typeof pulse.content==='string' && pulse.content.length>620){
+      pulse.content='O recorte disponível é de pré-mercado, não do fechamento. Naquele momento, os futuros Dow Jones avançavam 0,40%, enquanto S&P 500 recuava 0,27% e Nasdaq caía 1,18%. Receios com dívida e juros pesavam sobre empresas ligadas à IA; não há desempenho verificado da sessão regular.';
+    }
+    const tomorrow=edition.sections.find(s=>s.name==='O que observar amanhã');
+    if(tomorrow) tomorrow.content='A agenda de 16/10/2026 não foi verificada neste pacote histórico. Acompanhar o calendário oficial antes de atribuir horários ou expectativas a indicadores.';
+  }
+  edition.title='TESTE HISTÓRICO — After Market: fechamento não verificado; IA, juros e resultados da TSMC';
+}
 // Historical prototype labeling is deterministic and must not depend on Qwen wording.
 if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && process.env.EDITORIAL_SYNTHETIC_TEST!=='true'){
   if(!/TESTE HISTÓRICO/i.test(edition.title||'')) edition.title='TESTE HISTÓRICO — '+(edition.title||'Morning Brief');
