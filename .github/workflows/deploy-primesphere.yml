@@ -55,8 +55,33 @@ jobs:
           chrome=$(command -v google-chrome || command -v chromium)
           for route in /trades /trades/EB /trades/DC /educacional; do
             safe=$(echo "$route" | tr '/' '_')
-            timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$SITE_URL$route" > "/tmp/$safe.html"
-            grep -Eq 'Área de assinantes|Criar administrador' "/tmp/$safe.html"
+            echo "::group::Verify protected route $route"
+            if ! timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-features=UseDBus --virtual-time-budget=5000 --dump-dom "$SITE_URL$route" > "/tmp/$safe.html" 2>"/tmp/$safe.stderr"; then
+              echo "::error::Chrome failed while rendering $route"
+              tail -n 12 "/tmp/$safe.stderr" || true
+              exit 1
+            fi
+            if ! grep -Eq 'Área de assinantes|Criar administrador' "/tmp/$safe.html"; then
+              echo "::error::Subscriber access check failed for $route"
+              echo "Rendered DOM excerpt:"
+              head -c 1200 "/tmp/$safe.html" || true
+              exit 1
+            fi
+            echo "::endgroup::"
           done
+
+          echo "::group::Verify historical Morning Brief test route"
+          if ! timeout 55s "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-features=UseDBus --virtual-time-budget=5000 --dump-dom "$SITE_URL/teste-editorial" > /tmp/teste-editorial.html 2>/tmp/teste-editorial.stderr; then
+            echo "::error::Chrome failed on /teste-editorial"
+            tail -n 12 /tmp/teste-editorial.stderr || true
+            exit 1
+          fi
+          for marker in 'TESTE HISTÓRICO' 'Market Pulse' 'Premarket Movers' 'Fontes e método'; do
+            if ! grep -Fq "$marker" /tmp/teste-editorial.html; then
+              echo "::error::Historical Morning Brief missing expected marker: $marker"
+              exit 1
+            fi
+          done
+          echo "::endgroup::"
 
           echo 'PrimeSphere deployed with subscriber access controls enabled.'
