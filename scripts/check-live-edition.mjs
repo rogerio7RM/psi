@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const [,,file,kind]=process.argv;
+const x=JSON.parse(fs.readFileSync(file,'utf8'));
+if(x.kind!==kind) throw Error('Wrong edition kind');
+if(/TESTE HISTÓRICO|TESTE SINTÉTICO|HISTORICAL|SYNTHETIC/i.test(x.title+' '+x.summary)) throw Error('Test content cannot be published as live');
+const now=new Date();
+const ny=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(now);
+const code=['year','month','day'].map(k=>ny.find(p=>p.type===k).value).join('');
+if(x.date!==code) throw Error('Edition date differs from current NY session: '+x.date+' vs '+code);
+if(!Number.isFinite(Date.parse(x.updatedAtMadrid)) || Math.abs(now-Date.parse(x.updatedAtMadrid))>20*60*1000) throw Error('Generated timestamp is stale');
+console.log('Live edition passed date and test-label checks',file);

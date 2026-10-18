@@ -1,0 +1,70 @@
+name: PrimeSphere Morning Brief - Auto Website
+on:
+  schedule:
+    - cron: '30 12 * * 1-5'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: primesphere-morning-editorial
+  cancel-in-progress: false
+jobs:
+  publish-morning:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 50
+    defaults:
+      run:
+        shell: powershell
+    env:
+      EDITORIAL_PROVIDER: ollama
+      EDITORIAL_STRICT_QA: 'true'
+      OLLAMA_MODEL: qwen2.5:7b
+      OLLAMA_URL: http://127.0.0.1:11434
+      BIGDATA_API_KEY: ''
+      EDITORIAL_RESEARCH_FILE: live-research-morning.json
+      RESEARCH_URL: ${{ secrets.MORNING_RESEARCH_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require live research feed (never publish fixture)
+        run: |
+          if (-not $env:RESEARCH_URL) { throw 'MORNING_RESEARCH_URL is not configured. Live publishing is blocked.' }
+          if (-not $env:RESEARCH_URL.StartsWith('https://')) { throw 'MORNING_RESEARCH_URL must use HTTPS.' }
+          Invoke-WebRequest -Uri $env:RESEARCH_URL -OutFile $env:EDITORIAL_RESEARCH_FILE -TimeoutSec 45
+          node scripts/validate-live-research.mjs $env:EDITORIAL_RESEARCH_FILE morning
+          if ($LASTEXITCODE -ne 0) { throw 'Live research gate rejected source pack.' }
+      - name: Check local Ollama
+        run: |
+          $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
+          if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Ollama model unavailable' }
+      - run: npm ci
+      - name: Generate and validate Morning Brief
+        run: |
+          node scripts/generate-editorial-v2.mjs morning
+          if ($LASTEXITCODE -ne 0) { throw 'Generation failed' }
+          $code = node -e "const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>p.find(x=>x.type===k).value).join(''))"
+          $path = "src/react-app/editions/$code.json"
+          if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
+          node scripts/validate-editorial.mjs $path
+          if ($LASTEXITCODE -ne 0) { throw 'Editorial QA failed' }
+          node scripts/check-live-edition.mjs $path morning
+          if ($LASTEXITCODE -ne 0) { throw 'Live edition QA failed' }
+          npm run build
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+          "EDITION_PATH=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Commit validated edition and trigger site deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- $env:EDITION_PATH
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Publish validated Morning Brief: $env:EDITION_PATH"
+            git -c http.extraheader="AUTHORIZATION: basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN")))" push origin HEAD:main
+            if ($LASTEXITCODE -ne 0) { throw 'Git push failed; edition not published' }
+          } else { Write-Host 'No changes to publish' }
