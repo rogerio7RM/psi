@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+const [,,file,kind]=process.argv;
+if(!file || !['morning','afterclose'].includes(kind)) throw Error('Usage: validate-live-research.mjs <file> <morning|afterclose>');
+const pack=JSON.parse(fs.readFileSync(file,'utf8'));
+const now=new Date();
+const date=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+const v=k=>date.find(p=>p.type===k).value;
+const today=`${v('year')}-${v('month')}-${v('day')}`;
+const stamp=Date.parse(pack.asOf);
+if(pack.type!=='LIVE_VERIFIED_RESEARCH') throw Error('Source pack is not marked LIVE_VERIFIED_RESEARCH');
+if(pack.date!==today) throw Error(`Source pack date ${pack.date} does not match NY trading day ${today}`);
+if(!Number.isFinite(stamp) || stamp>now.getTime()+120000 || now.getTime()-stamp>4*60*60*1000) throw Error('Research must have fresh asOf ISO timestamp within 4 hours');
+if(typeof pack.answer!=='string'||pack.answer.trim().length<350) throw Error('Research answer too short');
+if(!Array.isArray(pack.sources)||pack.sources.length<2||pack.sources.some(s=>typeof s!=='string'||!s.trim())) throw Error('At least two verifiable source references required');
+if(pack.kind!==kind) throw Error('Source pack kind mismatch');
+if(kind==='afterclose' && pack.cashCloseVerified!==true) throw Error('Afterclose requires verified cash close research');
+if(/HISTORICAL|SYNTHETIC|TESTE HISTÓRICO|TESTE SINTÉTICO/i.test(pack.type+' '+pack.answer.slice(0,300))) throw Error('Test/historical research forbidden for live publication');
+console.log('Live source pack accepted:',kind,today,pack.asOf);
