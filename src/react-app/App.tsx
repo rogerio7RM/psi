@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { ComponentType } from 'react';
 import EditorialEditionView from './components/EditorialEditionView';
+import historicalMorningTest from './test-editions/261015.json';
 import type { EditorialEdition } from './components/EditorialEditionView';
 import SiteFooter from './components/SiteFooter';
 import SiteHeader from './components/SiteHeader';
@@ -83,7 +84,9 @@ function App() {
 
   let content;
 
-  if (path === '/') {
+  if (path === '/teste-editorial') {
+    content = <><main className='psi-brief-section'><div className='psi-section-heading'><div><span className='psi-eyebrow psi-eyebrow-dark'>Ambiente de validação</span><h2>TESTE HISTÓRICO — 15/10/2026</h2></div><p>Somente verificação visual. Não é um boletim atual.</p></div><div className='psi-brief-frame'><EditorialEditionView edition={historicalMorningTest as EditorialEdition} /></div></main></>;
+  } else if (path === '/') {
     if (!selected) {
       content = <main className='psi-empty-state' role='alert'>Nenhuma edição publicada.</main>;
     } else {
