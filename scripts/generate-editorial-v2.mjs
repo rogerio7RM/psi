@@ -135,7 +135,7 @@ let raw;
 if(local){
   const endpoint=process.env.OLLAMA_URL||'http://127.0.0.1:11434';
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),24*60*1000);
+  // Abort only if the model stops streaming, not while it is actively generating.\n  const idleLimitMs=Number(process.env.OLLAMA_IDLE_TIMEOUT_MS||10*60*1000);\n  let timeout;\n  const resetIdleTimeout=()=>{\n    clearTimeout(timeout);\n    timeout=setTimeout(()=>controller.abort(new Error('Ollama stream inactive for '+idleLimitMs+' ms')),idleLimitMs);\n  };\n  resetIdleTimeout();
   try{
     const r=await fetch(endpoint+'/api/chat',{
       method:'POST',
@@ -172,6 +172,7 @@ if(local){
     while(true){
       const {value,done}=await reader.read();
       if(done) break;
+      resetIdleTimeout();
       pending+=decoder.decode(value,{stream:true});
       let end;
       while((end=pending.indexOf('\n'))!==-1){
