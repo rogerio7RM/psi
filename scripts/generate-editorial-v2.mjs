@@ -92,7 +92,7 @@ const research=process.env.EDITORIAL_RESEARCH_FILE
 // Save the original source pack as a private workflow artifact, not as site content.
 if(!process.env.EDITORIAL_RESEARCH_FILE){
   await fs.mkdir('editorial-audit',{recursive:true});
-  await fs.writeFile(`editorial-audit/${code}-bigdata-research.json`,JSON.stringify({date:iso,kind,asOf:new Date().toISOString(),research},null,2)+'\\n');
+  await fs.writeFile(`editorial-audit/${code}-bigdata-research.json`,JSON.stringify({date:iso,kind,asOf:new Date().toISOString(),research},null,2)+'\n');
   if(!Array.isArray(research.sources)||research.sources.length<2) throw new Error('Bigdata research has fewer than two grounded references; refusing live publication');
 }
 
