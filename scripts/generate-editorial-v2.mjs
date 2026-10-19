@@ -89,6 +89,29 @@ Return a concise research pack for another model to edit; do not fabricate or fi
 const research=process.env.EDITORIAL_RESEARCH_FILE
   ? JSON.parse(await fs.readFile(process.env.EDITORIAL_RESEARCH_FILE,'utf8'))
   : await bigdataResearch();
+// Save the original source pack as a private workflow artifact, not as site content.
+if(!process.env.EDITORIAL_RESEARCH_FILE){
+  await fs.mkdir('editorial-audit',{recursive:true});
+  await fs.writeFile(`editorial-audit/${code}-bigdata-research.json`,JSON.stringify({date:iso,kind,asOf:new Date().toISOString(),research},null,2)+'\n');
+  if(!Array.isArray(research.sources)||research.sources.length<2) throw new Error('Bigdata research has fewer than two grounded references; refusing live publication');
+}
+
+
+// A constrained JSON schema prevents the local model from replacing Editorial V2
+// with arbitrary marketPulse/details objects. Validation remains independent.
+const editorialSchema={
+  type:'object',
+  properties:{
+    schemaVersion:{type:'integer'},date:{type:'string'},kind:{type:'string'},
+    label:{type:'string'},title:{type:'string'},updatedAtMadrid:{type:'string'},summary:{type:'string'},
+    markets:{type:'array',minItems:4,items:{type:'object',properties:{name:{type:'string'},value:{type:['number','null']},change:{type:['number','null']},unit:{type:'string'},context:{type:'string'}},required:['name']}},
+    drivers:{type:'array',minItems:3,maxItems:3,items:{type:'object',properties:{number:{type:'integer'},reason:{type:'string'},impact:{type:'string'}},required:['number','reason','impact']}},
+    sections:{type:'array',minItems:6,maxItems:6,items:{type:'object',properties:{name:{type:'string'},content:{type:'string'}},required:['name','content']}},
+    agenda:{type:'array',items:{type:'object',properties:{officialDate:{type:'string'},name:{type:'string'},timeNewYork:{type:'string'},timeMadrid:{type:'string'},status:{type:'string'},consensus:{type:'string'},previous:{type:'string'},result:{type:'string'}},required:['officialDate','name','timeNewYork','timeMadrid','status','consensus','previous']}},
+    sources:{type:'array',minItems:2,items:{type:'string'}}
+  },
+  required:['schemaVersion','date','kind','label','title','updatedAtMadrid','summary','markets','drivers','sections','agenda','sources']
+};
 
 const system=`You are PrimeSphere Intelligence's financial editor. Return ONLY valid JSON matching Editorial Edition V2. Audience: Brazilians following US markets. WRITE ALL HUMAN-READABLE EDITORIAL TEXT EXCLUSIVELY IN NATURAL BRAZILIAN PORTUGUESE (pt-BR), including title, summary, driver reason/impact, section content and agenda names. Preserve proper nouns, market tickers, product labels and mandatory section names. Never invent data. Use only the supplied Bigdata research pack. Edition date must be ${iso}. For economic agenda include ONLY events whose official date is exactly ${iso}; require New York time, Madrid conversion, status, consensus and previous. If any is missing or ambiguous, exclude it. For released events require result. Exactly 3 drivers; JSON property names MUST be number, reason, impact (English keys), while their string VALUES MUST be Brazilian Portuguese. Never translate JSON keys. kind=${kind}. schemaVersion=2. date=${code}. Required sections for morning: Market Pulse, Premarket Movers, Earnings Radar, Market Themes, Brasil → EUA, O que observar hoje. Required sections for afterclose: Market Pulse, Destaques do fechamento, Earnings Radar, Market Themes, Brasil → EUA, O que observar amanhã. sources must contain at least two identifiable source names/references from the supplied research. updatedAtMadrid must be a real Europe/Madrid timestamp. If historical offline research is used, date the edition to that historical date and explicitly state in the title and summary that it is a TESTE HISTÓRICO, not a live edition. Do not silently convert stale or previous-session data into current data. If the supplied pack is synthetic or unverified, explicitly mark the title and summary as TESTE SINTÉTICO, never invent numerical index values, prices, percentages, earnings, releases or sources, and do not suggest actual market direction. For markets without verified values, use null for numeric fields rather than invented numbers. Do not turn methodological QA themes into actual market events.`;
 
@@ -121,7 +144,7 @@ if(local){
       body:JSON.stringify({
         model:process.env.OLLAMA_MODEL||'qwen2.5:7b',
         stream:true,
-        format:'json',
+        format:editorialSchema,
         keep_alive:'10m',
         options:{temperature:0.1,num_ctx:8192,num_predict:5500},
         messages:[
@@ -179,6 +202,7 @@ if(local){
   if(!raw) throw new Error('OpenAI returned no JSON');
 }
 const edition=JSON.parse(raw);
+if(!Array.isArray(edition.markets)||edition.markets.length<4 || !Array.isArray(edition.sections)||edition.sections.length!==6 || !Array.isArray(edition.drivers)||edition.drivers.length!==3) throw new Error('Ollama output does not match Editorial V2 schema; refusing publication');
 // Normalize only explicit, unambiguous structural aliases; never invent content.
 if(Array.isArray(edition.sections)){
   edition.sections=edition.sections.map((section,i)=>{
@@ -250,6 +274,8 @@ if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && pro
   if(!/TESTE HISTÓRICO/i.test(edition.title||'')) edition.title='TESTE HISTÓRICO — '+(edition.title||'Morning Brief');
   if(!/TESTE HISTÓRICO/i.test(edition.summary||'')) edition.summary='TESTE HISTÓRICO (não é boletim ao vivo). '+(edition.summary||'');
 }
+// For live runs, source references come from Bigdata, not model-authored citations.
+if(!process.env.EDITORIAL_RESEARCH_FILE) edition.sources=[...new Set(research.sources.filter(s=>typeof s==='string'&&s.trim()))];
 // Keep all source references from a verified local research pack instead of
 // letting the model silently drop sources supporting factual claims.
 if(process.env.EDITORIAL_RESEARCH_FILE && Array.isArray(research.sources)){
