@@ -95,8 +95,9 @@ if(typeof research?.answer!=='string'||!research.answer.trim()) throw new Error(
 const sourceRef=(s)=>{
   if(typeof s==='string') return s.trim();
   if(!s||typeof s!=='object') return '';
-  const title=String(s.title||s.name||s.type||'Source').trim();
-  const url=typeof s.url==='string'?s.url:(typeof s.uri==='string'?s.uri:'');
+  const title=String(s.title||s.hd||s.name||s.action?.name||s.type||'Source').trim();
+  const embedded=typeof s.content==='string'?s.content.match(/\]\((https?:\/\/[^)]+)\)/)?.[1]:'';
+  const url=typeof s.url==='string'?s.url:(typeof s.action?.url==='string'?s.action.url:(typeof s.uri==='string'?s.uri:embedded||''));
   return (title+(url?' — '+url:'')).trim();
 };
 const sourceRefs=[...new Set((Array.isArray(research.sources)?research.sources:[]).map(sourceRef).filter(Boolean))];
