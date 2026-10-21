@@ -301,9 +301,7 @@ if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && pro
 if(!process.env.EDITORIAL_RESEARCH_FILE) edition.sources=sourceRefs;
 // Keep all source references from a verified local research pack instead of
 // letting the model silently drop sources supporting factual claims.
-if(process.env.EDITORIAL_RESEARCH_FILE && Array.isArray(research.sources)){
-  edition.sources=[...new Set(research.sources.filter(s=>typeof s==='string'&&s.trim()))];
-}
+if(process.env.EDITORIAL_RESEARCH_FILE) edition.sources=sourceRefs;
 edition.schemaVersion=2;
 edition.date=code;
 edition.kind=kind;
