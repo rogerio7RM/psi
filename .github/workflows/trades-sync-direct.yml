@@ -3,8 +3,8 @@ name: Trades Sync - Direct OneDrive to R2
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 20 * * 1-5'
-    - cron: '30 21 * * 1-5'
+    - cron: '0 20 * * *'
+    - cron: '0 21 * * *'
 
 permissions:
   contents: read
@@ -23,15 +23,15 @@ jobs:
       MS_GRAPH_CLIENT_ID: ${{ secrets.MS_GRAPH_CLIENT_ID }}
       MS_GRAPH_REFRESH_TOKEN: ${{ secrets.MS_GRAPH_REFRESH_TOKEN }}
     steps:
-      - name: Check New York 16:30 schedule window
+      - name: Check Valencia 22:00 schedule window
         id: window
         shell: bash
         run: |
-          ny_offset="$(TZ=America/New_York date +%z)"
+          valencia_offset="$(TZ=Europe/Madrid date +%z)"
           slot="${{ github.event.schedule }}"
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || \
-             { [ "$slot" = "30 20 * * 1-5" ] && [ "$ny_offset" = "-0400" ]; } || \
-             { [ "$slot" = "30 21 * * 1-5" ] && [ "$ny_offset" = "-0500" ]; }; then
+             { [ "$slot" = "0 20 * * *" ] && [ "$valencia_offset" = "+0200" ]; } || \
+             { [ "$slot" = "0 21 * * *" ] && [ "$valencia_offset" = "+0100" ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
