@@ -32,6 +32,29 @@ for(const [i,d] of x.drivers.entries()){
  for(const k of ['número','motivo','impacto']) if(Object.hasOwn(d,k)) fail('drivers['+i+'] translated JSON key '+k);
 }
 for(const [i,s] of x.sections.entries()) if(typeof s?.content!=='string'||!s.content.trim()) fail('sections['+i+'] missing content');
+// Deterministic semantic guardrails: fail closed on common, observable contradictions.
+if(x.kind==='morning'){
+ const prose=[x.summary,...x.sections.map(s=>s.content),...x.drivers.map(d=>d.impact)].join(' ');
+ if(/\\b(?:mercado|bolsa|wall street|s[eã]o p[aã]o)\\b.{0,45}\\b(?:abriu|fechou)\\b/i.test(prose) || /\\b(?:s&p 500|nasdaq(?:-100)?|dow jones|russell 2000)\\b.{0,30}\\bfechou\\b/i.test(prose))
+   fail('morning edition describes cash-market opening/closing without an explicit session boundary; use verified premarket/futures language');
+ if(x.agenda.length===0 && /\\b(?:ser[aá] divulgado|ser[aá] publicada|ser[aá] anunciado|est[aá] previsto|ser[aá] divulgado [aà]s)\\b/i.test(x.sections.find(s=>s.name==='O que observar hoje')?.content||''))
+   fail('agenda empty but watch section announces an upcoming release');
+ if(/nenhum(?:a)? agenda (?:oficial )?(?:foi|est[aá])|n[aã]o h[aá] (?:agenda|eventos? (?:econ[oô]micos?|oficiais?))/i.test(prose) && /\\b(?:ser[aá] divulgado|ser[aá] publicada|divulga[cç][aã]o (?:do|da)|est[aá] previsto)\\b/i.test(prose))
+   fail('claims no agenda while announcing a scheduled event');
+}
+for(const [i,m] of x.markets.entries()){
+ if(typeof m?.name!=='string'||!m.name.trim()) fail('markets['+i+'] missing name');
+ if(typeof m?.context!=='string'||!m.context.trim()) fail('markets['+i+'] missing context');
+ if(typeof m.change==='number' && /\\bfuturo(?:s)?\\b/i.test(m.context) && !/\\bfuturo(?:s)?\\b/i.test(m.name))
+   fail('markets['+i+'] mixes futures commentary with a cash index label');
+ if(typeof m.change==='number' && m.change<0 && /\\b(?:subiu|avan[cç]ou|alta|ganhos?)\\b/i.test(m.context) && !/\\b(?:mas|embora|apesar|enquanto|por[eé]m)\\b/i.test(m.context))
+   fail('markets['+i+'] negative change contradicts positive context');
+ if(typeof m.change==='number' && m.change>0 && /\\b(?:caiu|recuou|queda|baixa|perdas?)\\b/i.test(m.context) && !/\\b(?:mas|embora|apesar|enquanto|por[eé]m)\\b/i.test(m.context))
+   fail('markets['+i+'] positive change contradicts negative context');
+}
+if(x.sources.some(s=>typeof s!=='string'||!/^https?:\\/\\//.test(s.split(' — ').at(-1)||'')))
+ fail('sources must contain verifiable source URLs');
+if(new Set(x.sources.map(s=>s.split(' — ').at(-1))).size<2) fail('fewer than two distinct source URLs');
 if(process.env.EDITORIAL_STRICT_QA==='true'){
  const editorial=[x.title,x.summary,...x.drivers.flatMap(d=>[d.reason,d.impact]),...x.sections.map(s=>s.content)].filter(v=>typeof v==='string');
  const englishPatterns=[/\\bthis edition is based on\\b/i,/\\bno real market events\\b/i,/\\bsynthetic data (indicates|suggests)\\b/i,/\\btoday, investors should\\b/i,/\\bmarket monitoring techniques\\b/i,/\\bverification of synthetic data\\b/i,/\\bmethodological testing\\b/i,/\\bno earnings reports are expected\\b/i];
