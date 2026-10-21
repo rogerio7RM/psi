@@ -18,9 +18,9 @@ const suspicious=/(?:Ã[\u0080-\u00bf\u201a-\u201e\u2020-\u2026\u02c6\u2030\u016
 function repair(s){
  if(typeof s!=='string'||!suspicious.test(s))return s;
  let out=s;
+ const broken=/(?:Ã[\u0080-\u00bf\u201a-\u201e\u2020-\u2026\u02c6\u2030\u0160\u2039\u0152\u017d\u2018-\u201d\u2022\u02dc\u2122\u0161\u203a\u0153\u017e\u0178]|Â[\u0080-\u00bf]|â[\u0080-\u00bf\u20ac-\u2122]{2})/gu;
  for(let i=0;i<2;i++){
-  // Repair entire string only when every character can be encoded as CP1252.
-  const fixed=decodeOnce(out);
+  const fixed=out.replace(broken,m=>decodeOnce(m));
   if(fixed===out)break;
   out=fixed;
  }
