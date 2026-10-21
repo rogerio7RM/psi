@@ -46,6 +46,10 @@ jobs:
           if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
           node scripts/validate-editorial.mjs $path
           if ($LASTEXITCODE -ne 0) { throw 'Editorial QA failed' }
+          $research = "editorial-audit/$code-bigdata-research.json"
+          if (-not (Test-Path $research)) { throw "Bigdata research audit file missing: $research" }
+          node scripts/audit-bigdata-edition.mjs $path $research
+          if ($LASTEXITCODE -ne 0) { throw 'Bigdata factual audit failed; publication blocked' }
           node scripts/check-live-edition.mjs $path morning
           if ($LASTEXITCODE -ne 0) { throw 'Live edition QA failed' }
           npm run build
