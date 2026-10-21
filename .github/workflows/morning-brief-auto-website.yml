@@ -46,8 +46,8 @@ jobs:
           if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
           $research = "editorial-audit/$code-bigdata-research.json"
           if (-not (Test-Path $research)) { throw "Bigdata research audit file missing: $research" }
-          node scripts/repair-editorial-with-ollama.mjs $path $research
-          if ($LASTEXITCODE -ne 0) { throw 'Ollama factual repair exhausted; publication blocked' }
+          node scripts/fix-editorial-encoding.mjs $path --write
+          if ($LASTEXITCODE -ne 0) { throw 'Editorial UTF-8 repair failed; publication blocked' }
           node scripts/validate-editorial.mjs $path
           if ($LASTEXITCODE -ne 0) { throw 'Editorial QA failed after repair' }
           node scripts/audit-bigdata-edition.mjs $path $research
