@@ -11,7 +11,7 @@ concurrency:
 jobs:
   publish-morning:
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 50
+    timeout-minutes: 100
     defaults:
       run:
         shell: powershell
@@ -44,12 +44,14 @@ jobs:
           $code = node -e "const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>p.find(x=>x.type===k).value).join(''))"
           $path = "src/react-app/editions/$code.json"
           if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
-          node scripts/validate-editorial.mjs $path
-          if ($LASTEXITCODE -ne 0) { throw 'Editorial QA failed' }
           $research = "editorial-audit/$code-bigdata-research.json"
           if (-not (Test-Path $research)) { throw "Bigdata research audit file missing: $research" }
+          node scripts/repair-editorial-with-ollama.mjs $path $research
+          if ($LASTEXITCODE -ne 0) { throw 'Ollama factual repair exhausted; publication blocked' }
+          node scripts/validate-editorial.mjs $path
+          if ($LASTEXITCODE -ne 0) { throw 'Editorial QA failed after repair' }
           node scripts/audit-bigdata-edition.mjs $path $research
-          if ($LASTEXITCODE -ne 0) { throw 'Bigdata factual audit failed; publication blocked' }
+          if ($LASTEXITCODE -ne 0) { throw 'Bigdata factual audit failed after repair' }
           node scripts/check-live-edition.mjs $path morning
           if ($LASTEXITCODE -ne 0) { throw 'Live edition QA failed' }
           npm run build
