@@ -86,14 +86,28 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   return {answer:compactAnswer,sources:compactSources};
 }
 
-const research=process.env.EDITORIAL_RESEARCH_FILE
+const rawResearch=process.env.EDITORIAL_RESEARCH_FILE
   ? JSON.parse(await fs.readFile(process.env.EDITORIAL_RESEARCH_FILE,'utf8'))
   : await bigdataResearch();
+// Archived artifacts wrap the research in {date,kind,asOf,research}.
+const research=rawResearch?.research && rawResearch?.date ? rawResearch.research : rawResearch;
+if(typeof research?.answer!=='string'||!research.answer.trim()) throw new Error('Research pack missing answer');
+const sourceRef=(s)=>{
+  if(typeof s==='string') return s.trim();
+  if(!s||typeof s!=='object') return '';
+  const title=String(s.title||s.name||s.type||'Source').trim();
+  const url=typeof s.url==='string'?s.url:(typeof s.uri==='string'?s.uri:'');
+  return (title+(url?' — '+url:'')).trim();
+};
+const sourceRefs=[...new Set((Array.isArray(research.sources)?research.sources:[]).map(sourceRef).filter(Boolean))];
+// Keep the full source objects in the private audit artifact; the editor gets only
+// the concise research answer and source identifiers, not huge duplicate tearsheets.
+const editorResearch={answer:research.answer.slice(0,12000),sources:sourceRefs};
 // Save the original source pack as a private workflow artifact, not as site content.
 if(!process.env.EDITORIAL_RESEARCH_FILE){
   await fs.mkdir('editorial-audit',{recursive:true});
   await fs.writeFile(`editorial-audit/${code}-bigdata-research.json`,JSON.stringify({date:iso,kind,asOf:new Date().toISOString(),research},null,2)+'\n');
-  if(!Array.isArray(research.sources)||research.sources.length<2) throw new Error('Bigdata research has fewer than two grounded references; refusing live publication');
+  if(!Array.isArray(research.sources)||sourceRefs.length<2) throw new Error('Bigdata research has fewer than two grounded references; refusing live publication');
 }
 
 
@@ -130,7 +144,7 @@ const editorialGuidance=[
   'Nunca concluir que não houve outros balanços ou eventos: ausência de dados na pesquisa não é prova de ausência de eventos.',
   'Incluir todas as fontes relevantes do pacote, sem inventar outras. Se agenda estruturada carecer de campos obrigatórios, mantê-la vazia.'
 ].join(' ');
-const user=JSON.stringify({date:iso,kind,bigdataResearch:research,editorialGuidance});
+const user=JSON.stringify({date:iso,kind,bigdataResearch:editorResearch,editorialGuidance});
 let raw;
 if(local){
   const endpoint=process.env.OLLAMA_URL||'http://127.0.0.1:11434';
@@ -283,7 +297,7 @@ if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && pro
   if(!/TESTE HISTÓRICO/i.test(edition.summary||'')) edition.summary='TESTE HISTÓRICO (não é boletim ao vivo). '+(edition.summary||'');
 }
 // For live runs, source references come from Bigdata, not model-authored citations.
-if(!process.env.EDITORIAL_RESEARCH_FILE) edition.sources=[...new Set(research.sources.filter(s=>typeof s==='string'&&s.trim()))];
+if(!process.env.EDITORIAL_RESEARCH_FILE) edition.sources=sourceRefs;
 // Keep all source references from a verified local research pack instead of
 // letting the model silently drop sources supporting factual claims.
 if(process.env.EDITORIAL_RESEARCH_FILE && Array.isArray(research.sources)){
