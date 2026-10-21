@@ -3,7 +3,8 @@ import fs from 'node:fs';
 // Bigdata's supplied research answer is the sole factual authority; no external lookups.
 const [,,editionPath,researchPath]=process.argv;
 if(!editionPath||!researchPath) throw Error('Usage: node scripts/audit-bigdata-edition.mjs <edition.json> <research.json>');
-const x=JSON.parse(fs.readFileSync(editionPath,'utf8'));
+const x=JSON.parse(fs.readFileSync(editionPath,'utf8').replace(/^\uFEFF/,''));
+if(!Array.isArray(x.markets)||x.markets.length<4||!Array.isArray(x.drivers)||x.drivers.length!==3||!Array.isArray(x.sections)||x.sections.length!==6||!Array.isArray(x.agenda)||!Array.isArray(x.sources)||x.sources.length<2){console.error('Bigdata audit: incomplete Editorial V2 structure');process.exit(1);}
 const archive=JSON.parse(fs.readFileSync(researchPath,'utf8'));
 const r=archive.research?.answer?archive.research:archive;
 if(typeof r.answer!=='string'||r.answer.length<100) throw Error('Bigdata audit: missing research answer');
@@ -77,7 +78,7 @@ const sourceUrls=[...new Set((r.sources||[]).map(s=>{
 }).filter(s=>/^https?:\/\//.test(s)))];
 if(sourceUrls.length<2)fail('fewer than two unique Bigdata source URLs');
 for(const s of x.sources||[]){
- const u=String(s).split(' — ').at(-1);
+ const u=String(s).match(/https?:\/\/[^\s<>"']+/)?.[0]?.replace(/[),.;]+$/,'');
  if(!sourceUrls.includes(u)&&!r.answer.includes(u))fail('source URL not in Bigdata pack: '+u);
 }
 if(errors.length){for(const e of [...new Set(errors)])console.error('Bigdata audit: '+e);process.exitCode=1;}
