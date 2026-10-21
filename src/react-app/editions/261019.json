@@ -1,0 +1,85 @@
+{
+    "schemaVersion":  2,
+    "date":  "261019",
+    "kind":  "morning",
+    "label":  "Morning Brief",
+    "title":  "TESTE HISTÃ“RICO â€” PrÃ©-mercado: Nasdaq-100 Futuros Cobre Perdas, PressÃ£o InflacionÃ¡ria Persiste",
+    "updatedAtMadrid":  "2026-10-21T17:42:39.109Z",
+    "summary":  "TESTE HISTÃ“RICO (nÃ£o Ã© boletim ao vivo). O prÃ©-mercado nos EUA apresenta uma recuperaÃ§Ã£o parcial para os Ã­ndices tecnolÃ³gicos, com a Nasdaq-100 Futuros avanÃ§ando 1.03%. A pressÃ£o inflacionÃ¡ria persiste, com a alta do IGP-10 no Brasil pressionando a moeda local. O S\u0026P 500 Futuros, por outro lado, registra uma queda de 0.46%. A expectativa Ã© de que a agenda econÃ´mica seja tranquila, com poucos eventos programados para hoje. As empresas Cleveland-Cliffs e Fifth Third Bancorp apresentaram resultados positivos, enquanto a VinFast Auto decepcionou.",
+    "markets":  [
+                    {
+                        "name":  "S\u0026P 500 FUTUROS",
+                        "value":  null,
+                        "change":  0.46,
+                        "context":  "Abaixo do nÃ­vel de fechamento anterior"
+                    },
+                    {
+                        "name":  "Nasdaq-100 FUTUROS",
+                        "value":  29488,
+                        "change":  1.03,
+                        "context":  "Acima do nÃ­vel de fechamento anterior"
+                    },
+                    {
+                        "name":  "Dow Jones",
+                        "value":  52002.41,
+                        "change":  -0.34,
+                        "context":  "Abaixo do nÃ­vel de fechamento anterior"
+                    },
+                    {
+                        "name":  "Russell 2000",
+                        "value":  2721.37,
+                        "change":  -1.66,
+                        "context":  "Abaixo do nÃ­vel de fechamento anterior"
+                    }
+                ],
+    "drivers":  [
+                    {
+                        "number":  1,
+                        "reason":  "Rebound na Tecnologia",
+                        "impact":  "A Nasdaq-100 Futuros avanÃ§ou 1.03% apÃ³s uma semana de perdas, refletindo a recuperaÃ§Ã£o parcial dos ativos tecnolÃ³gicos."
+                    },
+                    {
+                        "number":  2,
+                        "reason":  "AlÃ­vio nas EnergÃ©ticas",
+                        "impact":  "O WTI Crude caiu 1.59% devido a uma alÃ­vio nas preocupaÃ§Ãµes de oferta, o que beneficiou os Ã­ndices globais."
+                    },
+                    {
+                        "number":  3,
+                        "reason":  "InflaÃ§Ã£o Persistente",
+                        "impact":  "A alta do IGP-10 no Brasil pressionou a moeda local, refletindo a persistente pressÃ£o inflacionÃ¡ria."
+                    }
+                ],
+    "sections":  [
+                     {
+                         "name":  "Market Pulse",
+                         "content":  "O prÃ©-mercado nos EUA apresenta uma recuperaÃ§Ã£o parcial para os Ã­ndices tecnolÃ³gicos, com a Nasdaq-100 Futuros avanÃ§ando 1.03%. A pressÃ£o inflacionÃ¡ria persiste, com a alta do IGP-10 no Brasil pressionando a moeda local. O S\u0026P 500 Futuros, por outro lado, registra uma queda de 0.46%. A expectativa Ã© de que a agenda econÃ´mica seja tranquila, com poucos eventos programados para hoje. As empresas Cleveland-Cliffs e Fifth Third Bancorp apresentaram resultados positivos, enquanto a VinFast Auto decepcionou."
+                     },
+                     {
+                         "name":  "Premarket Movers",
+                         "content":  "Cleveland-Cliffs (CLF) avanÃ§ou 10.2% apÃ³s um balanÃ§o positivo, apesar de disputas regulatÃ³rias. Targa Resources (TRGP) subiu 4.37% apÃ³s upgrades de bancos. CoreWeave (CRWV) caiu 11.91% devido a sentimentos negativos sobre operadores de nuvem."
+                     },
+                     {
+                         "name":  "Earnings Radar",
+                         "content":  "Cleveland-Cliffs (CLF) e Fifth Third Bancorp (FITB) divulgaram resultados positivos, com a Cleveland-Cliffs superando as expectativas. VinFast Auto (VFS) decepcionou com um resultado negativo."
+                     },
+                     {
+                         "name":  "Market Themes",
+                         "content":  "O setor de semicondutores estÃ¡ se recuperando, com o VanEck Semiconductor ETF (SMH) avanÃ§ando 2.7% pre-bell. O Brasil enfrenta pressÃ£o inflacionÃ¡ria, com o IGP-10 atingindo 1.76% (acima do esperado), o que impacta a moeda local."
+                     },
+                     {
+                         "name":  "Brasil → EUA",
+                         "content":  "A alta do IGP-10 no Brasil pressiona a moeda local, enquanto a moeda americana se fortalece. O dÃ³lar caiu 0.21% contra o real, mas a pressÃ£o inflacionÃ¡ria persiste."
+                     },
+                     {
+                         "name":  "O que observar hoje",
+                         "content":  "NÃ£o hÃ¡ eventos econÃ´micos ou corporativos programados para hoje, com a agenda econÃ´mica sendo tranquila. A expectativa Ã© de que a sessÃ£o seja movimentada apenas com os resultados de empresas apÃ³s o fechamento."
+                     }
+                 ],
+    "agenda":  [
+
+               ],
+    "sources":  [
+                    "Market Tearsheet — https://site.financialmodelingprep.com",
+                    "Stock Market Today, Oct. 19 – Futures Rise as Oil Prices Fall, Earnings in Focus — https://www.tipranks.com/news/stock-market-today-oct-19-futures-rise-as-oil-prices-fall-earnings-in-focus"
+                ]
+}
