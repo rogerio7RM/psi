@@ -1,7 +1,6 @@
 name: PrimeSphere After Close - Auto Website
 on:
   schedule:
-    - cron: '15 20 * * 1-5'
     - cron: '15 21 * * 1-5'
   workflow_dispatch:
 permissions:
@@ -30,30 +29,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check 22:15 Madrid schedule (DST safe)
-        id: clock
-        run: |
-          $now = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([datetime]::UtcNow, 'Romance Standard Time')
-          if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -or ($now.Hour -eq 22 -and $now.Minute -ge 15 -and $now.Minute -lt 45)) {
-            "ready=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-          } else {
-            Write-Host "Not the 22:15 Madrid window; skipping duplicate DST schedule."
-            "ready=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-          }
       - name: Require configured Bigdata API key
-        if: steps.clock.outputs.ready == 'true'
         run: |
           if (-not $env:BIGDATA_API_KEY) { throw 'BIGDATA_API_KEY is not configured.' }
       - name: Check local Ollama
-        if: steps.clock.outputs.ready == 'true'
         run: |
           $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
           if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Ollama model unavailable' }
-      - name: Install dependencies
-        if: steps.clock.outputs.ready == 'true'
-        run: npm ci
+      - run: npm ci
       - name: Generate and validate After Close
-        if: steps.clock.outputs.ready == 'true'
         run: |
           node scripts/generate-editorial-v2.mjs afterclose
           if ($LASTEXITCODE -ne 0) { throw 'Generation failed' }
@@ -63,11 +47,11 @@ jobs:
           $research = "editorial-audit/$code-bigdata-research.json"
           if (-not (Test-Path $research)) { throw "Bigdata research audit file missing: $research" }
           node scripts/fix-editorial-encoding.mjs $path --write
-          if ($LASTEXITCODE -ne 0) { throw 'UTF-8 repair failed' }
+          if ($LASTEXITCODE -ne 0) { throw 'Editorial UTF-8 repair failed; publication blocked' }
           node scripts/validate-editorial.mjs $path
-          if ($LASTEXITCODE -ne 0) { throw 'Editorial validation failed' }
+          if ($LASTEXITCODE -ne 0) { throw 'Editorial QA failed after repair' }
           node scripts/audit-bigdata-edition.mjs $path $research
-          if ($LASTEXITCODE -ne 0) { throw 'Bigdata factual audit failed' }
+          if ($LASTEXITCODE -ne 0) { throw 'Bigdata factual audit failed after repair' }
           node scripts/check-live-edition.mjs $path afterclose
           if ($LASTEXITCODE -ne 0) { throw 'Live edition QA failed' }
           npm run build
@@ -82,7 +66,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Commit validated edition and trigger site deployment
-        if: steps.clock.outputs.ready == 'true' && vars.EDITORIAL_AUTO_PUBLISH_ENABLED == 'true'
+        if: vars.EDITORIAL_AUTO_PUBLISH_ENABLED == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
