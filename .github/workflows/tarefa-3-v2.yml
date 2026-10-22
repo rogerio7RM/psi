@@ -1,49 +1,98 @@
-name: Tarefa 3 V2 - After Market
+name: PrimeSphere After Close - Auto Website
 on:
   schedule:
-    - cron: '30 20 * * 1-5'
+    - cron: '15 20 * * 1-5'
+    - cron: '15 21 * * 1-5'
   workflow_dispatch:
-concurrency:
-  group: tarefa-3-v2
-  cancel-in-progress: false
 permissions:
   contents: write
+concurrency:
+  group: primesphere-afterclose-editorial
+  cancel-in-progress: false
 jobs:
-  afterclose:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  publish-afterclose:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 100
+    defaults:
+      run:
+        shell: powershell
     env:
-      TZ: Europe/Madrid
+      EDITORIAL_PROVIDER: ollama
+      EDITORIAL_STRICT_QA: 'true'
+      OLLAMA_MODEL: qwen2.5:7b
+      OLLAMA_URL: http://127.0.0.1:11434
+      BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
+      BIGDATA_PAID_RESEARCH_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          persist-credentials: true
       - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm }
-      - run: npm ci
-      - name: Require V2 secrets
-        shell: bash
+        with:
+          node-version: '22'
+      - name: Check 22:15 Madrid schedule (DST safe)
+        id: clock
         run: |
-          test -n "${{ secrets.OPENAI_API_KEY }}"
-          test -n "${{ secrets.BIGDATA_API_KEY }}"
-      - name: Generate After Market V2
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
-        run: node scripts/generate-editorial-v2.mjs afterclose
-      - name: Validate edition
-        shell: bash
+          $now = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([datetime]::UtcNow, 'Romance Standard Time')
+          if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -or ($now.Hour -eq 22 -and $now.Minute -ge 15 -and $now.Minute -lt 45)) {
+            "ready=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            Write-Host "Not the 22:15 Madrid window; skipping duplicate DST schedule."
+            "ready=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+      - name: Require configured Bigdata API key
+        if: steps.clock.outputs.ready == 'true'
         run: |
-          code=$(TZ=Europe/Madrid date +%y%m%d)
-          node scripts/validate-editorial.mjs "src/react-app/editions/$code-afterclose.json"
+          if (-not $env:BIGDATA_API_KEY) { throw 'BIGDATA_API_KEY is not configured.' }
+      - name: Check local Ollama
+        if: steps.clock.outputs.ready == 'true'
+        run: |
+          $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
+          if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Ollama model unavailable' }
+      - name: Install dependencies
+        if: steps.clock.outputs.ready == 'true'
+        run: npm ci
+      - name: Generate and validate After Close
+        if: steps.clock.outputs.ready == 'true'
+        run: |
+          node scripts/generate-editorial-v2.mjs afterclose
+          if ($LASTEXITCODE -ne 0) { throw 'Generation failed' }
+          $code = node -e "const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>p.find(x=>x.type===k).value).join(''))"
+          $path = "src/react-app/editions/$code-afterclose.json"
+          if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
+          $research = "editorial-audit/$code-bigdata-research.json"
+          if (-not (Test-Path $research)) { throw "Bigdata research audit file missing: $research" }
+          node scripts/fix-editorial-encoding.mjs $path --write
+          if ($LASTEXITCODE -ne 0) { throw 'UTF-8 repair failed' }
+          node scripts/validate-editorial.mjs $path
+          if ($LASTEXITCODE -ne 0) { throw 'Editorial validation failed' }
+          node scripts/audit-bigdata-edition.mjs $path $research
+          if ($LASTEXITCODE -ne 0) { throw 'Bigdata factual audit failed' }
+          node scripts/check-live-edition.mjs $path afterclose
+          if ($LASTEXITCODE -ne 0) { throw 'Live edition QA failed' }
           npm run build
-      - name: Commit validated edition
-        shell: bash
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+          "EDITION_PATH=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Archive Bigdata research for audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: afterclose-bigdata-research
+          path: editorial-audit/*-bigdata-research.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Commit validated edition and trigger site deployment
+        if: steps.clock.outputs.ready == 'true' && vars.EDITORIAL_AUTO_PUBLISH_ENABLED == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          code=$(TZ=Europe/Madrid date +%y%m%d)
-          git config user.name "PrimeSphere Editorial Bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add "src/react-app/editions/$code-afterclose.json"
-          git diff --cached --quiet && exit 0
-          git commit -m "Publish After Market V2 $code"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- $env:EDITION_PATH
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Publish validated After Close: $env:EDITION_PATH"
+            git -c http.extraheader="AUTHORIZATION: basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN")))" push origin HEAD:main
+            if ($LASTEXITCODE -ne 0) { throw 'Git push failed; edition not published' }
+            gh workflow run primesphere-cloudflare-auto.yml --ref main
+            if ($LASTEXITCODE -ne 0) { throw 'Could not dispatch Cloudflare deploy' }
+          } else { Write-Host 'No changes to publish' }
