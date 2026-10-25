@@ -1,0 +1,80 @@
+name: PrimeSphere V14 Offline QA
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/prime_v14_offline.py"
+      - "tests/test_prime_v14_offline.py"
+      - "scripts/prime_v15_evidence.py"
+      - "tests/test_prime_v15_evidence.py"
+      - "scripts/prime_v16_verify.py"
+      - "tests/test_prime_v16_verify.py"
+      - "scripts/prime_v20_gate.py"
+      - "tests/test_prime_v20_gate.py"
+      - "scripts/prime_v21_manifest.py"
+      - "tests/test_prime_v21_manifest.py"
+      - "tests/test_prime_public_evidence.py"
+      - "qa/public_evidence_2026-10-13.json"
+      - "scripts/prime_morning_readiness.py"
+      - "tests/test_prime_morning_readiness.py"
+      - "scripts/prime_market_snapshots.py"
+      - "tests/test_prime_market_snapshots.py"
+      - "qa/market_snapshot_candidates_2026-10-13.json"
+      - "scripts/prime_market_reconcile.py"
+      - "qa/morning_brief_2026-10-13_editorial_draft.md"
+      - ".github/workflows/prime-v14-offline-qa.yml"
+permissions:
+  contents: read
+jobs:
+  offline-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests (offline, no paid API)
+        run: python -m unittest discover -s tests -p 'test_prime_v14_offline.py' -v
+      - name: V15 evidence triage tests
+        run: python -m unittest discover -s tests -p 'test_prime_v15_evidence.py' -v
+      - name: V16 conservative verification tests
+        run: python -m unittest discover -s tests -p 'test_prime_v16_verify.py' -v
+      - name: V20 editorial gate tests
+        run: python -m unittest discover -s tests -p 'test_prime_v20_gate.py' -v
+      - name: V21 evidence manifest integrity tests
+        run: python -m unittest discover -s tests -p 'test_prime_v21_manifest.py' -v
+      - name: Public evidence registry checks
+        run: python -m unittest discover -s tests -p 'test_prime_public_evidence.py' -v
+      - name: Morning Brief readiness tests
+        run: python -m unittest discover -s tests -p 'test_prime_morning_readiness.py' -v
+      - name: Generate real public evidence readiness report
+        run: python scripts/prime_morning_readiness.py qa/public_evidence_2026-10-13.json --out qa-output
+      - name: Market snapshot timestamp and provenance tests
+        run: python -m unittest discover -s tests -p 'test_prime_market_snapshots.py' -v
+      - name: Audit real timestamped quote candidates (expected to remain blocked)
+        run: python scripts/prime_market_snapshots.py qa/market_snapshot_candidates_2026-10-13.json --out qa-output
+      - name: Reconcile real market candidates by instrument and time
+        run: python scripts/prime_market_reconcile.py qa/market_snapshot_candidates_2026-10-13.json --out qa-output
+      - name: Check Bigdata source attribution in historical editorial draft
+        run: |
+          python -c "from pathlib import Path; p=Path('qa/morning_brief_2026-10-13_editorial_draft.md').read_text(encoding='utf-8'); assert 'Bigdata.com' in p and 'Nota editorial' in p"
+      - name: Run synthetic audit (real dataset intentionally not in public repository)
+        run: python scripts/prime_v14_offline.py tests/fixtures/prime_v14_synthetic.json --out qa-output
+      - name: Run V15 synthetic evidence triage
+        run: python scripts/prime_v15_evidence.py tests/fixtures/prime_v14_synthetic.json --out qa-output
+      - name: Run V16 synthetic source triage
+        run: python scripts/prime_v16_verify.py tests/fixtures/prime_v14_synthetic.json --out qa-output
+      - name: Enforce fail-closed publication gate
+        run: |
+          python - <<'PY'
+          import json
+          gate=json.load(open('qa-output/gate.json'))
+          assert gate['publication_allowed'] is False
+          assert gate['certified_facts'] == 0
+          print('Publication gate verified: BLOCKED')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prime-v14-offline-qa
+          path: qa-output/
