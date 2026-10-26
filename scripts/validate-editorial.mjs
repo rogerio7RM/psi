@@ -83,6 +83,14 @@ if(x.kind==='morning'){
   }
  }
 }
+// Large market claims need an explicit, independently reviewed data trail.
+// The current source list is edition-wide and cannot establish per-claim support;
+// fail closed instead of treating a generic source URL as verification.
+if(x.kind==='morning'){
+ const brazil=x.sections.find(s=>s.name==='Brasil → EUA')?.content||'';
+ if(/\b(?:EWZ|USD\/BRL|USDBRL)\b.{0,110}\b(?:caiu|subiu|queda|alta|recuou|avan[cç]ou)\b.{0,30}\b(?:1[0-9]|[2-9][0-9])(?:[.,]\d+)?\s*%/i.test(brazil))
+  fail('large Brazil market move requires independently verified per-claim evidence');
+}
 // TEMPORARY (2026-10-23): skip source URL checks for Bigdata-grounded editions.
 // Restore URL validation when Bigdata reference normalization is implemented.
 if(process.env.EDITORIAL_STRICT_QA==='true'){
