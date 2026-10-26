@@ -42,15 +42,46 @@ if(x.kind==='morning'){
  if(/nenhum(?:a)? agenda (?:oficial )?(?:foi|est[aá])|n[aã]o h[aá] (?:agenda|eventos? (?:econ[oô]micos?|oficiais?))/i.test(prose) && /\b(?:ser[aá] divulgado|ser[aá] publicada|divulga[cç][aã]o (?:do|da)|est[aá] previsto)\b/i.test(prose))
    fail('claims no agenda while announcing a scheduled event');
 }
+// Compare direction only when it describes the current movement, not a previous session.
+const positive=/\b(?:subiu|avan[cç]ou|alta|ganhos?|valorizou|avan[cç]ando)\b/i;
+const negative=/\b(?:caiu|recuou|queda|baixa|perdas?|desvalorizou)\b/i;
+const priorSession=/\b(?:ap[oó]s|depois d[aeo]|na sess[aã]o anterior|no preg[aã]o anterior)\b/i;
+const currentMovement=t=>String(t).split(/[,;.]/)[0].split(/\b(?:ap[oó]s|depois d[aeo]|na sess[aã]o anterior|no preg[aã]o anterior)\b/i)[0];
+const direction=t=>{const s=currentMovement(t);return positive.test(s)&&!negative.test(s)?1:negative.test(s)&&!positive.test(s)?-1:0};
 for(const [i,m] of x.markets.entries()){
  if(typeof m?.name!=='string'||!m.name.trim()) fail('markets['+i+'] missing name');
  if(typeof m?.context!=='string'||!m.context.trim()) fail('markets['+i+'] missing context');
  if(typeof m.change==='number' && /\bfuturo(?:s)?\b/i.test(m.context) && !/\bfuturo(?:s)?\b/i.test(m.name))
    fail('markets['+i+'] mixes futures commentary with a cash index label');
- if(typeof m.change==='number' && m.change<0 && /\b(?:subiu|avan[cç]ou|alta|ganhos?)\b/i.test(m.context) && !/\b(?:mas|embora|apesar|enquanto|por[eé]m)\b/i.test(m.context))
-   fail('markets['+i+'] negative change contradicts positive context');
- if(typeof m.change==='number' && m.change>0 && /\b(?:caiu|recuou|queda|baixa|perdas?)\b/i.test(m.context) && !/\b(?:mas|embora|apesar|enquanto|por[eé]m)\b/i.test(m.context))
-   fail('markets['+i+'] positive change contradicts negative context');
+ const d=direction(m.context);
+ if(typeof m.change==='number' && d!==0 && Math.sign(m.change)!==d)
+   fail('markets['+i+'] change contradicts current movement in context');
+ if(m.value==null && /\b(?:n[ií]vel|cot[aá][cç][aã]o|pontos?)\s+(?:de\s+)?[\d.,]+/i.test(m.context))
+   fail('markets['+i+'] quotes a precise level despite missing verified value');
+}
+// Cross-check explicit market directions in the headline market narrative.
+// Only compare unambiguous named assets, not broad sentiment or prior sessions.
+if(x.kind==='morning'){
+ const narrative=[x.summary,x.sections.find(s=>s.name==='Market Pulse')?.content||''];
+ const aliases=[
+  /\bS&P\s*500\b/i,/\bNasdaq(?:-100)?\b/i,/\bDow Jones\b/i,/\bRussell\s*2000\b/i
+ ];
+ for(const [i,m] of x.markets.entries()){
+  if(typeof m.change!=='number') continue;
+  const asset=aliases.find(a=>a.test(m.name));
+  if(!asset) continue;
+  for(const [j,t] of narrative.entries()){
+   // Look for explicit direction immediately following the instrument mention.
+   const match=asset.exec(t);
+   if(!match) continue;
+   const after=t.slice(match.index+match[0].length).split(/[.;]/)[0];
+   const nextAsset=after.search(/\b(?:S&P\s*500|Nasdaq(?:-100)?|Dow Jones|Russell\s*2000)\b/i);
+   const scope=(nextAsset>=0?after.slice(0,nextAsset):after).slice(0,90);
+   const d=direction(scope);
+   if(d!==0 && Math.sign(m.change)!==d)
+    fail('markets['+i+'] contradicts '+(j===0?'summary':'Market Pulse')+' direction');
+  }
+ }
 }
 // TEMPORARY (2026-10-23): skip source URL checks for Bigdata-grounded editions.
 // Restore URL validation when Bigdata reference normalization is implemented.
