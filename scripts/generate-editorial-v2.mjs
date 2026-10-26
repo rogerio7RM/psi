@@ -306,6 +306,16 @@ if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && pro
   if(!/TESTE HISTÓRICO/i.test(edition.title||'')) edition.title='TESTE HISTÓRICO — '+(edition.title||'Morning Brief');
   if(!/TESTE HISTÓRICO/i.test(edition.summary||'')) edition.summary='TESTE HISTÓRICO (não é boletim ao vivo). '+(edition.summary||'');
 }
+// Keep the watch section consistent with the verified structured agenda.
+// An empty agenda means no release has all required fields verified; it does
+// not establish that no real events exist. Preserve the strict QA guardrail.
+if(kind==='morning' && Array.isArray(edition.agenda) && edition.agenda.length===0 && Array.isArray(edition.sections)){
+  const watch=edition.sections.find(s=>s?.name==='O que observar hoje');
+  if(watch && typeof watch.content==='string' && /\\b(?:ser[aá] divulgado|ser[aá] publicada|ser[aá] anunciado|est[aá] previsto|ser[aá] divulgado [aà]s)\\b/i.test(watch.content)){
+    watch.content='Não há eventos com data, horário, consenso e dado anterior integralmente verificados no pacote de pesquisa desta edição. Isso não significa ausência de divulgações reais; consulte o calendário oficial antes de tomar decisões.';
+    console.log('Editorial repair: removed unverified upcoming release from empty-agenda watch section');
+  }
+}
 // For live runs, source references come from Bigdata, not model-authored citations.
 if(!process.env.EDITORIAL_RESEARCH_FILE) edition.sources=sourceRefs;
 // Keep all source references from a verified local research pack instead of
