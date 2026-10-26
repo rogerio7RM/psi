@@ -1,7 +1,7 @@
 name: PrimeSphere Morning Brief - Auto Website
 on:
   schedule:
-    - cron: '37 12 * * 1-5'
+    - cron: '0 11 * * 1-5' # 12:00 Europe/Madrid in winter (UTC+1)
   workflow_dispatch:
 permissions:
   contents: write
