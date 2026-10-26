@@ -316,6 +316,40 @@ if(kind==='morning' && Array.isArray(edition.agenda) && edition.agenda.length===
     console.log('Editorial repair: removed unverified upcoming release from empty-agenda watch section');
   }
 }
+// Conservative editorial normalization: remove unsupported precision rather than
+// inventing a value or changing the sign of a verified market movement.
+if(kind==='morning' && Array.isArray(edition.markets)){
+ for(const m of edition.markets){
+  if(m?.value==null && typeof m.context==='string'){
+   m.context=m.context.replace(/\b(?:abaixo|acima)\s+do\s+n[ií]vel\s+de\s+[\d.,]+(?:\s+pontos?)?,?\s*/gi,'')
+    .replace(/\b(?:n[ií]vel|cot[aá][cç][aã]o)\s+de\s+[\d.,]+(?:\s+pontos?)?/gi,'nível não confirmado')
+    .trim();
+   if(!m.context) m.context='Nível de preço não verificado no pacote de pesquisa.';
+  }
+ }
+ // Headline market direction comes from the structured market snapshot, not
+ // from a separate free-form summary that may describe another session.
+ const descriptions=edition.markets.filter(m=>typeof m?.change==='number').map(m=>{
+  const sign=m.change>0?'alta':m.change<0?'queda':'estabilidade';
+  return m.name+' em '+sign+' de '+Math.abs(m.change).toFixed(2).replace('.',',')+'%';
+ });
+ if(descriptions.length>=4){
+  const headline='No recorte de mercado disponível: '+descriptions.join('; ')+'. Os números representam os instrumentos e horários identificados no pacote de pesquisa.';
+  edition.summary=headline;
+  const pulse=edition.sections?.find(s=>s?.name==='Market Pulse');
+  if(pulse) pulse.content=headline;
+ }
+}
+// Without claim-level provenance, do not print extreme Brazil market percentages
+// or present political events as proven causes. Keep a transparent uncertainty note.
+if(kind==='morning' && Array.isArray(edition.sections)){
+ const brazil=edition.sections.find(s=>s?.name==='Brasil → EUA');
+ const extreme=/\b(?:EWZ|USD\/BRL|USDBRL)\b.{0,110}\b(?:caiu|subiu|queda|alta|recuou|avan[cç]ou|caindo)\b.{0,30}\b(?:1[0-9]|[2-9][0-9])(?:[.,]\d+)?\s*%/i;
+ if(brazil && typeof brazil.content==='string' && extreme.test(brazil.content)){
+  brazil.content='O pacote de pesquisa menciona movimentos relevantes em ativos brasileiros e no câmbio, mas as variações extremas e sua atribuição causal não têm comprovação individual suficiente nesta edição. Consulte as cotações e fontes originais antes de utilizar esses números.';
+  console.log('Editorial repair: withheld extreme Brazil claims without claim-level evidence');
+ }
+}
 // For live runs, source references come from Bigdata, not model-authored citations.
 if(!process.env.EDITORIAL_RESEARCH_FILE) edition.sources=sourceRefs;
 // Keep all source references from a verified local research pack instead of
