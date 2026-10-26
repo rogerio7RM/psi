@@ -311,7 +311,7 @@ if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && pro
 // not establish that no real events exist. Preserve the strict QA guardrail.
 if(kind==='morning' && Array.isArray(edition.agenda) && edition.agenda.length===0 && Array.isArray(edition.sections)){
   const watch=edition.sections.find(s=>s?.name==='O que observar hoje');
-  if(watch && typeof watch.content==='string' && /\\b(?:ser[aá] divulgado|ser[aá] publicada|ser[aá] anunciado|est[aá] previsto|ser[aá] divulgado [aà]s)\\b/i.test(watch.content)){
+  if(watch && typeof watch.content==='string' && /\b(?:ser[aá] divulgado|ser[aá] publicada|ser[aá] anunciado|est[aá] previsto|ser[aá] divulgado [aà]s)\b/i.test(watch.content)){
     watch.content='Não há eventos com data, horário, consenso e dado anterior integralmente verificados no pacote de pesquisa desta edição. Isso não significa ausência de divulgações reais; consulte o calendário oficial antes de tomar decisões.';
     console.log('Editorial repair: removed unverified upcoming release from empty-agenda watch section');
   }
