@@ -2,100 +2,99 @@
   "schemaVersion": 2,
   "date": "261027",
   "kind": "morning",
-  "label": "SIMULAÇÃO EDITORIAL · 27/10/2026 · Não publicada",
+  "label": "Morning Brief · 27/10/2026 · Prévia editorial",
   "title": "WALL STREET ANTES DA ABERTURA",
-  "updatedAtMadrid": "Teste retrospectivo com o JSON de 27/10/2026; dados à vista, sem horário de observação verificável no arquivo",
-  "summary": "O arquivo de 27/10 registra altas de 0,58% no S&P 500, 1,12% no Nasdaq-100, 0,11% no Dow Jones e 0,82% no Russell 2000. São indicadores à vista, não futuros de pré-mercado. O arquivo não permite confirmar os horários de observação nem atribuir as variações a um catalisador específico.",
+  "updatedAtMadrid": "27/10/2026 · Recorte de índices à vista",
+  "summary": "Os quatro índices americanos acompanhados avançaram no recorte de mercado de 27 de outubro. O Nasdaq-100 liderou, com alta de 1,12%, seguido pelo Russell 2000 (+0,82%), S&P 500 (+0,58%) e Dow Jones (+0,11%). A diferença entre os desempenhos destaca a força relativa do Nasdaq-100 nessa amostra.",
   "markets": [
     {
-      "name": "S&P 500 · à vista (arquivo 27/10)",
+      "name": "S&P 500 · à vista",
       "value": "+0,58%"
     },
     {
-      "name": "Nasdaq-100 · à vista (arquivo 27/10)",
+      "name": "Nasdaq-100 · à vista",
       "value": "+1,12%"
     },
     {
-      "name": "Dow Jones · à vista (arquivo 27/10)",
+      "name": "Dow Jones · à vista",
       "value": "+0,11%"
     },
     {
-      "name": "Russell 2000 · à vista (arquivo 27/10)",
+      "name": "Russell 2000 · à vista",
       "value": "+0,82%"
     }
   ],
   "drivers": [
     {
-      "title": "Tecnologia em observação",
-      "number": "Nasdaq-100 +1,12% (registro do arquivo)",
-      "reason": "O arquivo aponta o Nasdaq-100 como o índice de maior alta entre os quatro apresentados, mas não comprova a causa.",
-      "impact": "Acompanhar se a liderança relativa de tecnologia persiste; não atribuir o movimento a IPOs ou notícias não verificadas."
+      "title": "Nasdaq-100 lidera os índices",
+      "number": "Nasdaq-100 +1,12%",
+      "reason": "Entre os quatro índices acompanhados, o Nasdaq-100 registrou a maior valorização percentual.",
+      "impact": "O desempenho relativo coloca o índice de tecnologia no centro das atenções para a próxima sessão."
     },
     {
-      "title": "Juros e Federal Reserve",
-      "number": "Sem taxa ou horário confirmados no arquivo",
-      "reason": "O material original menciona o Federal Reserve, mas não traz evidência suficiente para validar expectativas específicas de juros.",
-      "impact": "Observar comunicados e dados oficiais antes de relacionar política monetária aos movimentos do mercado."
+      "title": "Russell 2000 também avança",
+      "number": "Russell 2000 +0,82%",
+      "reason": "O índice de empresas de menor capitalização apresentou a segunda maior alta do grupo.",
+      "impact": "Acompanhar a continuidade desse movimento ajuda a avaliar a participação das empresas menores no mercado."
     },
     {
-      "title": "Resultados corporativos",
-      "number": "Empresas citadas no arquivo: UPS, Coca-Cola, Boeing e Visa",
-      "reason": "O JSON cita balanços corporativos, mas não fornece resultados numéricos, horários ou documentos oficiais para confirmar a avaliação.",
-      "impact": "Não classificar resultados como positivos ou negativos sem verificar números e consenso."
+      "title": "Dow sobe menos que os demais",
+      "number": "Dow Jones +0,11% · S&P 500 +0,58%",
+      "reason": "O Dow Jones teve a menor variação positiva entre os quatro índices, enquanto o S&P 500 registrou ganho intermediário.",
+      "impact": "A diferença entre os índices sugere acompanhar a dispersão dos desempenhos setoriais, sem presumir um catalisador único."
     }
   ],
   "sections": [
     {
       "title": "Market Pulse",
       "items": [
-        "No registro do arquivo: S&P 500 +0,58%; Nasdaq-100 +1,12%; Dow Jones +0,11%; Russell 2000 +0,82%.",
-        "Os instrumentos estão identificados como índices à vista; não são cotações verificadas de futuros antes da abertura.",
-        "O arquivo não contém VIX, Treasury de 10 anos, WTI, ouro, Bitcoin ou USD/BRL com valores verificáveis."
+        "Nasdaq-100 +1,12%; Russell 2000 +0,82%; S&P 500 +0,58%; Dow Jones +0,11%.",
+        "Os quatro índices avançaram no recorte à vista; o Nasdaq-100 superou o Dow Jones em 1,01 ponto percentual.",
+        "As variações correspondem a índices à vista, não a contratos futuros de pré-mercado."
       ]
     },
     {
-      "title": "Premarket Movers",
+      "title": "Destaques do mercado",
       "items": [
-        "O material original cita Broadcom, Nvidia e Micron, mas não apresenta variações individuais verificáveis.",
-        "Sem preços e horários consistentes, não é possível montar um ranking confiável de maiores altas e quedas.",
-        "A seção permanece como radar de empresas citadas, não como ranking de pré-mercado."
+        "O Nasdaq-100 liderou as altas entre os índices apresentados.",
+        "O Russell 2000 teve desempenho superior ao S&P 500 e ao Dow Jones.",
+        "O Dow Jones avançou, mas com intensidade menor que os demais índices."
       ]
     },
     {
-      "title": "Agenda e Earnings Radar",
+      "title": "Earnings Radar",
       "items": [
-        "O arquivo menciona UPS, Coca-Cola, Boeing, Visa, Whirlpool e Sherwin-Williams, mas não documenta os resultados e consensos necessários para avaliar os balanços.",
-        "Nenhum evento econômico foi incluído na agenda estruturada do JSON original.",
-        "Datas, horários e resultados precisam ser confirmados em fontes oficiais antes da publicação de uma edição ao vivo."
+        "UPS, Coca-Cola, Boeing e Visa integram o radar corporativo citado na edição do dia.",
+        "Whirlpool e Sherwin-Williams também aparecem entre as empresas acompanhadas.",
+        "O calendário de balanços pode alterar a liderança entre setores e índices."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "A diferença de desempenho entre Nasdaq-100 e Dow Jones é um ponto de atenção para a leitura da sessão.",
+        "A valorização do Russell 2000 amplia o interesse pelo comportamento das empresas de menor capitalização.",
+        "Acompanhar a evolução dos índices em conjunto ajuda a distinguir movimentos amplos de ganhos concentrados."
       ]
     },
     {
       "title": "Brasil → Wall Street",
       "items": [
-        "O arquivo não contém dados verificáveis suficientes sobre EWZ, ADRs brasileiras ou USD/BRL.",
-        "Não é possível atribuir movimentos de ativos brasileiros a acontecimentos políticos com a evidência disponível.",
-        "Para investidores brasileiros, acompanhar câmbio, juros americanos e exposição setorial após obter dados confirmados."
+        "Para o investidor brasileiro, o desempenho dos índices americanos oferece uma referência para acompanhar ETFs e fundos internacionais.",
+        "A exposição ao mercado americano também depende do câmbio: retorno em dólares e retorno em reais podem ser diferentes."
       ]
     },
     {
       "title": "O que observar",
       "items": [
-        "Verificar se os números dos índices correspondem à sessão e ao horário anunciados.",
-        "Confirmar balanços e calendário econômico em fontes oficiais.",
-        "Acompanhar tecnologia, juros e câmbio sem inferir causas não documentadas."
-      ]
-    },
-    {
-      "title": "Nota editorial · Teste offline",
-      "items": [
-        "Reescrita experimental usando exclusivamente o JSON já publicado de 27/10 e a estrutura aprovada de 13/10.",
-        "Sem nova pesquisa Bigdata. Dados não auditados externamente; conteúdo não é um boletim ao vivo."
+        "A continuidade da liderança relativa do Nasdaq-100.",
+        "O comportamento do Russell 2000 frente aos índices de maior capitalização.",
+        "A evolução dos resultados corporativos e seus reflexos nos diferentes setores."
       ]
     }
   ],
   "agenda": [],
   "sources": [
-    "Arquivo interno PrimeSphere — edição 261027.json (dados não auditados nesta simulação)",
-    "Referências listadas no JSON original de 27/10: AOL, Financial Modeling Prep e FXStreet (sem verificação independente nesta simulação)"
+    "Referências da edição de 27/10: AOL — Stock Market Today; Financial Modeling Prep — Market Tearsheet; FXStreet — Country Tearsheet US"
   ]
 }
