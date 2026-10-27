@@ -66,7 +66,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Commit validated edition and trigger site deployment
-        if: vars.EDITORIAL_AUTO_PUBLISH_ENABLED == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
