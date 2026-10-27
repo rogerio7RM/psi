@@ -91,7 +91,7 @@ function App() {
     const samples: Record<string, EditorialEdition> = {
       '261013': comparison13 as EditorialEdition,
       '261015': historicalMorningTest as EditorialEdition,
-      '261019': comparison19 as EditorialEdition,
+      '261019': comparison19 as unknown as EditorialEdition,
     };
     const chosen = query.get('edicao') || '261013';
     const active = samples[chosen] ? chosen : '261013';
