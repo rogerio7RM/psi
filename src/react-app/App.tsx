@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import type { ComponentType } from 'react';
 import EditorialEditionView from './components/EditorialEditionView';
 import historicalMorningTest from './test-editions/261015.json';
+import comparison13 from './editions/261013.json';
+import comparison19 from './editions/261019.json';
 import type { EditorialEdition } from './components/EditorialEditionView';
 import SiteFooter from './components/SiteFooter';
 import SiteHeader from './components/SiteHeader';
@@ -71,6 +73,7 @@ function App() {
   useEffect(() => {
     const titles: Record<string, string> = {
       '/': 'PrimeSphere Intelligence | Brief de Wall Street',
+      '/comparativo-editorial': 'Comparativo Editorial | PrimeSphere Intelligence',
       '/quem-somos': 'Quem Somos | PrimeSphere Intelligence',
       '/educacional': 'Educacional | PrimeSphere Intelligence',
       '/trades': 'Trades | PrimeSphere Intelligence',
@@ -84,7 +87,30 @@ function App() {
 
   let content;
 
-  if (path === '/teste-editorial') {
+  if (path === '/comparativo-editorial') {
+    const samples: Record<string, EditorialEdition> = {
+      '261013': comparison13 as EditorialEdition,
+      '261015': historicalMorningTest as EditorialEdition,
+      '261019': comparison19 as EditorialEdition,
+    };
+    const chosen = query.get('edicao') || '261013';
+    const active = samples[chosen] ? chosen : '261013';
+    content = (
+      <main className='psi-brief-section'>
+        <div className='psi-section-heading'>
+          <div><span className='psi-eyebrow psi-eyebrow-dark'>Arquivo de comparação · não é notícia atual</span><h2>Comparativo editorial</h2></div>
+          <p>Versões históricas originais, preservadas para avaliar conteúdo e apresentação. Nenhuma substitui o Morning Brief atual.</p>
+        </div>
+        <nav aria-label='Selecionar edição histórica' style={{display:'flex',flexWrap:'wrap',gap:12,marginBottom:24}}>
+          {Object.keys(samples).map((date) => (
+            <a key={date} href={'/comparativo-editorial?edicao=' + date} aria-current={date === active ? 'page' : undefined} style={{padding:'12px 18px',borderRadius:10,border:'1px solid #c7a34c',background:date === active ? '#071a2d' : '#fff',color:date === active ? '#fff' : '#071a2d',fontWeight:700}}>{date.slice(4,6)}/{date.slice(2,4)}/2026</a>
+          ))}
+        </nav>
+        <p style={{marginBottom:20,color:'#65758a'}}>O protótipo de oito cards de 18/10 é um artefato separado, não uma edição de Morning Brief; será avaliado independentemente.</p>
+        <div className='psi-brief-frame'><EditorialEditionView edition={samples[active]} /></div>
+      </main>
+    );
+  } else if (path === '/teste-editorial') {
     content = <><main className='psi-brief-section'><div className='psi-section-heading'><div><span className='psi-eyebrow psi-eyebrow-dark'>Ambiente de validação</span><h2>TESTE HISTÓRICO — 15/10/2026</h2></div><p>Somente verificação visual. Não é um boletim atual.</p></div><div className='psi-brief-frame'><EditorialEditionView edition={historicalMorningTest as EditorialEdition} /></div></main></>;
   } else if (path === '/') {
     if (!selected) {
