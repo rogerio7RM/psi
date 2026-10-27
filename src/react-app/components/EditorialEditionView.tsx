@@ -8,13 +8,14 @@ export type EditorialEdition = {
   title: string;
   updatedAtMadrid: string;
   summary: string;
-  markets: Array<{ name?: string; index?: string; value?: string | null; change?: string | null; futuro?: string | null; indice?: string | null }>;
+  markets: Array<{ name?: string; index?: string; value?: string | number | null; change?: string | number | null; futuro?: string | null; indice?: string | null }>;
   drivers: Array<{ title?: string; number: string | number; reason: string; impact: string }>;
   sections: Array<{ title?: string; name?: string; items?: string[]; content?: string }>;
   agenda: Array<{ name: string; officialDate: string; timeNewYork: string; timeMadrid: string; status: 'FUTURO' | 'JÁ DIVULGADO'; consensus: string; previous: string; result?: string }>;
   sources: string[];
 };
 
+// Shared renderer accepts the approved Oct 13 presentation and newer numeric editions.
 const Box=({title,children}:{title:string;children:ReactNode})=><section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"><h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-cyan-400">{title}</h2><div className="space-y-3 text-base leading-7 text-slate-200">{children}</div></section>;
 
 // Highlight signed percentage movements without changing any market data.

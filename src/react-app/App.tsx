@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { ComponentType } from 'react';
 import EditorialEditionView from './components/EditorialEditionView';
 import historicalMorningTest from './test-editions/261015.json';
+import goldenSimulation27 from './test-editions/261027-golden.json';
 import comparison13 from './editions/261013.json';
 import comparison19 from './editions/261019.json';
 import type { EditorialEdition } from './components/EditorialEditionView';
@@ -74,6 +75,7 @@ function App() {
     const titles: Record<string, string> = {
       '/': 'PrimeSphere Intelligence | Brief de Wall Street',
       '/comparativo-editorial': 'Comparativo Editorial | PrimeSphere Intelligence',
+      '/teste-golden-27': 'Teste Golden Standard 27/10 | PrimeSphere Intelligence',
       '/quem-somos': 'Quem Somos | PrimeSphere Intelligence',
       '/educacional': 'Educacional | PrimeSphere Intelligence',
       '/trades': 'Trades | PrimeSphere Intelligence',
@@ -87,7 +89,9 @@ function App() {
 
   let content;
 
-  if (path === '/comparativo-editorial') {
+  if (path === '/teste-golden-27') {
+    content = <main className='psi-brief-section'><div className='psi-section-heading'><div><span className='psi-eyebrow psi-eyebrow-dark'>Simulação offline · não publicada</span><h2>Golden Standard — 27/10</h2></div><p>Dados do JSON de 27/10 reorganizados no padrão aprovado de 13/10; afirmações sem evidência foram omitidas.</p></div><div className='psi-brief-frame'><EditorialEditionView edition={goldenSimulation27 as EditorialEdition} /></div></main>;
+  } else if (path === '/comparativo-editorial') {
     const samples: Record<string, EditorialEdition> = {
       '261013': comparison13 as EditorialEdition,
       '261015': historicalMorningTest as EditorialEdition,
