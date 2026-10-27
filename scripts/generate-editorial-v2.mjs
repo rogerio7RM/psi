@@ -146,7 +146,9 @@ const editorialGuidance=[
   'Distinguir calendário já publicado de indicador ainda não divulgado. Nunca dizer que se aguarda o calendário se o calendário já está disponível.',
   'Separar a hora do recorte da pesquisa da hora de geração. Evitar afirmações no presente/futuro incompatíveis com o recorte temporal.',
   'Não declarar como atual uma notícia histórica. Para pacote histórico, título e resumo devem conter TESTE HISTÓRICO.',
-  'Em cada seção: 1 fato específico do pacote e 1 implicação ou limitação verificável; evitar frases repetidas e generalidades.',
+  'Em cada seção: fatos concretos, movimentos, empresas e implicações para investidores; evitar frases repetidas e generalidades.',
+  'Nunca publicar comentários sobre arquivo, JSON, pesquisa, pacote, verificação, QA, fontes ausentes ou limitações do processamento. Essas informações pertencem aos logs internos.',
+  'Escreva como um analista financeiro brasileiro: priorize notícias e catalisadores específicos presentes no Bigdata, não apenas uma descrição dos índices.',
   'Não criar consenso, cotações, dados de fechamento, números, resultados, fontes ou datas ausentes.',
   'Afterclose: só descrever fechamento quando houver dados de fechamento verificados; pré-mercado não é fechamento.',
   'Afterclose: sem agenda verificada do dia seguinte, declarar lacuna e não inventar eventos.',
@@ -306,50 +308,8 @@ if(process.env.EDITORIAL_TEST_DATE && process.env.EDITORIAL_RESEARCH_FILE && pro
   if(!/TESTE HISTÓRICO/i.test(edition.title||'')) edition.title='TESTE HISTÓRICO — '+(edition.title||'Morning Brief');
   if(!/TESTE HISTÓRICO/i.test(edition.summary||'')) edition.summary='TESTE HISTÓRICO (não é boletim ao vivo). '+(edition.summary||'');
 }
-// Keep the watch section consistent with the verified structured agenda.
-// An empty agenda means no release has all required fields verified; it does
-// not establish that no real events exist. Preserve the strict QA guardrail.
-if(kind==='morning' && Array.isArray(edition.agenda) && edition.agenda.length===0 && Array.isArray(edition.sections)){
-  const watch=edition.sections.find(s=>s?.name==='O que observar hoje');
-  if(watch && typeof watch.content==='string' && /\b(?:ser[aá] divulgado|ser[aá] publicada|ser[aá] anunciado|est[aá] previsto|ser[aá] divulgado [aà]s)\b/i.test(watch.content)){
-    watch.content='Não há eventos com data, horário, consenso e dado anterior integralmente verificados no pacote de pesquisa desta edição. Isso não significa ausência de divulgações reais; consulte o calendário oficial antes de tomar decisões.';
-    console.log('Editorial repair: removed unverified upcoming release from empty-agenda watch section');
-  }
-}
-// Conservative editorial normalization: remove unsupported precision rather than
-// inventing a value or changing the sign of a verified market movement.
-if(kind==='morning' && Array.isArray(edition.markets)){
- for(const m of edition.markets){
-  if(m?.value==null && typeof m.context==='string'){
-   m.context=m.context.replace(/\b(?:abaixo|acima)\s+do\s+n[ií]vel\s+de\s+[\d.,]+(?:\s+pontos?)?,?\s*/gi,'')
-    .replace(/\b(?:n[ií]vel|cot[aá][cç][aã]o)\s+de\s+[\d.,]+(?:\s+pontos?)?/gi,'nível não confirmado')
-    .trim();
-   if(!m.context) m.context='Nível de preço não verificado no pacote de pesquisa.';
-  }
- }
- // Headline market direction comes from the structured market snapshot, not
- // from a separate free-form summary that may describe another session.
- const descriptions=edition.markets.filter(m=>typeof m?.change==='number').map(m=>{
-  const sign=m.change>0?'alta':m.change<0?'queda':'estabilidade';
-  return m.name+' em '+sign+' de '+Math.abs(m.change).toFixed(2).replace('.',',')+'%';
- });
- if(descriptions.length>=4){
-  const headline='No recorte de mercado disponível: '+descriptions.join('; ')+'. Os números representam os instrumentos e horários identificados no pacote de pesquisa.';
-  edition.summary=headline;
-  const pulse=edition.sections?.find(s=>s?.name==='Market Pulse');
-  if(pulse) pulse.content=headline;
- }
-}
-// Without claim-level provenance, do not print extreme Brazil market percentages
-// or present political events as proven causes. Keep a transparent uncertainty note.
-if(kind==='morning' && Array.isArray(edition.sections)){
- const brazil=edition.sections.find(s=>s?.name==='Brasil → EUA');
- const extreme=/\b(?:EWZ|USD\/BRL|USDBRL)\b.{0,110}\b(?:caiu|subiu|queda|alta|recuou|avan[cç]ou|caindo)\b.{0,30}\b(?:1[0-9]|[2-9][0-9])(?:[.,]\d+)?\s*%/i;
- if(brazil && typeof brazil.content==='string' && extreme.test(brazil.content)){
-  brazil.content='O pacote de pesquisa menciona movimentos relevantes em ativos brasileiros e no câmbio, mas as variações extremas e sua atribuição causal não têm comprovação individual suficiente nesta edição. Consulte as cotações e fontes originais antes de utilizar esses números.';
-  console.log('Editorial repair: withheld extreme Brazil claims without claim-level evidence');
- }
-}
+// Preserve the editor's analysis. Editorial consistency checks run separately;
+// do not overwrite entire sections with internal QA explanations.
 // For live runs, source references come from Bigdata, not model-authored citations.
 if(!process.env.EDITORIAL_RESEARCH_FILE) edition.sources=sourceRefs;
 // Keep all source references from a verified local research pack instead of
