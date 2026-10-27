@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 2,
+  "date": "261027",
+  "kind": "morning",
+  "label": "Morning Brief",
+  "title": "Mercados Americanos em Pré-Mercado: Sentimento Positivo e Expectativas de Earnings",
+  "updatedAtMadrid": "2026-10-27T15:39:49.136Z",
+  "summary": "No recorte de mercado disponível: S&P 500 À VISTA em alta de 0,58%; Nasdaq-100 À VISTA em alta de 1,12%; Dow Jones Industrial Average À VISTA em alta de 0,11%; Russell 2000 À VISTA em alta de 0,82%. Os números representam os instrumentos e horários identificados no pacote de pesquisa.",
+  "markets": [
+    {
+      "name": "S&P 500 À VISTA",
+      "value": 7721.54,
+      "change": 0.58,
+      "context": "Aumento de 0.58% em relação ao último fechamento verificado."
+    },
+    {
+      "name": "Nasdaq-100 À VISTA",
+      "value": 29602.41,
+      "change": 1.12,
+      "context": "Aumento de 1.12% em relação ao último fechamento verificado."
+    },
+    {
+      "name": "Dow Jones Industrial Average À VISTA",
+      "value": 52418.47,
+      "change": 0.11,
+      "context": "Aumento de 0.11% em relação ao último fechamento verificado."
+    },
+    {
+      "name": "Russell 2000 À VISTA",
+      "value": 2809.25,
+      "change": 0.82,
+      "context": "Aumento de 0.82% em relação ao último fechamento verificado."
+    }
+  ],
+  "drivers": [
+    {
+      "number": 1,
+      "reason": "AI & Tech Catalyst",
+      "impact": "Avaliação positiva das ações de tecnologia e semisselos, com o IPO do Anthropic e ações de Broadcom, Nvidia e Micron subindo."
+    },
+    {
+      "number": 2,
+      "reason": "Fed Policy Watch",
+      "impact": "A reunião do Federal Reserve e a expectativa de pelo menos duas elevações de juros adicionais até o meio de 2027."
+    },
+    {
+      "number": 3,
+      "reason": "Mixed Earnings Signal",
+      "impact": "Resultados mistos de empresas, com beats de UPS e Corning, mas misses de Whirlpool e Sherwin-Williams."
+    }
+  ],
+  "sections": [
+    {
+      "name": "Market Pulse",
+      "content": "No recorte de mercado disponível: S&P 500 À VISTA em alta de 0,58%; Nasdaq-100 À VISTA em alta de 1,12%; Dow Jones Industrial Average À VISTA em alta de 0,11%; Russell 2000 À VISTA em alta de 0,82%. Os números representam os instrumentos e horários identificados no pacote de pesquisa."
+    },
+    {
+      "name": "Premarket Movers",
+      "content": "As ações de tecnologia e semisselos lideram o movimento, com ações como Broadcom, Nvidia e Micron subindo. O IPO do Anthropic tem um impacto positivo. Ações de empresas como UPS, Coca-Cola, Boeing e Visa também se destacam."
+    },
+    {
+      "name": "Earnings Radar",
+      "content": "Earnings highlights incluem resultados positivos de UPS, Coca-Cola, Boeing e Visa, enquanto Whirlpool e Sherwin-Williams apresentam resultados negativos."
+    },
+    {
+      "name": "Market Themes",
+      "content": "O foco está nos semisselos e na tecnologia, com a AI impulsionando o investimento. O cenário político brasileiro continua volátil, com a reeleição de Lula impactando as ações de empresas brasileiras listadas nos EUA."
+    },
+    {
+      "name": "Brasil → EUA",
+      "content": "A reeleição de Lula continua impactando o mercado, com ações de empresas brasileiras listadas nos EUA caindo significativamente. O governo brasileiro cancelou leilões de títulos para gerir a volatilidade do mercado."
+    },
+    {
+      "name": "O que observar hoje",
+      "content": "A reunião do Federal Reserve e a divulgação de indicadores econômicos como Durable Goods Orders e Housing Price Index são os principais eventos a serem monitorados."
+    }
+  ],
+  "agenda": [],
+  "sources": [
+    "Stock Market Today (Oct. 27, 2026): S&P 500 climbs as Wall Street gears up for earnings, Fed meeting — https://www.aol.com/articles/stock-market-today-oct-27-105043000.html",
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "Country Tearsheet — US — https://www.fxstreet.com"
+  ]
+}
