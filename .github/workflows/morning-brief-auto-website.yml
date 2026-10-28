@@ -56,6 +56,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Live edition QA failed' }
           node scripts/format-morning-golden.mjs $path
           if ($LASTEXITCODE -ne 0) { throw 'Golden editorial formatting failed' }
+          node -e "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')); console.log('Final edition JSON valid')" $path
+          if ($LASTEXITCODE -ne 0) { throw 'Final JSON invalid; publication blocked' }
           npm run build
           if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
           "EDITION_PATH=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
