@@ -66,10 +66,12 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   const sources=[];
   let apiError='';
   let eventCount=0;
+  let nonEventLines=0;
+  let firstLineType='';
   const consumeLine=line=>{
-    if(!line.startsWith('data: ')) return;
+    if(!line.startsWith('data:')) { if(line.trim()) {nonEventLines++; if(!firstLineType) firstLineType=line.slice(0,30);} return; }
     let event;
-    try{event=JSON.parse(line.slice(6));}catch{return;}
+    try{event=JSON.parse(line.slice(5).trimStart());}catch{return;}
     eventCount++;
     const delta=event?.delta||{};
     if(delta.type==='ANSWER' && delta.content) answer+=delta.content;
@@ -92,7 +94,7 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   }catch(error){
     throw new Error('Bigdata SSE connection interrupted after '+eventCount+' events ('+answer.length+' answer chars); paid research NOT retried automatically', {cause:error});
   }finally{reader.releaseLock();}
-  console.log('Bigdata SSE completed:',eventCount,'events,',answer.length,'answer chars');
+  console.log('Bigdata SSE completed:',eventCount,'events,',answer.length,'answer chars; non-event lines:',nonEventLines,'first line prefix:',JSON.stringify(firstLineType));
   if(apiError) throw new Error('Bigdata workflow stream error: '+apiError);
   if(!answer.trim()) throw new Error('Bigdata workflow returned no research answer');
   // Bigdata can emit a very large research stream. The editor only needs a compact,
