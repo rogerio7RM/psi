@@ -84,8 +84,8 @@ Return a concise research pack for another model to edit; do not fabricate or fi
       if(done) break;
       pending+=decoder.decode(value,{stream:true});
       let end;
-      while((end=pending.indexOf('\\n'))!==-1){
-        consumeLine(pending.slice(0,end).replace(/\\r$/,''));
+      while((end=pending.indexOf('\n'))!==-1){
+        consumeLine(pending.slice(0,end).replace(/\r$/,''));
         pending=pending.slice(end+1);
       }
     }
