@@ -55,23 +55,44 @@ Return a concise research pack for another model to edit; do not fabricate or fi
   });
   if(!r.ok) throw new Error('Bigdata workflow failed '+r.status+' '+await r.text());
 
-  const stream=await r.text();
+  // Consume SSE incrementally. A long Bigdata workflow may be interrupted by
+  // proxies if the response is buffered until completion. Do not automatically
+  // retry paid research: it could charge twice for the same request.
+  const reader=r.body?.getReader();
+  if(!reader) throw new Error('Bigdata workflow returned no response body');
+  const decoder=new TextDecoder();
+  let pending='';
   let answer='';
   const sources=[];
   let apiError='';
-  for(const line of stream.split(/\r?\n/)){
-    if(!line.startsWith('data: ')) continue;
+  let eventCount=0;
+  const consumeLine=line=>{
+    if(!line.startsWith('data: ')) return;
     let event;
-    try{ event=JSON.parse(line.slice(6)); }catch{ continue; }
+    try{event=JSON.parse(line.slice(6));}catch{return;}
+    eventCount++;
     const delta=event?.delta||{};
     if(delta.type==='ANSWER' && delta.content) answer+=delta.content;
-    if(delta.type==='GROUNDING'){
-      for(const ref of delta.references||[]){
-        if(ref?.source) sources.push(ref.source);
+    if(delta.type==='GROUNDING') for(const ref of delta.references||[]) if(ref?.source) sources.push(ref.source);
+    if(delta.type==='ERROR') apiError=typeof delta.error==='string'?delta.error:JSON.stringify(delta.error);
+  };
+  try{
+    while(true){
+      const {value,done}=await reader.read();
+      if(done) break;
+      pending+=decoder.decode(value,{stream:true});
+      let end;
+      while((end=pending.indexOf('\\n'))!==-1){
+        consumeLine(pending.slice(0,end).replace(/\\r$/,''));
+        pending=pending.slice(end+1);
       }
     }
-    if(delta.type==='ERROR') apiError=typeof delta.error==='string'?delta.error:JSON.stringify(delta.error);
-  }
+    pending+=decoder.decode();
+    if(pending.trim()) consumeLine(pending.trim());
+  }catch(error){
+    throw new Error('Bigdata SSE connection interrupted after '+eventCount+' events ('+answer.length+' answer chars); paid research NOT retried automatically', {cause:error});
+  }finally{reader.releaseLock();}
+  console.log('Bigdata SSE completed:',eventCount,'events,',answer.length,'answer chars');
   if(apiError) throw new Error('Bigdata workflow stream error: '+apiError);
   if(!answer.trim()) throw new Error('Bigdata workflow returned no research answer');
   // Bigdata can emit a very large research stream. The editor only needs a compact,
