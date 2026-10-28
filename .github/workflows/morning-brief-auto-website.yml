@@ -61,6 +61,14 @@ jobs:
           npm run build
           if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
           "EDITION_PATH=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Preserve generated edition for recovery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-edition-recovery
+          path: src/react-app/editions/26*.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Archive Bigdata research for audit
         if: always()
         uses: actions/upload-artifact@v4
@@ -68,7 +76,7 @@ jobs:
           name: morning-bigdata-research
           path: editorial-audit/*-bigdata-research.json
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 14
       - name: Commit validated edition and trigger site deployment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
