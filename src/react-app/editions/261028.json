@@ -4,81 +4,96 @@
   "kind": "morning",
   "label": "Morning Brief · 28/10/2026",
   "title": "WALL STREET ANTES DA ABERTURA",
-  "updatedAtMadrid": "2026-10-28T13:41:22.472Z",
-  "summary": "O pré-mercado americano indica uma sessão positiva, com os principais índices negociando em alta. O Federal Reserve realiza uma decisão de taxa de juros, enquanto a SK Hynix e outras empresas tecnológicas apresentam resultados sólidos. O cenário político no Brasil continua influenciando os investimentos, com a reeleição de Lula gerando incertezas sobre a política fiscal.",
+  "updatedAtMadrid": "2026-10-28T17:15:58.431Z",
+  "summary": "O pré-mercado americano registrou uma sessão estável, com o S&P 500 e o Nasdaq-100 avançando levemente. O Dow Jones também subiu, enquanto o Russell 2000 manteve-se estável. A pressão de juros de longo prazo e a notícia de recordes de receita e lucro da SK Hynix impulsionaram a sessão. O Federal Reserve mantém a taxa de juros, mas a expectativa de um 'pausa hawkish' persiste. O Ibovespa caiu 2.44% após uma queda de 13.88% na semana passada, refletindo incertezas sobre a gestão fiscal e a política econômica após a reeleição do presidente Lula.",
   "markets": [
     {
       "name": "S&P 500 FUTUROS",
-      "value": "+0,60%"
+      "value": "+0,26%"
     },
     {
       "name": "Nasdaq-100 FUTUROS",
-      "value": "+1,29%"
+      "value": "+0,26%"
     },
     {
       "name": "Dow Jones FUTUROS",
-      "value": "+0,03%"
+      "value": "+0,32%"
     },
     {
       "name": "Russell 2000 FUTUROS",
-      "value": "+1,16%"
+      "value": "+0,08%"
     }
   ],
   "drivers": [
     {
-      "title": "Decisão de Taxa de Juros do Federal Reserve",
+      "title": "FOMC Policy Decision",
       "number": "Destaque 1",
-      "reason": "Decisão de Taxa de Juros do Federal Reserve",
-      "impact": "A decisão de manter a taxa de juros no nível atual pode influenciar a volatilidade do mercado, especialmente se houver comentários sobre a possibilidade de uma alta de juros em dezembro."
+      "reason": "FOMC Policy Decision",
+      "impact": "Alta"
     },
     {
-      "title": "Resultados de Empresas Tecnológicas",
+      "title": "AI Semiconductor Rally",
       "number": "Destaque 2",
-      "reason": "Resultados de Empresas Tecnológicas",
-      "impact": "A SK Hynix e outras empresas tecnológicas apresentaram resultados sólidos, impulsionando a valorização do setor."
+      "reason": "AI Semiconductor Rally",
+      "impact": "Positiva"
     },
     {
-      "title": "Cenário Político no Brasil",
+      "title": "Bond Yield Pressure",
       "number": "Destaque 3",
-      "reason": "Cenário Político no Brasil",
-      "impact": "A reeleição de Lula continua gerando incertezas sobre a política fiscal, influenciando o comportamento dos investidores brasileiros."
+      "reason": "Bond Yield Pressure",
+      "impact": "Negativa"
     }
   ],
   "sections": [
     {
       "title": "Market Pulse",
       "items": [
-        "O pré-mercado americano indica uma sessão positiva, com os principais índices negociando em alta. O Federal Reserve realiza uma decisão de taxa de juros, enquanto a SK Hynix e outras empresas tecnológicas apresentam resultados sólidos. O cenário político no Brasil continua influenciando os investimentos, com a reeleição de Lula gerando incertezas sobre a política fiscal."
+        "O pré-mercado americano registrou uma sessão estável, com o S&P 500 e o Nasdaq-100 avançando levemente.",
+        "O Dow Jones também subiu, enquanto o Russell 2000 manteve-se estável.",
+        "A pressão de juros de longo prazo e a notícia de recordes de receita e lucro da SK Hynix impulsionaram a sessão.",
+        "O Federal Reserve mantém a taxa de juros, mas a expectativa de um 'pausa hawkish' persiste.",
+        "O Ibovespa caiu 2.44% após uma queda de 13.88% na semana passada, refletindo incertezas sobre a gestão fiscal e a política econômica após a reeleição do presidente Lula."
       ]
     },
     {
       "title": "Premarket Movers",
       "items": [
-        "Ultralife (ULBI): +144% pre-market após EnerSys anunciar a aquisição da empresa por $16 por ação em dinheiro. Enphase Energy (ENPH): -18% pre-market após uma queda de 293,3 milhões de dólares em receita no quarto trimestre, em comparação com 410,4 milhões no ano anterior. SK Hynix (SLHY): +7.4% em US pre-market trading após anunciar resultados recordes e capacidade de chips AI vendida até 2029. PPG Industries (PPG): +6% após anunciar resultados recordes do terceiro trimestre e aumentar a projeção para o ano."
+        "Entre os principais movimentos, destaque para a Vertiv (VRT), que avançou 16.52% após anunciar um crescimento de 61% nas vendas trimestrais e reforçar suas projeções para o ano.",
+        "A Flex Ltd. (FLEX) também subiu 11.58% após um forte relatório de resultados.",
+        "A SK Hynix (SKHY) avançou 7.4% em pré-mercado, refletindo recordes de receita e lucro.",
+        "Por outro lado, a Ventas Inc. (VTR) caiu 19.8% após resultados abaixo do esperado.",
+        "ONEOK Inc. (OKE) subiu 42% após superar as expectativas de lucro."
       ]
     },
     {
       "title": "Earnings Radar",
       "items": [
-        "Phillips 66 (PSX): Relatório do terceiro trimestre com lucro por ação de $14.08 (real) contra estimativa de $11.73. GE Vernova (GEV): Resultados fortes, impulsionados pela alta demanda para turbinas de gás para centrais de dados de IA, sem cancelamentos. Labcorp (LH): Lucro por ação do terceiro trimestre de $4.78 (real) contra estimativa de $4.64. ONEOK (OKE): Lucro por ação do terceiro trimestre de $2.13 (real) contra estimativa de $1.50. eBay (EBAY), Teladoc (TDOC), Gen Digital (GEN), Q2 Holdings (QTWO) divulgam resultados após o fechamento."
+        "ONEOK Inc. (OKE) reportou um lucro por ação de $2.13, superando as expectativas.",
+        "Phillips 66 (PSX) também divulgou resultados superiores, com lucro por ação de $14.08.",
+        "Jones Lang LaSalle (JLL) e Labcorp Holdings (LH) também divulgaram resultados positivos, com lucros por ação de $6.76 e $4.78, respectivamente.",
+        "Brinker International (EAT) reportou um lucro por ação de $2.77."
       ]
     },
     {
       "title": "Market Themes",
       "items": [
-        "O buildout de IA continua sendo o principal driver de demanda, com GE Vernova e SK Hynix destacando a importância do hardware físico para a infraestrutura de IA. O cenário político no Brasil continua influenciando os investimentos, com a reeleição de Lula gerando incertezas sobre a política fiscal."
+        "As tecnológicas e as energéticas lideraram a sessão, com o S&P 500 e o Nasdaq-100 avançando 0.84%.",
+        "O petróleo WTI subiu 3.20%, impulsionando a sessão energética.",
+        "O setor imobiliário, no entanto, foi o pior desempenhador, caindo 1.19% devido à pressão de juros de longo prazo."
       ]
     },
     {
       "title": "Brasil → EUA",
       "items": [
-        "Petrobras (PBR) divulgará seu relatório de produção e vendas do terceiro trimestre após o fechamento. Vale (VALE) continua sensível à percepção do mercado de minério de ferro, com uma queda de 3.23% na semana passada. O relatório completo de desempenho da Vale será divulgado no dia seguinte."
+        "O Ibovespa caiu 2.44% a 171,422, refletindo incertezas sobre a gestão fiscal e a política econômica após a reeleição do presidente Lula.",
+        "O dólar subiu 0.67% a 5.39, decolando do cenário global de estabilidade."
       ]
     },
     {
       "title": "O que observar hoje",
       "items": [
-        "Não há eventos com todos os campos verificados neste pacote. O Federal Reserve realiza uma decisão de taxa de juros, enquanto a SK Hynix e outras empresas tecnológicas apresentam resultados sólidos. O cenário político no Brasil continua influenciando os investimentos, com a reeleição de Lula gerando incertezas sobre a política fiscal."
+        "O Federal Reserve realiza a decisão de taxa de juros às 18:00 UTC (14:00 ET).",
+        "A SK Hynix apresenta seu balanço de terceiro trimestre às 18:30 UTC (14:30 ET)."
       ]
     }
   ],
@@ -86,10 +101,6 @@
   "sources": [
     "Market Tearsheet — https://site.financialmodelingprep.com",
     "Country Tearsheet — US — https://www.fxstreet.com",
-    "Daily Gold Trading Report - Wednesday, October 28, 2026 — https://www.zerohedge.com/news/2026-10-28/daily-gold-trading-report-wednesday-october-28-2026",
-    "Jim Cramer's top 10 things to watch in the stock market Wednesday — https://www.cnbc.com/investingclub/2026/10/28/jim-cramers-top-10-things-to-watch-in-the-stock-market-wednesday.html",
-    "Premarket movers: Vertiv, SK Hynix jump; Enphase, NXP slide By Investing.com — https://ca.investing.com/news/stock-market-news/premarket-movers-vertiv-sk-hynix-jump-enphase-nxp-slide-4908931",
-    "Real Rebounds as the Fed Meets: Latin American Currencies Now Hinge on December Signals and Luiz Inácio Lula da Silva's Fiscal Test · Paral — https://paral.news/a/en/2026-10-28/fed-week-latam-currencies-real-rebound-lula.html",
-    "Brazil Miner Vale Falls 3.23% as Rio Tinto Gains 0.36% — https://www.riotimesonline.com/iron-ore-markets-latam-monday-october-26-2026/"
+    "Fed May Hold Rates Today, But Bond ETFs Face a Bigger Test Ahead — https://www.benzinga.com/node/62666046?utm_campaign=partner_feed&utm_medium=feed&utm_source=ravenpack"
   ]
 }
