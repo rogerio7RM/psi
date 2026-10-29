@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 2,
+  "date": "261029",
+  "kind": "morning",
+  "label": "Morning Brief · 29/10/2026",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "2026-10-29T12:36:03.258Z",
+  "summary": "O pré-mercado americano registrou uma queda geral, com destaque para o S&P 500, que caiu 0.45%. O VIX, índice de volatilidade, subiu 1.36%, indicando maior incerteza. A Eli Lilly liderou o avanço com um ganho de 4.4%, enquanto a Alphabet sofreu uma forte queda de 11.0% devido a resultados abaixo do esperado. O calendário econômico destaca a divulgação do PIB trimestral e do índice de preços PCE, ambos previstos para o próximo dia.",
+  "markets": [
+    {
+      "name": "S&P 500 FUTUROS",
+      "value": "-0,45%"
+    },
+    {
+      "name": "Nasdaq-100 FUTUROS",
+      "value": "-1,26%"
+    },
+    {
+      "name": "Dow Jones FUTUROS",
+      "value": "-0,40%"
+    },
+    {
+      "name": "Russell 2000 FUTUROS",
+      "value": "+0,16%"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "Alphabet (GOOGL) Earnings Drag",
+      "number": "Destaque 1",
+      "reason": "Alphabet (GOOGL) Earnings Drag",
+      "impact": "Forneceu forte pressão negativa sobre o setor de Tecnologia e Comunicações."
+    },
+    {
+      "title": "Eli Lilly (LLY) Growth Catalyst",
+      "number": "Destaque 2",
+      "reason": "Eli Lilly (LLY) Growth Catalyst",
+      "impact": "Suporte ao setor de Saúde, devido a superação de expectativas e aumento da projeção de receita."
+    },
+    {
+      "title": "Industrial Sector Caution (CAT)",
+      "number": "Destaque 3",
+      "reason": "Industrial Sector Caution (CAT)",
+      "impact": "Abaixo do esperado, com queda nas vendas de construção, pesando sobre o Dow industriais e o sentimento geral."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "O pré-mercado americano registrou uma queda geral, com destaque para o S&P 500, que caiu 0.45%.",
+        "O VIX, índice de volatilidade, subiu 1.36%, indicando maior incerteza.",
+        "A Eli Lilly liderou o avanço com um ganho de 4.4%, enquanto a Alphabet sofreu uma forte queda de 11.0% devido a resultados abaixo do esperado.",
+        "O calendário econômico destaca a divulgação do PIB trimestral e do índice de preços PCE, ambos previstos para o próximo dia."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "Picocela (PCLA) subiu 34.1% após ganhos em ações de depósito (ADS).",
+        "Mesoblast (MESO) avançou 18.4% com atualizações clínicas.",
+        "Fortinet (FTNT) caiu 26.2% após anúncios trimestrais.",
+        "Alphabet (GOOGL) caiu 11.0% devido a resultados abaixo do esperado e preocupações com fluxo de caixa.",
+        "Caterpillar (CAT) caiu 9.1% devido a vendas fracas na construção."
+      ]
+    },
+    {
+      "title": "Earnings Radar",
+      "items": [
+        "Eli Lilly (LLY) reportou $7.48 EPS (vs. $5.68 consenso).",
+        "Caterpillar (CAT) reportou $7.20 EPS (vs. $7.06 consenso).",
+        "DoorDash (DASH) estima $0.81 EPS (chamada às 8:30 AM ET).",
+        "Republic Services (RSG) estima $1.93 EPS (AMC).",
+        "Twilio (TWLO) estima $1.47 EPS (AMC)."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "O tema principal é a preocupação com o investimento em capital de giro (capex) na área de IA, com gastos massivos ($51.4B para a Alphabet em Q3) começando a pesar nas margens e fluxo de caixa.",
+        "O cenário político brasileiro continua volátil, com a reeleição de Lula da Silva e incertezas fiscais persistindo."
+      ]
+    },
+    {
+      "title": "Brasil → EUA",
+      "items": [
+        "Os ADRs brasileiros negociados nos EUA apresentaram variações mistas.",
+        "XP Inc caiu 2.6%, Petrobras caiu 1.0%, Vale caiu 0.7%, e Itau Unibanco subiu 0.2%."
+      ]
+    },
+    {
+      "title": "O que observar hoje",
+      "items": [
+        "O calendário econômico destaca a divulgação do PIB trimestral e do índice de preços PCE, ambos previstos para o próximo dia.",
+        "Não há eventos com todos os campos verificados neste pacote, portanto, não anunciamos nenhum evento como programado."
+      ]
+    }
+  ],
+  "agenda": [],
+  "sources": [
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "Alphabet Q3 2026 Earnings Call Transcript — https://www.benzinga.com/node/62679903?utm_campaign=partner_feed&utm_medium=feed&utm_source=ravenpack",
+    "Stocks making the biggest moves premarket: GOOGL, CAT, LLY, DASH — https://www.cnbc.com/2026/10/29/stocks-making-the-biggest-moves-premarket-.html",
+    "Eli Lilly quarterly profit up amid Mounjaro surge, lifts revenue view",
+    "Eli Lilly's results far better than expected - adjusts forecasts (update) — http://media.finwire.com/media/FWE00FA398-table-1",
+    "Caterpillar shares slump despite slight sales beat, unchanged outlook",
+    "Caterpillar third-quarter profit rises on power equipment demand By Reuters — https://www.investing.com/news/stock-market-news/caterpillar-thirdquarter-profit-rises-on-power-equipment-demand-4982548",
+    "Country Tearsheet — US — https://www.fxstreet.com",
+    "Events Calendar"
+  ]
+}
