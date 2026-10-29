@@ -10,6 +10,8 @@ on:
       - ".github/workflows/instagram-staging.yml"
       - "scripts/generate-social-edition.mjs"
       - "scripts/render-instagram-cards.mjs"
+  schedule:
+    - cron: '30 13 * * 1-5' # Fallback 14:30/15:30 Madrid; skips if today's edition absent or already posted
   workflow_dispatch:
     inputs:
       edition:
@@ -56,6 +58,10 @@ jobs:
             edition="20${code:0:2}-${code:2:2}-${code:4:2}"
           fi
           test -f "src/react-app/editions/${edition:2:2}${edition:5:2}${edition:8:2}.json"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            today=$(TZ=Europe/Madrid date +%F)
+            if [ "$edition" != "$today" ]; then echo "No current Morning Brief; scheduled run will not publish stale edition"; exit 1; fi
+          fi
           echo "edition=$edition" >> "$GITHUB_OUTPUT"
           force=false
           if [ -f ".social-force-republish" ] && grep -qx "$edition" ".social-force-republish"; then force=true; fi
@@ -156,7 +162,6 @@ jobs:
   facebook:
     needs: [prepare, stage]
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Facebook independent publish
         env:
