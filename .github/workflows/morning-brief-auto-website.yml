@@ -88,6 +88,5 @@ jobs:
             git commit -m "Publish validated Morning Brief: $env:EDITION_PATH"
             git -c http.extraheader="AUTHORIZATION: basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN")))" push origin HEAD:main
             if ($LASTEXITCODE -ne 0) { throw 'Git push failed; edition not published' }
-            gh workflow run primesphere-cloudflare-auto.yml --ref main
-            if ($LASTEXITCODE -ne 0) { throw 'Could not dispatch Cloudflare deploy' }
+            Write-Host 'Commit pushed to main; Cloudflare deploy is automatically triggered by push.'
           } else { Write-Host 'No changes to publish' }
