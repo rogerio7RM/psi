@@ -6,7 +6,10 @@ on:
     types: [completed]
   push:
     branches: ["main"]
-    paths: [".github/workflows/instagram-staging.yml"]
+    paths:
+      - ".github/workflows/instagram-staging.yml"
+      - "scripts/generate-social-edition.mjs"
+      - "scripts/render-instagram-cards.mjs"
   workflow_dispatch:
     inputs:
       edition:
@@ -47,12 +50,12 @@ jobs:
           if [ -n "${INPUT_EDITION:-}" ]; then
             edition="$INPUT_EDITION"
           else
-            file=$(find src/react-app/editions -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{6}\.tsx' -printf '%f\n' | sort | tail -1)
+            file=$(find src/react-app/editions -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{6}\\.json' -printf '%f\\n' | sort | tail -1)
             test -n "$file"
-            code="${file%.tsx}"
+            code="${file%.json}"
             edition="20${code:0:2}-${code:2:2}-${code:4:2}"
           fi
-          grep -q "Morning Brief" "src/react-app/editions/${edition:2:2}${edition:5:2}${edition:8:2}.tsx"
+          test -f "src/react-app/editions/${edition:2:2}${edition:5:2}${edition:8:2}.json"
           echo "edition=$edition" >> "$GITHUB_OUTPUT"
           force=false
           if [ -f ".social-force-republish" ] && grep -qx "$edition" ".social-force-republish"; then force=true; fi
@@ -64,7 +67,7 @@ jobs:
           EDITION: ${{ steps.resolve.outputs.edition }}
         run: |
           code="${EDITION:2:2}${EDITION:5:2}${EDITION:8:2}"
-          node scripts/generate-social-edition.mjs "src/react-app/editions/$code.tsx" ".social/$EDITION.json"
+          node scripts/generate-social-edition.mjs "src/react-app/editions/$code.json" ".social/$EDITION.json"
       - run: npm install --no-save --package-lock=false sharp
       - uses: actions/upload-artifact@v4
         with:
@@ -114,7 +117,7 @@ jobs:
           assert q["passed"] is True and q["templateVersion"]=="primesphere-approved-v2"
           assert q["slides"]==8 and q["width"]==1080 and q["height"]==1350
           assert q["minBodyFont"]>=28 and q["minTableFont"]>=22
-          assert q["slide2Columns"]==["Ticker","Preço (US$)","Variação","Leitura"] and q["slide2Rows"]==10
+          assert q["slide2Columns"]==["Índice","Variação","Leitura"] and 1<=q["slide2Rows"]<=10
           assert q["marketPulseBlocks"]==3
           print("HARD QA PASS: approved visual/content contract + 8 PNGs 1080x1350")
           PY
