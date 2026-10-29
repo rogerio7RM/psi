@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: '0 11 * * 1-5' # 12:00 Europe/Madrid in winter (UTC+1)
   workflow_dispatch:
+    inputs:
+      reuse_existing_research:
+        description: 'Reuse saved research from runner (no Bigdata charge)'
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -39,6 +44,13 @@ jobs:
       - run: npm ci
       - name: Generate and validate Morning Brief
         run: |
+          $code = node -e "const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>p.find(x=>x.type===k).value).join(''))"
+          $savedResearch = "editorial-audit/$code-bigdata-research.json"
+          if ('${{ inputs.reuse_existing_research }}' -eq 'true') {
+            if (-not (Test-Path $savedResearch)) { throw "Saved research not found: $savedResearch" }
+            $env:EDITORIAL_RESEARCH_FILE = $savedResearch
+            Write-Host "Reusing saved research: $savedResearch"
+          }
           node scripts/generate-editorial-v2.mjs morning
           if ($LASTEXITCODE -ne 0) { throw 'Generation failed' }
           $code = node -e "const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>p.find(x=>x.type===k).value).join(''))"
