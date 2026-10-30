@@ -1,7 +1,8 @@
 name: PrimeSphere Morning Brief - Auto Website
 on:
   schedule:
-    - cron: '0 11 * * 1-5' # 12:00 Europe/Madrid in winter (UTC+1)
+    - cron: '7 10 * * 1-5' # 12:07 Madrid during summer (UTC+2)
+    - cron: '7 11 * * 1-5' # 12:07 Madrid during winter (UTC+1)
   workflow_dispatch:
     inputs:
       reuse_existing_research:
@@ -10,6 +11,7 @@ on:
         default: false
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: primesphere-morning-editorial
   cancel-in-progress: false
@@ -28,21 +30,37 @@ jobs:
       BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
       BIGDATA_PAID_RESEARCH_ENABLED: 'true'
     steps:
+      - name: Gate scheduled runs to 12:00 Madrid
+        id: madrid_time
+        run: |
+          $hour = node -e "console.log(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Madrid',hour:'2-digit',hourCycle:'h23'}).format(new Date()))"
+          if ('${{ github.event_name }}' -eq 'schedule' -and [int]$hour -ne 12) {
+            Write-Host "Skipping alternate UTC cron: Madrid hour is $hour"
+            'run_editorial=false' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            'run_editorial=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
       - uses: actions/checkout@v4
+        if: steps.madrid_time.outputs.run_editorial == 'true'
         with:
           persist-credentials: true
       - uses: actions/setup-node@v4
+        if: steps.madrid_time.outputs.run_editorial == 'true'
         with:
           node-version: '22'
       - name: Require configured Bigdata API key
+        if: steps.madrid_time.outputs.run_editorial == 'true'
         run: |
           if (-not $env:BIGDATA_API_KEY) { throw 'BIGDATA_API_KEY is not configured.' }
       - name: Check local Ollama
+        if: steps.madrid_time.outputs.run_editorial == 'true'
         run: |
           $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
           if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Ollama model unavailable' }
       - run: npm ci
+        if: steps.madrid_time.outputs.run_editorial == 'true'
       - name: Generate and validate Morning Brief
+        if: steps.madrid_time.outputs.run_editorial == 'true'
         run: |
           $code = node -e "const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>p.find(x=>x.type===k).value).join(''))"
           $savedResearch = "editorial-audit/$code-bigdata-research.json"
@@ -74,6 +92,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
           "EDITION_PATH=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Preserve generated edition for recovery
+        if: always() && steps.madrid_time.outputs.run_editorial == 'true'
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -82,6 +101,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - name: Archive Bigdata research for audit
+        if: always() && steps.madrid_time.outputs.run_editorial == 'true'
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -90,6 +110,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - name: Commit validated edition and trigger site deployment
+        if: steps.madrid_time.outputs.run_editorial == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -103,7 +124,7 @@ jobs:
             Write-Host 'Edition pushed to main. Dispatching Cloudflare deployment explicitly.'
           } else { Write-Host 'No changes to publish' }
       - name: Trigger Cloudflare deploy via GitHub API
-        if: success()
+        if: steps.madrid_time.outputs.run_editorial == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
