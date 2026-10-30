@@ -157,6 +157,7 @@ const editorialGuidance=[
   'PROTÓTIPO EDITORIAL: priorize clareza e precisão factual, sem exigir perfeição estilística.',
   'Distinguir explicitamente FUTUROS de índices à vista em markets, summary e Market Pulse; não atribuir variação de futuros ao índice à vista.',
   'MORNING BRIEF: não escrever que o mercado americano abriu, fechou, encerrou ou terminou a sessão; esta edição descreve o pré-mercado. Use expressões como futuros negociavam, antes da abertura, último fechamento verificado em data explícita.',
+  'MORNING BRIEF: em resumo, seções e impactos, não escrever que mercado, bolsa ou índices abriram ou fecharam no dia corrente; use linguagem de futuros e pré-mercado, ou identifique explicitamente a data de uma sessão anterior verificada. Evitar frases ambíguas como mercado fechou, bolsa abriu, Nasdaq fechou.',
   'MORNING BRIEF: para cada markets[i], name deve identificar o instrumento correto: S&P 500 FUTUROS se change for dos futuros, ou S&P 500 À VISTA se for do índice à vista. Não misturar os dois em name/context.',
   'MORNING BRIEF: context de markets[i] deve descrever o sinal da variação numérica do MESMO instrumento: change negativo significa queda; positivo significa alta. Não trocar o sinal nem citar outro instrumento no mesmo context.',
   'MORNING BRIEF: se o pacote trouxer valor à vista de fechamento anterior e variação de futuros atual, NÃO combinar esses dados na mesma linha; prefira valor e change nulos quando não houver par consistente.',
