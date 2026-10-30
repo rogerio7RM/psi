@@ -93,7 +93,6 @@ jobs:
           "EDITION_PATH=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Preserve generated edition for recovery
         if: always() && steps.madrid_time.outputs.run_editorial == 'true'
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: morning-edition-recovery
@@ -102,7 +101,6 @@ jobs:
           retention-days: 14
       - name: Archive Bigdata research for audit
         if: always() && steps.madrid_time.outputs.run_editorial == 'true'
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: morning-bigdata-research
