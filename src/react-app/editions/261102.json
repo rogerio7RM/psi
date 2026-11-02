@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 2,
+  "date": "261102",
+  "kind": "morning",
+  "label": "Morning Brief · 02/11/2026",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "2026-11-02T12:36:55.352Z",
+  "summary": "O pré-mercado americano está marcado por uma tendência de alta, com os futuros dos principais índices negociando em terreno positivo. A expectativa de um possível descongelamento geopolítico entre EUA e Irã está pressionando os preços do petróleo abaixo do nível psicológico de US$ 100. Além disso, a atenção está voltada para os resultados de earnings de empresas tecnológicas, com destaque para Apple (AAPL). O cenário econômico é acompanhado de perto, com a divulgação do PMI de manufatura e do relatório de construção. No Brasil, o mercado está fechado por conta do feriado de Finados, mas a atenção está voltada para a decisão do Copom na próxima terça-feira.",
+  "markets": [
+    {
+      "name": "S&P 500 FUTUROS",
+      "value": "+0,54%"
+    },
+    {
+      "name": "Nasdaq-100 FUTUROS",
+      "value": "+0,80%"
+    },
+    {
+      "name": "Dow Jones FUTUROS",
+      "value": "+0,61%"
+    },
+    {
+      "name": "US 10Y Treasury",
+      "value": "-0,80%"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "Eleições de meia legislatura nos EUA",
+      "number": "Destaque 1",
+      "reason": "Eleições de meia legislatura nos EUA",
+      "impact": "Investidores estão se preparando para as eleições de meia legislatura, que podem impactar a política fiscal e a regulação da IA."
+    },
+    {
+      "title": "Descongelamento geopolítico entre EUA e Irã",
+      "number": "Destaque 2",
+      "reason": "Descongelamento geopolítico entre EUA e Irã",
+      "impact": "Esperanças de uma resolução diplomática levaram os preços do petróleo WTI abaixo do nível psicológico de US$ 100, aliviando as preocupações com inflação energética."
+    },
+    {
+      "title": "Resultados de earnings de empresas tecnológicas",
+      "number": "Destaque 3",
+      "reason": "Resultados de earnings de empresas tecnológicas",
+      "impact": "Os mercados estão tentando se estabilizar após uma queda de US$ 2,5 trilhões em tecnologia em outubro, com foco especial no desempenho de Apple (AAPL) em relação à sua infraestrutura de IA."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "Os principais índices futuros negociam em alta, com o S&P 500 FUTUROS avançando 0.54%, o Nasdaq-100 FUTUROS ganhando 0.80% e o Dow Jones FUTUROS subindo 0.61%.",
+        "O WTI Crude caiu 4.02% para US$ 99.93, enquanto o VIX Index caiu 1.29% para 19.17.",
+        "O US 10Y Treasury caiu 0.80% para 4.94%.",
+        "O Bitcoin caiu 0.41% para US$ 77,911.58 e o USD/BRL subiu 0.02% para 5.44."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "Fox Corp (FOXA) avançou 5.64% para US$ 66.81, IDEXX Laboratories (IDXX) subiu 5.19% para US$ 579.80, Apple Inc. (AAPL) caiu 0.16% para US$ 344.08, Palantir Technologies (PLTR) subiu 1.07% para US$ 186.08 e Vertex Pharmaceuticals (VRTX) subiu 0.24% para US$ 560.20."
+      ]
+    },
+    {
+      "title": "Earnings Radar",
+      "items": [
+        "Fox Corp (FOXA) e IDEXX Laboratories (IDXX) divulgaram resultados pré-mercado.",
+        "Apple Inc. (AAPL) e Palantir Technologies (PLTR) divulgaram resultados após o fechamento.",
+        "Vertex Pharmaceuticals (VRTX) divulgou resultados após o fechamento."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "O cenário econômico é acompanhado de perto, com a divulgação do PMI de manufatura e do relatório de construção.",
+        "O Copom está programado para decidir sobre a taxa Selic na próxima terça-feira, com expectativa de manutenção da taxa em 13.75%.",
+        "O mercado brasileiro está fechado por conta do feriado de Finados."
+      ]
+    },
+    {
+      "title": "Brasil → EUA",
+      "items": [
+        "O mercado brasileiro está fechado por conta do feriado de Finados.",
+        "No entanto, a atenção está voltada para a decisão do Copom na próxima terça-feira, com expectativa de manutenção da taxa Selic em 13.75%.",
+        "Petrobras (PBR) caiu 1.67% pré-mercado, enquanto Vale (VALE) subiu 0.79% pré-mercado."
+      ]
+    },
+    {
+      "title": "O que observar hoje",
+      "items": [
+        "Não há eventos com todos os campos verificados neste pacote.",
+        "O mercado brasileiro está fechado por conta do feriado de Finados.",
+        "A atenção está voltada para a decisão do Copom na próxima terça-feira, com expectativa de manutenção da taxa Selic em 13.75%.",
+        "O mercado americano está em pré-mercado, com os principais índices futuros negociando em alta."
+      ]
+    }
+  ],
+  "agenda": [],
+  "sources": [
+    "US Stock Outlook | Major Index Futures Rise Together, WTI Drops Below $100; Midterm Elections, Apple Earnings, and Non-Farm Payrolls Take Center Stage This Week — https://www.zhitongcaijing.com/content/detail/1517365.html",
+    "Stock Market Today, Nov. 2: Futures Rise Ahead of Earnings and Midterm Elections; Oil Prices Fall - TipRanks.com — https://www.tipranks.com/news/stock-market-today-nov-2-futures-rise-ahead-of-earnings-and-midterm-elections-oil-prices-fall",
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "Country Tearsheet — US — https://www.fxstreet.com"
+  ]
+}
