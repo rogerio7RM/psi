@@ -30,7 +30,7 @@ jobs:
       EDITORIAL_STRICT_QA: 'true'
       EDITORIAL_SYNTHETIC_TEST: ${{ inputs.research == 'synthetic' && 'true' || 'false' }}
       EDITORIAL_TEST_DATE: ${{ inputs.research == 'historical-20261015' && '2026-10-15' || '' }}
-      OLLAMA_MODEL: qwen2.5:7b
+      OLLAMA_MODEL: qwen2.5:3b
       OLLAMA_URL: http://127.0.0.1:11434
       BIGDATA_API_KEY: ''
       EDITORIAL_RESEARCH_FILE: ${{ inputs.research == 'historical-20261015' && (inputs.edition == 'afterclose' && 'scripts/fixtures/ollama-afterclose-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research-real-20261015.json') || 'scripts/fixtures/ollama-editorial-research.json' }}
