@@ -1,4 +1,30 @@
 import fs from 'node:fs/promises';
+import http from 'node:http';
+import { Readable } from 'node:stream';
+
+// Node fetch/undici may time out while a CPU-only Ollama loads a model,
+// before the first HTTP response header. Use native HTTP and rely on
+// the existing AbortController idle timeout instead.
+async function localOllamaFetch(url, options) {
+  return await new Promise((resolve, reject) => {
+    const req = http.request(new URL(url), {
+      method: 'POST',
+      headers: options.headers,
+      signal: options.signal
+    }, res => resolve({
+      ok: res.statusCode >= 200 && res.statusCode < 300,
+      status: res.statusCode,
+      body: Readable.toWeb(res),
+      text: async () => {
+        let result = '';
+        for await (const chunk of res) result += chunk.toString();
+        return result;
+      }
+    }));
+    req.on('error', reject);
+    req.end(options.body);
+  });
+}
 
 const kind=process.argv[2];
 if(!['morning','afterclose'].includes(kind)) throw new Error('kind must be morning or afterclose');
@@ -197,7 +223,7 @@ if(local){
   };
   resetIdleTimeout();
   try{
-    const r=await fetch(endpoint+'/api/chat',{
+    const r=await localOllamaFetch(endpoint+'/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       signal:controller.signal,
