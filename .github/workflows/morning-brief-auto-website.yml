@@ -9,6 +9,10 @@ on:
         description: 'Reuse saved research from runner (no Bigdata charge)'
         type: boolean
         default: false
+      research_run_id:
+        description: 'Existing GitHub Actions run ID with morning-bigdata-research artifact (no Bigdata charge)'
+        type: string
+        default: ''
 permissions:
   contents: write
   actions: write
@@ -25,7 +29,7 @@ jobs:
     env:
       EDITORIAL_PROVIDER: ollama
       EDITORIAL_STRICT_QA: 'true'
-      OLLAMA_MODEL: qwen2.5:7b
+      OLLAMA_MODEL: qwen2.5:3b
       OLLAMA_URL: http://127.0.0.1:11434
       BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
       BIGDATA_PAID_RESEARCH_ENABLED: 'true'
@@ -59,15 +63,23 @@ jobs:
           if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Ollama model unavailable' }
       - run: npm ci
         if: steps.madrid_time.outputs.run_editorial == 'true'
+      - name: Download previously saved Bigdata research (optional, no API charge)
+        if: steps.madrid_time.outputs.run_editorial == 'true' && github.event_name == 'workflow_dispatch' && inputs.research_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: morning-bigdata-research
+          run-id: ${{ inputs.research_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: editorial-audit
       - name: Generate and validate Morning Brief
         if: steps.madrid_time.outputs.run_editorial == 'true'
         run: |
           $code = node -e "const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>p.find(x=>x.type===k).value).join(''))"
           $savedResearch = "editorial-audit/$code-bigdata-research.json"
-          if ('${{ inputs.reuse_existing_research }}' -eq 'true') {
+          if ('${{ inputs.reuse_existing_research }}' -eq 'true' -or '${{ inputs.research_run_id }}' -ne '') {
             if (-not (Test-Path $savedResearch)) { throw "Saved research not found: $savedResearch" }
             $env:EDITORIAL_RESEARCH_FILE = $savedResearch
-            Write-Host "Reusing saved research: $savedResearch"
+            Write-Host "Reusing saved research: $savedResearch (no Bigdata API call)"
           }
           node scripts/generate-editorial-v2.mjs morning
           if ($LASTEXITCODE -ne 0) { throw 'Generation failed' }
