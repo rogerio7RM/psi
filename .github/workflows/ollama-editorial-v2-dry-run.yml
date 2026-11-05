@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/ollama-editorial-v2-dry-run.yml'
       - 'scripts/generate-editorial-v2.mjs'
+      - 'scripts/validate-editorial.mjs'
   workflow_dispatch:
     inputs:
       edition:
