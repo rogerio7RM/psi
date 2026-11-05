@@ -4,100 +4,144 @@
   "kind": "morning",
   "label": "Morning Brief · 05/11/2026",
   "title": "WALL STREET ANTES DA ABERTURA",
-  "updatedAtMadrid": "2026-11-05T11:24:41.473Z",
-  "summary": "PROTÓTIPO EDITORIAL: Este briefing é uma versão protótipo baseada no pacote de dados fornecido. Não há eventos programados para hoje, mas os dados fornecidos são suficientes para descrever o cenário atual dos mercados. O pacote não inclui dados históricos ou previsões futuras. Se você estiver procurando por uma versão mais completa e atualizada, é recomendado consultar fontes financeiras confiáveis.",
+  "updatedAtMadrid": "2026-11-05T12:08:00.000Z",
+  "summary": "Wall Street inicia a quinta-feira com futuros mistos após a forte recuperação da sessão anterior, que acompanhou a vitória democrata nas eleições de meio de mandato dos EUA. O Nasdaq-100 sente a pressão de fabricantes de chips e empresas ligadas a data centers; a Qualcomm recua após uma perspectiva mais fraca para seus negócios, enquanto a AppLovin avança depois de resultados melhores que o esperado. A atenção se divide entre o ritmo dos investimentos em inteligência artificial, a recuperação do petróleo e os indicadores do mercado de trabalho americano previstos para 8h30 de Nova York.",
   "markets": [
     {
-      "name": "S&P 500 FUTUROS",
-      "value": "-0,10%"
+      "name": "S&P 500 À VISTA · FECH. 04/11",
+      "value": "+1,58%"
     },
     {
-      "name": "Nasdaq-100 FUTUROS",
-      "value": "-0,10%"
+      "name": "NASDAQ-100 À VISTA · FECH. 04/11",
+      "value": "+0,91%"
     },
     {
-      "name": "Dow Jones FUTUROS",
-      "value": "+0,05%"
+      "name": "DOW JONES À VISTA · FECH. 04/11",
+      "value": "+3,03%"
     },
     {
-      "name": "WTI Crude",
-      "value": "+0,05%"
+      "name": "RUSSELL 3000 À VISTA · FECH. 04/11",
+      "value": "+1,55%"
+    },
+    {
+      "name": "NASDAQ-100 FUTUROS · 05/11",
+      "value": "−0,63%"
+    },
+    {
+      "name": "DOW JONES FUTUROS · 05/11",
+      "value": "+0,48%"
+    },
+    {
+      "name": "QUALCOMM (QCOM) · PRÉ-MERCADO",
+      "value": "−10,1%"
     }
   ],
   "drivers": [
     {
-      "title": "Impacto da \"Blue Wave\" nas Eleições Midterm nos EUA",
+      "title": "Vitória democrata e reação dos mercados",
       "number": "Destaque 1",
-      "reason": "Impacto da \"Blue Wave\" nas Eleições Midterm nos EUA",
-      "impact": "Risco de desacordo legislativo e tensões com o teto de dívida"
+      "reason": "A vitória democrata nas eleições legislativas reduziu parte da incerteza política, mas trouxe novas discussões sobre orçamento e prioridades regulatórias.",
+      "impact": "Após a valorização dos índices à vista em 04/11, o pré-mercado de 05/11 mostra comportamento distinto por setor. O foco agora é como o novo Congresso influenciará tecnologia, gasto público e política econômica."
     },
     {
-      "title": "Correção nos Preços do Petróleo",
+      "title": "Semicondutores e risco para data centers",
       "number": "Destaque 2",
-      "reason": "Correção nos Preços do Petróleo",
-      "impact": "Pressão sobre as ações de energia e inflação"
+      "reason": "Nasdaq-100 futuros recuam 0,63% no recorte divulgado pela Reuters, com perdas em fabricantes de chips e fornecedores da infraestrutura de IA.",
+      "impact": "A resistência local à expansão de data centers e o custo de novos projetos colocam em discussão o ritmo de encomendas para servidores, memória e semicondutores; empresas com alta exposição ao ciclo de IA exigem atenção especial."
     },
     {
-      "title": "Fed manterá taxas de juros em 4",
+      "title": "Balanços ampliam dispersão entre ações",
       "number": "Destaque 3",
-      "reason": "Fed manterá taxas de juros em 4.00%",
-      "impact": "Desinflamação da queda nos preços do petróleo"
+      "reason": "Qualcomm sofre queda próxima de 10% no pré-mercado por uma perspectiva desfavorável para chips de smartphones, enquanto a AppLovin sobe após superar expectativas.",
+      "impact": "A divergência reforça que resultados trimestrais e projeções importam mais do que o movimento agregado do índice: demanda final, margens e investimentos futuros orientam a reação de cada ação."
     }
   ],
   "sections": [
     {
       "title": "Market Pulse",
       "items": [
-        "O mercado pré-mercado está mostrando movimentos variados.",
-        "O S&P 500 FUTUROS caiu 0.10%, enquanto o Nasdaq-100 FUTUROS e o Dow Jones FUTUROS mantiveram-se relativamente estáveis.",
-        "O WTI Crude também teve uma pequena queda de 0.05%."
+        "O fechamento de 04/11 foi forte: o S&P 500 avançou 1,58%, o Nasdaq-100 ganhou 0,91% e o Dow Jones subiu 3,03%. Esses números pertencem à sessão à vista anterior, não ao pré-mercado de quinta-feira.",
+        "No recorte da Reuters de 05/11, os contratos futuros do Nasdaq-100 recuavam 0,63%, os do Dow avançavam 0,48% e os do S&P 500 operavam perto da estabilidade. A diferença mostra uma abertura menos uniforme que a sessão anterior.",
+        "O petróleo ensaiava recuperação depois de forte baixa na sessão anterior. Investidores monitoravam comentários de dirigentes do Federal Reserve e os dados de emprego previstos para o dia."
       ]
     },
     {
       "title": "Premarket Movers",
       "items": [
-        "AppLovin (APP) liderou o mercado pré-mercado com alta de 20%, seguido por Qualcomm (QCOM) com baixa de 7%.",
-        "SK Hynix (SKH) e Micron (MU) tiveram declínios significativos, enquanto Tesla (TSLA) teve uma queda."
+        "Qualcomm (QCOM) recuava 10,1% no pré-mercado, segundo a Reuters, após vendas de chips de smartphones abaixo das estimativas; margens e exposição à Apple seguem no radar.",
+        "AppLovin (APP) avançava depois de lucro superior ao esperado, em contraste com a fraqueza de empresas ligadas a chips e infraestrutura de IA.",
+        "Nvidia, Marvell e Intel também registravam perdas no recorte da Reuters. O movimento sugere pressão seletiva sobre a cadeia de semicondutores, em vez de queda homogênea de todo o setor tecnológico."
       ]
     },
     {
       "title": "Earnings Radar",
       "items": [
-        "A Kimberly-Clark Corp. (KMB) está prevista para divulgar seus resultados no horário de 11:30 AM, com estimativa de EPS de 1.65.",
-        "A Tapestry Inc. (TPR) está prevista para divulgar seus resultados no horário de 1:00 PM, com estimativa de EPS de 1.56.",
-        "A ConocoPhillips (COP) está prevista para divulgar seus resultados pré-mercado, enquanto a Airbnb Inc. (ABNB) e a Affirm Holdings Inc. (AFRM) não têm previsões de resultados."
+        "O balanço da Qualcomm concentrou as atenções: o mercado reagiu negativamente à perspectiva para chips de smartphones, apesar de outras linhas do trimestre apresentarem avanços.",
+        "A AppLovin foi destaque positivo após surpreender nas contas trimestrais. A reação oposta entre as duas companhias ilustra o peso das projeções, e não apenas dos resultados históricos.",
+        "Para 05/11, o calendário de resultados também inclui ConocoPhillips (COP) antes da abertura e Airbnb (ABNB) após o fechamento, de acordo com o material de pesquisa arquivado. Confirme o horário final no canal de relações com investidores."
       ]
     },
     {
       "title": "Market Themes",
       "items": [
-        "O setor tecnológico enfrenta volatilidade, com a semicondutores sob pressão de temores regulatórias, enquanto o setor de biotecnologia (como Eli Lilly +1.27%) está em alta.",
-        "As ações de defesa (Lockheed Martin -6.9%) estão sobperformendo devido a possíveis cortes de orçamento no novo Congresso."
+        "Inteligência artificial continua no centro da precificação. A discussão migrou do crescimento potencial da demanda para a viabilidade de construir data centers no ritmo projetado, diante de resistência local e limitações práticas.",
+        "A rotação entre setores ganhou força após a alta generalizada de 04/11. As maiores oscilações no pré-mercado mostram que tecnologia, publicidade digital e negócios ligados ao consumo respondem a catalisadores diferentes.",
+        "O petróleo recuperava parte das perdas após queda expressiva no dia anterior. A mudança influencia expectativas de inflação e pode produzir efeitos distintos em empresas de energia, transporte e consumo."
       ]
     },
     {
       "title": "Brasil → EUA",
       "items": [
-        "A BCB (Banco Central do Brasil) parou sua ciclo de cortes de juros, mantendo a Selic em 13.75%, devido a expectativas crescentes de inflação (5.2% para 2026).",
-        "Apesar da vitória democrata, a tarifa de 25% sobre produtos brasileiros permanece em vigor, mantendo pressão sobre os exportadores, mesmo que o Brasil tenha uma entrada de dólares de $9.5B por semana devido ao comércio."
+        "A mudança no humor de Wall Street importa para brasileiros expostos a ETFs internacionais, ações americanas e empresas com receitas dolarizadas. O ganho dos índices em 04/11 não garante valorização semelhante na abertura de 05/11.",
+        "Segundo a captura de mercado da Financial Modeling Prep arquivada em 04/11, o ETF iShares MSCI Brazil (EWZ) subiu 1,64% naquela sessão. A referência é histórica e não representa a cotação do pré-mercado de hoje.",
+        "Para posições com exposição cambial, convém acompanhar simultaneamente o dólar frente ao real, os rendimentos dos Treasuries e a trajetória do Nasdaq: o efeito combinado pode divergir do retorno em dólares de cada ativo."
       ]
     },
     {
       "title": "O que observar hoje",
       "items": [
-        "Não há eventos programados para hoje.",
-        "No entanto, os dados fornecidos permitem uma análise do cenário atual dos mercados."
+        "Às 8h30 em Nova York (14h30 em Madrid), estão previstos pedidos iniciais de seguro-desemprego, produtividade não agrícola e custos unitários do trabalho. O consenso registrado é, respectivamente, 196 mil, 2,5% e 0,6%.",
+        "Além da agenda macro, acompanhe as reações a resultados de tecnologia, as discussões sobre infraestrutura para IA e a recuperação do petróleo.",
+        "Os números de futuros e ações mencionados são recortes do pré-mercado, não promessas de preço de abertura ou de fechamento."
       ]
     }
   ],
-  "agenda": [],
+  "agenda": [
+    {
+      "officialDate": "2026-11-05",
+      "name": "Pedidos iniciais de seguro-desemprego",
+      "timeNewYork": "08:30",
+      "timeMadrid": "14:30",
+      "status": "FUTURO",
+      "consensus": "196 mil",
+      "previous": "194 mil",
+      "result": ""
+    },
+    {
+      "officialDate": "2026-11-05",
+      "name": "Produtividade não agrícola (3º trimestre, preliminar)",
+      "timeNewYork": "08:30",
+      "timeMadrid": "14:30",
+      "status": "FUTURO",
+      "consensus": "2,5%",
+      "previous": "1,4%",
+      "result": ""
+    },
+    {
+      "officialDate": "2026-11-05",
+      "name": "Custos unitários do trabalho (3º trimestre, preliminar)",
+      "timeNewYork": "08:30",
+      "timeMadrid": "14:30",
+      "status": "FUTURO",
+      "consensus": "0,6%",
+      "previous": "1,2%",
+      "result": ""
+    }
+  ],
   "sources": [
-    "Market Tearsheet — https://site.financialmodelingprep.com",
-    "The FuW Morning Report for November 5, 2026: What you need to know for today's trading day — https://www.fuw.ch/der-fuw-morgen-report-vom-5-november-2026-was-sie-fuer-den-heutigen-681298677330",
-    "Country Tearsheet — US — https://www.fxstreet.com",
-    "Economic & market highlights (Nov 5, 2026) — https://www.ccfgroup.com/newscenter/newsview.php?Class_ID=800000&Info_ID=2026110530018",
-    "[Global Market Report November 5] — https://www.newspim.com/news/view/20261105000266",
-    "Market Morning Briefing — http://news.10jqka.com.cn/20261105/c681483141.shtml",
-    "Market focus after the U.S. midterm elections — https://finance.eastmoney.com/a/202611053923514479.html"
+    "Reuters — https://www.reuters.com/business/sp-500-futures-steady-after-midterm-rally-nasdaq-lags-chip-weakness-2026-11-05/",
+    "Reuters/MarketScreener — https://www.marketscreener.com/news/s-p-500-futures-steady-after-midterm-rally-nasdaq-lags-on-chip-weakness-ce785fdcdc88fe22",
+    "FXStreet — calendário econômico EUA — https://www.fxstreet.com/economic-calendar/united-states",
+    "Financial Modeling Prep — dados da sessão de 04/11 — https://site.financialmodelingprep.com"
   ]
 }
