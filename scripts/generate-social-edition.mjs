@@ -3,6 +3,10 @@ import path from "node:path";
 const [,,source,output]=process.argv;
 if(!source||!output)throw Error("Usage: generate source.json output.json");
 const data=JSON.parse(await fs.readFile(source,"utf8"));
+// Social distribution must not amplify a failed editorial draft.
+const editorial=[data.summary,...(data.sections||[]).flatMap(s=>[s.content,...(s.items||[])])].filter(v=>typeof v==='string').join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+if(/\b(?:prototipo|pacote de dados|pacote de pesquisa|modelo de linguagem|consulte fontes financeiras confiaveis)\b/i.test(editorial))
+  throw Error('Social publishing blocked: Morning Brief contains prototype or internal-process language');
 const code=path.basename(source).match(/^(\d{6})\.json$/)?.[1];
 if(!code||data.kind!=="morning"||String(data.date)!==code)throw Error("Expected matching Morning Brief JSON");
 const edition=`20${code.slice(0,2)}-${code.slice(2,4)}-${code.slice(4,6)}`;
