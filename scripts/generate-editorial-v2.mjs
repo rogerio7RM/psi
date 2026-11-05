@@ -224,6 +224,9 @@ const editorialGuidance=[
   'Afterclose: só descrever fechamento quando houver dados de fechamento verificados; pré-mercado não é fechamento.',
   'Afterclose: sem agenda verificada do dia seguinte, declarar lacuna e não inventar eventos.',
   'Não repetir o mesmo parágrafo em Market Pulse e Destaques do fechamento: Market Pulse contextualiza cenário, Destaques do fechamento deve limitar-se aos fatos de fechamento efetivamente confirmados.',
+  'PESQUISA REAL VERSUS SINTÉTICA: um arquivo histórico da Bigdata com fontes reais e fatos datados NÃO é simulação apenas porque alguns números são estimados ou há incerteza. Preserve os fatos sustentados pelas fontes e identifique a sessão e o horário; exclua individualmente as informações não sustentadas. Use TESTE HISTÓRICO apenas porque se trata de uma revisão de edição passada; não use TESTE SINTÉTICO a menos que o próprio arquivo seja explicitamente sintético.',
+  'QUALIDADE PRIME SPHERE: texto jornalístico específico, não aconselhamento sobre o processo. A síntese executiva deve conectar 2 ou 3 acontecimentos concretos com as consequências para índices, setores e investidor. Cada uma das seis seções deve explicar fatos verificáveis, catalisadores, nomes e impactos; evite repetições genéricas e listas vazias.',
+  'MERCADOS: use apenas preços e variações identificados com ativo e recorte temporal no pacote. Um fechamento anterior de índice à vista não pode ser tratado como futuro atual. Se os futuros forem apenas estimativa, não apresente como cotação confirmada. Não substitua valores verificados de fechamento anterior por nulos sem necessidade.',
   'Nunca concluir que não houve outros balanços ou eventos: ausência de dados na pesquisa não é prova de ausência de eventos.',
   'Incluir todas as fontes relevantes do pacote, sem inventar outras. Se agenda estruturada carecer de campos obrigatórios, mantê-la vazia.'
 ].join(' ');
