@@ -15,7 +15,7 @@ const section=t=>data.sections?.find(s=>s.title===t)?.items||[];
 const join=(arr,n)=>short(arr.join(" • "),n);
 const mon=["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
 const footer=`${code.slice(4,6)} ${mon[Number(code.slice(2,4))-1]} 20${code.slice(0,2)} • @portfoliointelligence`;
-const reading=v=>{const n=Number(String(v).replace("%","").replace(",",".").replace(/[^\d.+-]/g,""));return !Number.isFinite(n)?"NEUTRO":n>=.35?"POSITIVO":n>0?"NEUTRO/+":n<=-.35?"NEGATIVO":n<0?"NEUTRO/-":"NEUTRO"};
+const reading=v=>{const n=Number(String(v).replace(/[−–]/g,"-").replace("%","").replace(",",".").replace(/[^\d.+-]/g,""));return !Number.isFinite(n)?"NEUTRO":n>=.35?"POSITIVO":n>0?"NEUTRO/+":n<=-.35?"NEGATIVO":n<0?"NEUTRO/-":"NEUTRO"};
 const marketRows=(data.markets||[]).filter(x=>x.name&&x.value).slice(0,10).map(x=>({ticker:x.name.replace(" FUTUROS",""),change:x.value,reading:reading(x.value)}));
 if(!marketRows.length)throw Error("No market data in Morning Brief");
 const drivers=(data.drivers||[]).slice(0,3).map(x=>({title:short(x.title||x.reason,37),text:short(x.impact,155)}));
