@@ -34,16 +34,27 @@ jobs:
       BIGDATA_API_KEY: ${{ secrets.BIGDATA_API_KEY }}
       BIGDATA_PAID_RESEARCH_ENABLED: 'true'
     steps:
-      - name: Gate scheduled runs to 12:00 Madrid
+      - name: Select Madrid noon cron (allow delayed GitHub jobs)
         id: madrid_time
         run: |
-          $hour = node -e "console.log(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Madrid',hour:'2-digit',hourCycle:'h23'}).format(new Date()))"
-          if ('${{ github.event_name }}' -eq 'schedule' -and [int]$hour -ne 12) {
-            Write-Host "Skipping alternate UTC cron: Madrid hour is $hour"
-            'run_editorial=false' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          if ('${{ github.event_name }}' -eq 'schedule') {
+            # GitHub cron timestamps are UTC. At 10:07 UTC Madrid is 12:07 in
+            # summer, and 11:07 UTC is 12:07 in winter. Select by the cron
+            # expression that fired, NOT the runner's actual start time:
+            # GitHub may queue a scheduled run for hours before starting it.
+            $madridHourAt1007Utc = node -e "const d=new Date();const day=d.toISOString().slice(0,10);console.log(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Madrid',hour:'2-digit',hourCycle:'h23'}).format(new Date(day+'T10:07:00Z')))"
+            $expectedCron = if ([int]$madridHourAt1007Utc -eq 12) { '7 10 * * 1-5' } else { '7 11 * * 1-5' }
+            $triggeredCron = '${{ github.event.schedule }}'
+            if ($triggeredCron -ne $expectedCron) {
+              Write-Host "Skipping alternate UTC cron ($triggeredCron); expected $expectedCron for Madrid 12:07."
+              'run_editorial=false' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              exit 0
+            }
+            Write-Host "Madrid scheduled cron selected: $triggeredCron. Proceeding even if GitHub delayed job start."
           } else {
-            'run_editorial=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host 'Manual workflow dispatch: proceed independent of clock time.'
           }
+          'run_editorial=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
       - uses: actions/checkout@v4
         if: steps.madrid_time.outputs.run_editorial == 'true'
         with:
