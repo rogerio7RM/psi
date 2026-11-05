@@ -70,6 +70,11 @@ if(x.kind==='morning'){
   if(typeof m.change!=='number') continue;
   const asset=aliases.find(a=>a.test(m.name));
   if(!asset) continue;
+  // A headline may discuss today's futures and yesterday's cash close.
+  // The first ticker mention is not enough to bind a direction to one row.
+  // Skip this redundant headline comparison for multi-session instruments;
+  // individual market context and Bigdata numeric checks still apply.
+  if(x.markets.filter(other=>asset.test(other.name)).length>1) continue;
   for(const [j,t] of narrative.entries()){
    // Look for explicit direction immediately following the instrument mention.
    const match=asset.exec(t);
