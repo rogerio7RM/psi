@@ -23,7 +23,7 @@ if(drivers.length!==3)throw Error("Missing three drivers");
 const cards=[
 {id:"cover",background:29,title:"WALL STREET",subtitle:"ANTES DA ABERTURA",body:short(data.summary,180),footer},
 {id:"highlights",background:30,title:"DESTAQUES DO DIA",subtitle:"FUTUROS • VARIAÇÃO • LEITURA",marketRows,footer},
-{id:"agenda",background:31,title:"AGENDA DO DIA",subtitle:"EVENTOS CONFIRMADOS",body:data.agenda?.length?join(data.agenda.map(x=>typeof x==="string"?x:JSON.stringify(x)),420):"Sem eventos com data e horário verificados nesta edição.",footer},
+{id:"agenda",background:31,title:"AGENDA DO DIA",subtitle:"EVENTOS CONFIRMADOS",body:data.agenda?.length?join(data.agenda.map(x=>typeof x==="string"?x:`${x.timeMadrid||"—"} Madrid · ${x.name} · Consenso: ${x.consensus||"—"} · Anterior: ${x.previous||"—"}`),420):"Sem eventos com data e horário verificados nesta edição.",footer},
 {id:"pulse",background:32,title:"MARKET PULSE",subtitle:"3 LEITURAS PARA A ABERTURA",blocks:drivers,footer},
 {id:"radar",background:33,title:"RADAR",subtitle:"O QUE OBSERVAR HOJE",body:join(section("O que observar hoje"),430)||"Acompanhe a evolução dos índices e da volatilidade.",footer},
 {id:"earnings",background:34,title:"EARNINGS RADAR",subtitle:"RESULTADOS E EXPECTATIVAS",body:join(section("Earnings Radar"),360)||"Sem resultados verificados nesta edição.",footer},
