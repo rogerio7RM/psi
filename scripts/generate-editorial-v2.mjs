@@ -177,6 +177,24 @@ const editorialSchema={
   required:['schemaVersion','date','kind','label','title','updatedAtMadrid','summary','markets','drivers','sections','agenda','sources']
 };
 
+
+// OpenAI Structured Outputs requires every object property to be required and
+// disallows extra fields. Keep this independent from the more permissive Ollama schema.
+const strictSchema=(node)=>{
+  if(Array.isArray(node)) return node.map(strictSchema);
+  if(!node||typeof node!=='object') return node;
+  const out={...node};
+  delete out.minItems;delete out.maxItems;
+  if(out.properties){
+    out.properties=Object.fromEntries(Object.entries(out.properties).map(([k,v])=>[k,strictSchema(v)]));
+    out.required=Object.keys(out.properties);
+    out.additionalProperties=false;
+  }
+  if(out.items)out.items=strictSchema(out.items);
+  return out;
+};
+const openaiEditorialSchema=strictSchema(editorialSchema);
+
 const system=`You are PrimeSphere Intelligence's financial editor. Return ONLY valid JSON matching Editorial Edition V2. Audience: Brazilians following US markets. WRITE ALL HUMAN-READABLE EDITORIAL TEXT EXCLUSIVELY IN NATURAL BRAZILIAN PORTUGUESE (pt-BR), including title, summary, driver reason/impact, section content and agenda names. Preserve proper nouns, market tickers, product labels and mandatory section names. Never invent data. Use only the supplied Bigdata research pack. Edition date must be ${iso}. For economic agenda include ONLY events whose official date is exactly ${iso}; require New York time, Madrid conversion, status, consensus and previous. If any is missing or ambiguous, exclude it. For released events require result. Exactly 3 drivers; JSON property names MUST be number, reason, impact (English keys), while their string VALUES MUST be Brazilian Portuguese. Never translate JSON keys. kind=${kind}. schemaVersion=2. date=${code}. Required sections for morning: Market Pulse, Premarket Movers, Earnings Radar, Market Themes, Brasil → EUA, O que observar hoje. Required sections for afterclose: Market Pulse, Destaques do fechamento, Earnings Radar, Market Themes, Brasil → EUA, O que observar amanhã. sources must contain at least two identifiable source names/references from the supplied research. updatedAtMadrid must be a real Europe/Madrid timestamp. If historical offline research is used, date the edition to that historical date and explicitly state in the title and summary that it is a TESTE HISTÓRICO, not a live edition. Do not silently convert stale or previous-session data into current data. For morning editions, never state the US cash market opened or closed today: discuss verified premarket futures and label previous cash closes with their dates. A market row must represent exactly one instrument and one time slice, with matching value, change and context; if unavailable use nulls. An empty structured agenda must not coexist with a claim that a specific event is scheduled. Do not describe future earnings as already released. If the supplied pack is synthetic or unverified, explicitly mark the title and summary as TESTE SINTÉTICO, never invent numerical index values, prices, percentages, earnings, releases or sources, and do not suggest actual market direction. For markets without verified values, use null for numeric fields rather than invented numbers. Do not turn methodological QA themes into actual market events.`;
 
 const editorialGuidance=[
@@ -279,7 +297,7 @@ if(local){
     body:JSON.stringify({
       model:process.env.OPENAI_MODEL||'gpt-5.6',
       input:[{role:'system',content:system},{role:'user',content:user}],
-      text:{format:{type:'json_object'}},
+      text:{format:{type:'json_schema',name:'editorial_v2',schema:openaiEditorialSchema,strict:true}},
       store:false
     })
   });
