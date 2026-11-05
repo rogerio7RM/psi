@@ -1,4 +1,4 @@
-name: PrimeSphere - Ollama Editorial V2 Dry Run
+name: PrimeSphere - Editorial V2 Dry Run
 on:
   workflow_dispatch:
     inputs:
@@ -15,9 +15,11 @@ on:
         options:
           - synthetic
           - historical-20261015
+          - archived-20261105
         default: historical-20261015
 permissions:
   contents: read
+  actions: read
 jobs:
   editorial-dry-run:
     runs-on: [self-hosted, Windows, X64]
@@ -26,23 +28,30 @@ jobs:
       run:
         shell: powershell
     env:
-      EDITORIAL_PROVIDER: ollama
+      EDITORIAL_PROVIDER: openai
+      OPENAI_API_KEY: ${{ secrets.OPENAI_EDITORIAL_API_KEY }}
+      OPENAI_MODEL: gpt-5.6
       EDITORIAL_STRICT_QA: 'true'
       EDITORIAL_SYNTHETIC_TEST: ${{ inputs.research == 'synthetic' && 'true' || 'false' }}
-      EDITORIAL_TEST_DATE: ${{ inputs.research == 'historical-20261015' && '2026-10-15' || '' }}
-      OLLAMA_MODEL: qwen2.5:3b
-      OLLAMA_URL: http://127.0.0.1:11434
+      EDITORIAL_TEST_DATE: ${{ inputs.research == 'archived-20261105' && '2026-11-05' || inputs.research == 'historical-20261015' && '2026-10-15' || '' }}
       BIGDATA_API_KEY: ''
-      EDITORIAL_RESEARCH_FILE: ${{ inputs.research == 'historical-20261015' && (inputs.edition == 'afterclose' && 'scripts/fixtures/ollama-afterclose-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research-real-20261015.json') || 'scripts/fixtures/ollama-editorial-research.json' }}
+      EDITORIAL_RESEARCH_FILE: ${{ inputs.research == 'archived-20261105' && 'editorial-audit/261105-bigdata-research.json' || inputs.research == 'historical-20261015' && (inputs.edition == 'afterclose' && 'scripts/fixtures/ollama-afterclose-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research-real-20261015.json') || 'scripts/fixtures/ollama-editorial-research.json' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check local Ollama only (no paid APIs)
+      - name: Check editorial API credentials
         run: |
-          $models = Invoke-RestMethod -Uri "$env:OLLAMA_URL/api/tags" -TimeoutSec 30
-          if (-not ($models.models | Where-Object { $_.name -eq $env:OLLAMA_MODEL })) { throw 'Local Ollama model unavailable' }
+          if (-not $env:OPENAI_API_KEY) { throw 'OPENAI_EDITORIAL_API_KEY missing' }
+      - name: Restore archived Bigdata research without paid request
+        if: inputs.research == 'archived-20261105'
+        uses: actions/download-artifact@v4
+        with:
+          name: morning-bigdata-research
+          run-id: 42017594280
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: editorial-audit
       - run: npm ci
       - name: Generate local V2 edition from offline research fixture
         run: node scripts/generate-editorial-v2.mjs "${{ inputs.edition }}"
