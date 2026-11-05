@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 2,
+  "date": "261105",
+  "kind": "morning",
+  "label": "Morning Brief · 05/11/2026",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "2026-11-05T11:24:41.473Z",
+  "summary": "PROTÓTIPO EDITORIAL: Este briefing é uma versão protótipo baseada no pacote de dados fornecido. Não há eventos programados para hoje, mas os dados fornecidos são suficientes para descrever o cenário atual dos mercados. O pacote não inclui dados históricos ou previsões futuras. Se você estiver procurando por uma versão mais completa e atualizada, é recomendado consultar fontes financeiras confiáveis.",
+  "markets": [
+    {
+      "name": "S&P 500 FUTUROS",
+      "value": "-0,10%"
+    },
+    {
+      "name": "Nasdaq-100 FUTUROS",
+      "value": "-0,10%"
+    },
+    {
+      "name": "Dow Jones FUTUROS",
+      "value": "+0,05%"
+    },
+    {
+      "name": "WTI Crude",
+      "value": "+0,05%"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "Impacto da \"Blue Wave\" nas Eleições Midterm nos EUA",
+      "number": "Destaque 1",
+      "reason": "Impacto da \"Blue Wave\" nas Eleições Midterm nos EUA",
+      "impact": "Risco de desacordo legislativo e tensões com o teto de dívida"
+    },
+    {
+      "title": "Correção nos Preços do Petróleo",
+      "number": "Destaque 2",
+      "reason": "Correção nos Preços do Petróleo",
+      "impact": "Pressão sobre as ações de energia e inflação"
+    },
+    {
+      "title": "Fed manterá taxas de juros em 4",
+      "number": "Destaque 3",
+      "reason": "Fed manterá taxas de juros em 4.00%",
+      "impact": "Desinflamação da queda nos preços do petróleo"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "O mercado pré-mercado está mostrando movimentos variados.",
+        "O S&P 500 FUTUROS caiu 0.10%, enquanto o Nasdaq-100 FUTUROS e o Dow Jones FUTUROS mantiveram-se relativamente estáveis.",
+        "O WTI Crude também teve uma pequena queda de 0.05%."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "AppLovin (APP) liderou o mercado pré-mercado com alta de 20%, seguido por Qualcomm (QCOM) com baixa de 7%.",
+        "SK Hynix (SKH) e Micron (MU) tiveram declínios significativos, enquanto Tesla (TSLA) teve uma queda."
+      ]
+    },
+    {
+      "title": "Earnings Radar",
+      "items": [
+        "A Kimberly-Clark Corp. (KMB) está prevista para divulgar seus resultados no horário de 11:30 AM, com estimativa de EPS de 1.65.",
+        "A Tapestry Inc. (TPR) está prevista para divulgar seus resultados no horário de 1:00 PM, com estimativa de EPS de 1.56.",
+        "A ConocoPhillips (COP) está prevista para divulgar seus resultados pré-mercado, enquanto a Airbnb Inc. (ABNB) e a Affirm Holdings Inc. (AFRM) não têm previsões de resultados."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "O setor tecnológico enfrenta volatilidade, com a semicondutores sob pressão de temores regulatórias, enquanto o setor de biotecnologia (como Eli Lilly +1.27%) está em alta.",
+        "As ações de defesa (Lockheed Martin -6.9%) estão sobperformendo devido a possíveis cortes de orçamento no novo Congresso."
+      ]
+    },
+    {
+      "title": "Brasil → EUA",
+      "items": [
+        "A BCB (Banco Central do Brasil) parou sua ciclo de cortes de juros, mantendo a Selic em 13.75%, devido a expectativas crescentes de inflação (5.2% para 2026).",
+        "Apesar da vitória democrata, a tarifa de 25% sobre produtos brasileiros permanece em vigor, mantendo pressão sobre os exportadores, mesmo que o Brasil tenha uma entrada de dólares de $9.5B por semana devido ao comércio."
+      ]
+    },
+    {
+      "title": "O que observar hoje",
+      "items": [
+        "Não há eventos programados para hoje.",
+        "No entanto, os dados fornecidos permitem uma análise do cenário atual dos mercados."
+      ]
+    }
+  ],
+  "agenda": [],
+  "sources": [
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "The FuW Morning Report for November 5, 2026: What you need to know for today's trading day — https://www.fuw.ch/der-fuw-morgen-report-vom-5-november-2026-was-sie-fuer-den-heutigen-681298677330",
+    "Country Tearsheet — US — https://www.fxstreet.com",
+    "Economic & market highlights (Nov 5, 2026) — https://www.ccfgroup.com/newscenter/newsview.php?Class_ID=800000&Info_ID=2026110530018",
+    "[Global Market Report November 5] — https://www.newspim.com/news/view/20261105000266",
+    "Market Morning Briefing — http://news.10jqka.com.cn/20261105/c681483141.shtml",
+    "Market focus after the U.S. midterm elections — https://finance.eastmoney.com/a/202611053923514479.html"
+  ]
+}
