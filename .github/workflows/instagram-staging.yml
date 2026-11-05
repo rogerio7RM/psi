@@ -160,6 +160,7 @@ jobs:
           NODE
 
   facebook:
+    if: false # Temporarily disabled by product decision; keep job for future reactivation.
     needs: [prepare, stage]
     runs-on: ubuntu-latest
     steps:
