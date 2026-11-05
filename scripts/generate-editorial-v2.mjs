@@ -340,6 +340,16 @@ if(Array.isArray(edition.drivers)){
     return normalized;
   });
 }
+// Normalize unambiguous agenda statuses; do not modify facts or event times.
+if(Array.isArray(edition.agenda)){
+  edition.agenda=edition.agenda.map(e=>{
+    if(!e||typeof e!=='object') return e;
+    const st=String(e.status||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();
+    const status=/^(FUTURO|PREVISTO|PROGRAMADO|AGENDADO|UPCOMING|SCHEDULED)$/.test(st)?'FUTURO':
+      /^(JA DIVULGADO|DIVULGADO|PUBLICADO|RELEASED|REPORTED)$/.test(st)?'JÁ DIVULGADO':e.status;
+    return {...e,status};
+  });
+}
 // Guard known overclaims in limited-source historical After Market prototypes.
 // These corrections are intentionally scoped to the offline fixture, not live editions.
 if(kind==='afterclose' && process.env.EDITORIAL_RESEARCH_FILE?.includes('ollama-afterclose-research-real-20261015.json')){
