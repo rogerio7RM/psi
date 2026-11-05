@@ -5,10 +5,10 @@ if(x.kind!==kind) throw Error('Wrong edition kind');
 if(/TESTE HISTÓRICO|TESTE SINTÉTICO|HISTORICAL|SYNTHETIC/i.test(x.title+' '+x.summary)) throw Error('Test content cannot be published as live');
 // A live edition must read like financial journalism, not a test or model log.
 const editorialText=[x.title,x.summary,...(x.drivers||[]).flatMap(d=>[d.reason,d.impact]),...(x.sections||[]).flatMap(s=>[s.content,...(s.items||[])])].filter(v=>typeof v==='string').join(' ');
-const normalized=editorialText.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
-if(/\\b(?:prototipo|pacote de dados|pacote de pesquisa|versao prototipo|modelo de linguagem|consulte fontes financeiras confiaveis|informacoes fornecidas|processamento editorial)\\b/i.test(normalized))
+const normalized=editorialText.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+if(/\b(?:prototipo|pacote de dados|pacote de pesquisa|versao prototipo|modelo de linguagem|consulte fontes financeiras confiaveis|informacoes fornecidas|processamento editorial)\b/i.test(normalized))
   throw Error('Live editorial quality gate: prototype or internal research commentary detected');
-if(/\\bnao ha eventos programados\\b/i.test(normalized) && (!x.agenda||x.agenda.length===0))
+if(/\bnao ha eventos programados\b/i.test(normalized) && (!x.agenda||x.agenda.length===0))
   throw Error('Live editorial quality gate: an empty verified agenda is not proof of no scheduled events');
 if(typeof x.summary!=='string'||x.summary.trim().length<150)
   throw Error('Live editorial quality gate: executive summary is too shallow');
