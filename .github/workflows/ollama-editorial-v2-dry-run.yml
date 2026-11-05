@@ -1,5 +1,9 @@
 name: PrimeSphere - Editorial V2 Dry Run
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ollama-editorial-v2-dry-run.yml'
   workflow_dispatch:
     inputs:
       edition:
@@ -33,9 +37,9 @@ jobs:
       OPENAI_MODEL: gpt-5.6
       EDITORIAL_STRICT_QA: 'true'
       EDITORIAL_SYNTHETIC_TEST: ${{ inputs.research == 'synthetic' && 'true' || 'false' }}
-      EDITORIAL_TEST_DATE: ${{ inputs.research == 'archived-20261105' && '2026-11-05' || inputs.research == 'historical-20261015' && '2026-10-15' || '' }}
+      EDITORIAL_TEST_DATE: ${{ (github.event_name == 'push' || inputs.research == 'archived-20261105') && '2026-11-05' || inputs.research == 'historical-20261015' && '2026-10-15' || '' }}
       BIGDATA_API_KEY: ''
-      EDITORIAL_RESEARCH_FILE: ${{ inputs.research == 'archived-20261105' && 'editorial-audit/261105-bigdata-research.json' || inputs.research == 'historical-20261015' && (inputs.edition == 'afterclose' && 'scripts/fixtures/ollama-afterclose-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research-real-20261015.json') || 'scripts/fixtures/ollama-editorial-research.json' }}
+      EDITORIAL_RESEARCH_FILE: ${{ (github.event_name == 'push' || inputs.research == 'archived-20261105') && 'editorial-audit/261105-bigdata-research.json' || inputs.research == 'historical-20261015' && (inputs.edition == 'afterclose' && 'scripts/fixtures/ollama-afterclose-research-real-20261015.json' || 'scripts/fixtures/ollama-editorial-research-real-20261015.json') || 'scripts/fixtures/ollama-editorial-research.json' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,7 +49,7 @@ jobs:
         run: |
           if (-not $env:OPENAI_API_KEY) { throw 'OPENAI_EDITORIAL_API_KEY missing' }
       - name: Restore archived Bigdata research without paid request
-        if: inputs.research == 'archived-20261105'
+        if: (github.event_name == 'push' || inputs.research == 'archived-20261105')
         uses: actions/download-artifact@v4
         with:
           name: morning-bigdata-research
@@ -54,19 +58,19 @@ jobs:
           path: editorial-audit
       - run: npm ci
       - name: Generate local V2 edition from offline research fixture
-        run: node scripts/generate-editorial-v2.mjs "${{ inputs.edition }}"
+        run: node scripts/generate-editorial-v2.mjs "${{ inputs.edition || 'morning' }}"
       - name: Preserve raw generated JSON for debugging
         if: ${{ always() }}
         run: |
           $code = if ($env:EDITORIAL_TEST_DATE) { $env:EDITORIAL_TEST_DATE.Substring(2).Replace('-','') } else { node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))" }
-          $suffix = if ("${{ inputs.edition }}" -eq 'afterclose') { '-afterclose' } else { '' }
+          $suffix = if ("${{ inputs.edition || 'morning' }}" -eq 'afterclose') { '-afterclose' } else { '' }
           $path = "src/react-app/editions/$code$suffix.json"
           if (Test-Path $path) { Copy-Item $path editorial-dry-run.json -Force; Write-Host "Saved $path for artifact upload" }
           else { Write-Warning "No generated edition at $path" }
       - name: Validate V2 and build (no publishing)
         run: |
           $code = if ($env:EDITORIAL_TEST_DATE) { $env:EDITORIAL_TEST_DATE.Substring(2).Replace('-','') } else { node -e "const d=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); console.log(['year','month','day'].map(k=>d.find(p=>p.type===k).value).join(''))" }
-          $suffix = if ("${{ inputs.edition }}" -eq 'afterclose') { '-afterclose' } else { '' }
+          $suffix = if ("${{ inputs.edition || 'morning' }}" -eq 'afterclose') { '-afterclose' } else { '' }
           $path = "src/react-app/editions/$code$suffix.json"
           if (-not (Test-Path $path)) { throw "Generated edition missing: $path" }
           node scripts/validate-editorial.mjs $path
@@ -77,7 +81,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: ollama-editorial-v2-${{ inputs.edition }}
+          name: openai-editorial-v2-${{ inputs.edition || 'morning' }}
           path: editorial-dry-run.json
           if-no-files-found: error
           retention-days: 7
