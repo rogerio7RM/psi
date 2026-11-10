@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 2,
+  "date": "261110",
+  "kind": "morning",
+  "label": "Morning Brief · 10/11/2026",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "2026-11-10T13:30:40.414Z",
+  "summary": "Às 08:28 em Nova York, os futuros do S&P 500 e do Dow Jones avançavam, enquanto os do Nasdaq-100 recuavam antes da divulgação do CPI de outubro. A expectativa de inflação cheia de 0,3% no mês e núcleo de 0,2% divide a atenção com a sinalização mais dura de Christopher Waller sobre os juros. No petróleo, o WTI caía 2,07% após Donald Trump considerar altamente improváveis novos ataques contra o Irã durante as negociações.",
+  "markets": [
+    {
+      "name": "S&P 500 FUTUROS",
+      "value": "+0,10%"
+    },
+    {
+      "name": "Nasdaq-100 FUTUROS",
+      "value": "-0,40%"
+    },
+    {
+      "name": "Dow Jones FUTUROS",
+      "value": "+0,30%"
+    },
+    {
+      "name": "S&P 500 À VISTA",
+      "value": "7.549,94"
+    },
+    {
+      "name": "Nasdaq-100 À VISTA",
+      "value": "27.907,62"
+    },
+    {
+      "name": "Dow Jones À VISTA",
+      "value": "52.389,75"
+    },
+    {
+      "name": "VIX Index",
+      "value": "+1,20%"
+    },
+    {
+      "name": "US 10Y Treasury",
+      "value": "+1,00%"
+    },
+    {
+      "name": "WTI Crude",
+      "value": "-2,07%"
+    },
+    {
+      "name": "Gold Spot",
+      "value": "-1,58%"
+    },
+    {
+      "name": "Bitcoin",
+      "value": "-1,37%"
+    },
+    {
+      "name": "USD/BRL",
+      "value": "+0,81%"
+    },
+    {
+      "name": "EWZ",
+      "value": "+1,97%"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "CPI de outubro concentra as atenções antes da abertura",
+      "number": "Destaque 1",
+      "reason": "CPI de outubro concentra as atenções antes da abertura",
+      "impact": "O consenso aponta alta mensal de 0,3% para o índice cheio e de 0,2% para o núcleo. O resultado pode alterar as expectativas de juros e ampliar a volatilidade em ações de tecnologia e Treasuries."
+    },
+    {
+      "title": "Christopher Waller reforça uma sinalização mais dura do Federal R",
+      "number": "Destaque 2",
+      "reason": "Christopher Waller reforça uma sinalização mais dura do Federal Reserve",
+      "impact": "Waller afirmou estar inclinado a apoiar uma alta de 25 pontos-base em dezembro e admitiu abertura a 50 pontos-base se o aperto precisar continuar. A precificação indicada para uma alta em dezembro estava em 81%."
+    },
+    {
+      "title": "Menor temor geopolítico pressiona o petróleo",
+      "number": "Destaque 3",
+      "reason": "Menor temor geopolítico pressiona o petróleo",
+      "impact": "O WTI recuava após Donald Trump considerar altamente improváveis novos ataques contra o Irã enquanto as negociações avançam, reduzindo o prêmio associado ao risco de interrupção da oferta."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "Às 08:28 em Nova York, os futuros mostravam sinais divergentes: S&P 500 FUTUROS subiam 0,10%, Dow Jones FUTUROS avançavam 0,30% e Nasdaq-100 FUTUROS recuavam 0,40%.",
+        "O rendimento do Treasury de dez anos aumentava 1 ponto-base, para 4,89%, enquanto o VIX subia 1,20%, para 20,16 pontos.",
+        "Entre os ativos globais, WTI, ouro e Bitcoin caíam, e o USD/BRL avançava 0,81%, para 5,5516."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "Sanmina (SANM) avançava 21% após reportar EPS de US$ 4,43 no quarto trimestre, acima do consenso de US$ 3,27, e projetar receita entre US$ 17,5 bilhões e US$ 19,5 bilhões no ano fiscal de 2027, citando demanda ligada à inteligência artificial.",
+        "Quantum (QMCO) subia 15,5% depois de resultados e perspectivas acima das expectativas.",
+        "Rocket Lab (RKLB) recuava 7,9% após adiar para 2027 o primeiro voo do foguete Neutron e informar aumento das perdas do projeto.",
+        "Microvast Holdings (MVST) despencava 49,2% após queda anual de 62,8% na receita."
+      ]
+    },
+    {
+      "title": "Earnings Radar",
+      "items": [
+        "Em 10/11/2026, Canaan Inc. (CAN) já havia divulgado EPS de US$ 0,01 no terceiro trimestre, ante estimativa de prejuízo de US$ 0,06.",
+        "Atour Lifestyle (ATAT) já havia reportado EPS de US$ 0,48, abaixo dos US$ 0,56 esperados, enquanto Hesai Group (HSAI) já havia informado EPS de US$ 0,00112, ante consenso de US$ 0,1039.",
+        "Após o fechamento de 10/11/2026, estavam previstas as divulgações de StubHub (STUB), com EPS estimado em US$ 0,08, e Mercury Systems (MRCY), com estimativa de US$ 0,30."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "A pressão sobre tecnologia permanecia ligada à queda de 4,3% da Nvidia na sessão anterior e à investigação do conselho sobre o CEO Jensen Huang.",
+        "Em sentido oposto, a alta da Sanmina reforçava a demanda por infraestrutura de inteligência artificial como catalisador para empresas industriais e de eletrônicos.",
+        "A combinação de juros longos em 4,89% e expectativa de aperto monetário mantém as ações de crescimento sensíveis ao CPI."
+      ]
+    },
+    {
+      "title": "Brasil → EUA",
+      "items": [
+        "O USD/BRL avançava 0,81%, para 5,5516, indicando dólar mais caro em reais no recorte das 08:28 em Nova York.",
+        "Na sessão de 09/11/2026, o EWZ subiu 1,97%, para US$ 32,61.",
+        "Para o investidor brasileiro, a valorização do dólar aumenta em reais o valor de ativos denominados na moeda americana, enquanto a taxa básica brasileira mantida recentemente em 13,75% preserva um diferencial elevado de juros."
+      ]
+    },
+    {
+      "title": "O que observar hoje",
+      "items": [
+        "Às 08:30 em Nova York, 14:30 em Madri, serão divulgados o CPI mensal de outubro, com consenso de 0,3% e leitura anterior de 0,6%, e o núcleo do CPI, com expectativa de 0,2% ante 0,3%.",
+        "Às 08:55 em Nova York, 14:55 em Madri, sai o Redbook Index anual, com consenso de 9,3% e leitura anterior de 10,4%.",
+        "Depois, o foco corporativo inclui StubHub e Mercury Systems, com balanços previstos após o fechamento."
+      ]
+    }
+  ],
+  "agenda": [
+    {
+      "officialDate": "2026-11-10",
+      "name": "Índice de Preços ao Consumidor mensal de outubro",
+      "timeNewYork": "08:30",
+      "timeMadrid": "14:30",
+      "status": "FUTURO",
+      "consensus": "0,3%",
+      "previous": "0,6%",
+      "result": "Não divulgado"
+    },
+    {
+      "officialDate": "2026-11-10",
+      "name": "Núcleo do Índice de Preços ao Consumidor mensal de outubro",
+      "timeNewYork": "08:30",
+      "timeMadrid": "14:30",
+      "status": "FUTURO",
+      "consensus": "0,2%",
+      "previous": "0,3%",
+      "result": "Não divulgado"
+    },
+    {
+      "officialDate": "2026-11-10",
+      "name": "Redbook Index anual",
+      "timeNewYork": "08:55",
+      "timeMadrid": "14:55",
+      "status": "FUTURO",
+      "consensus": "9,3%",
+      "previous": "10,4%",
+      "result": "Não divulgado"
+    }
+  ],
+  "sources": [
+    "Stock Futures Mostly Up Ahead of Key Consumer Inflation Report",
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "Premarket movers: Sanmina, AAON surge; Hims & Hers, Rocket Lab fall By Investing.com — https://ca.investing.com/news/stock-market-news/premarket-movers-sanmina-aaon-surge-hims--hers-rocket-lab-fall-4946313",
+    "Today's Premarket Stock Movers — https://stockanalysis.com/markets/premarket/",
+    "CPI, Crude Views Support Wall Street Pre-Bell; Asia, Europe Up",
+    "[US Pre-Market]Anthropic Plans $64.4 Billion IPO, Seven Tech Giants Including Nvidia and Microsoft Plan Additional $26 Billion Injection; Major October CPI Looms — https://www.tradingkey.com/analysis/stocks/us-stocks/262298595-anthropic-ipo-64-4-billion-seven-tech-giants-26-billion-october-cpi-tradingkey"
+  ]
+}
