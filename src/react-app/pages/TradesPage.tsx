@@ -172,6 +172,12 @@ export default function TradesPage() {
     const needle = term.trim().toLowerCase();
     return !needle || [row.asset, row.strategy, row.strike].join(' ').toLowerCase().includes(needle);
   }).reverse(), [rows, asset, flow, status, term]);
+  const filteredSummary = useMemo(() => {
+    const balance = filtered.reduce((total, row) => total - row.rawAmount, 0);
+    const closed = filtered.filter(row => row.status === 'closed');
+    const wins = closed.filter(row => row.rawAmount < 0).length;
+    return { balance, closed: closed.length, wins, hitRate: closed.length ? (wins / closed.length) * 100 : 0 };
+  }, [filtered]);
   const changeFilter = (next: FlowFilter) => { setFlow(next); setVisible(15); };
 
   return (
@@ -237,6 +243,25 @@ export default function TradesPage() {
             </div>
             <div className='trades-table-scroll'><table className='trades-table'><thead><tr><th>Data</th><th>Ativo</th><th>Estratégia</th><th>Strike / vencimento</th><th>Qtd.</th><th>Status</th><th className='trades-align-right'>Fluxo de caixa</th></tr></thead><tbody>{filtered.slice(0, visible).map(row => <tr key={row.sourceRow}><td>{showDate(row.date)}</td><td className='trades-ticker'>{row.asset}</td><td>{row.strategy}</td><td className='trades-strike'>{row.strike || '—'}</td><td>{row.quantity}</td><td><span className={'trades-status ' + row.status}>{row.status === 'closed' ? 'CLOSED' : 'OPEN'}</span></td><td className={'trades-amount trades-align-right ' + (row.rawAmount <= 0 ? 'trades-green' : 'trades-red')}>{showCash(-row.rawAmount)}</td></tr>)}</tbody></table>{!filtered.length && <p className='trades-empty'>Nenhum lançamento corresponde aos filtros.</p>}</div>
             <div className='trades-table-footer'><span>Mostrando {Math.min(visible, filtered.length)} de {filtered.length} lançamentos filtrados.</span>{visible < filtered.length && <button type='button' onClick={() => setVisible(v => v + 15)}>Carregar mais ↓</button>}</div>
+            <div className='trades-filter-summary' aria-live='polite' aria-label='Resumo dos lançamentos filtrados'>
+              <div className='trades-filter-summary-heading'>
+                <strong>Resumo do histórico filtrado</strong>
+                <span>{filtered.length} lançamentos · {asset || 'Todos os ativos'} · {showDate(bounds.from)} a {showDate(bounds.to)}</span>
+              </div>
+              <div className='trades-filter-summary-grid'>
+                <div>
+                  <span>Subtotal · Saldo das movimentações</span>
+                  <strong className={filteredSummary.balance >= 0 ? 'trades-green' : 'trades-red'}>{showCash(filteredSummary.balance)}</strong>
+                  <small>Entradas menos custos dos registros filtrados</small>
+                </div>
+                <div>
+                  <span>HIT Rate · Filtro atual</span>
+                  <strong className='trades-green'>{filteredSummary.closed ? number.format(filteredSummary.hitRate) + '%' : '—'}</strong>
+                  <small>{filteredSummary.wins} de {filteredSummary.closed} lançamentos CLOSED com entrada de capital</small>
+                </div>
+              </div>
+              <p>Os totais incluem todas as linhas que correspondem aos filtros, mesmo as ainda não exibidas na tabela. Saldo é fluxo de caixa, não lucro realizado; o HIT Rate segue o critério atual do painel (lançamentos CLOSED com entrada), não a rentabilidade por trade.</p>
+            </div>
           </section>
           <div className='trades-disclaimer'><span>ⓘ</span><p><strong>Transparência:</strong> os valores são fluxos de caixa, não retornos realizados. Rolagens e ajustes aparecem como lançamentos individuais; toda operação que não estiver marcada como CLOSED no Excel é exibida como OPEN. Unidade monetária exibida como USD, a confirmar na planilha. As observações internas do Excel não são publicadas.</p></div>
           <div className='trades-footer-meta'>Conta: {activeAccount} · Fonte: {snapshot.source} · Sincronização: {formatUpdate(snapshot.syncedAt)} · Sincronização automática com o Excel no horário programado e também sob demanda.</div>
