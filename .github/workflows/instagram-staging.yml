@@ -120,11 +120,11 @@ jobs:
             assert struct.unpack(">II",b[16:24])==(1080,1350)
           import json
           q=json.load(open("social-assets/cards/qa.json"))
-          assert q["passed"] is True and q["templateVersion"]=="primesphere-approved-v2"
+          assert q["passed"] is True and q["templateVersion"]=="primesphere-approved-v3"
           assert q["slides"]==8 and q["width"]==1080 and q["height"]==1350
           assert q["minBodyFont"]>=28 and q["minTableFont"]>=22
           assert q["slide2Columns"]==["Índice","Variação","Leitura"] and 1<=q["slide2Rows"]<=10
-          assert q["marketPulseBlocks"]==3
+          assert q["marketPulseBlocks"]==3 and q["completeText"] is True and q["noEllipses"] is True
           print("HARD QA PASS: approved visual/content contract + 8 PNGs 1080x1350")
           PY
       - name: Stage validated assets and caption
