@@ -21,7 +21,7 @@ const estimate=(s,size)=>[...String(s)].reduce((a,c)=>a+size*(c===" "?0.30:/[MW@
 const wrap=(s,maxPx,size)=>{const out=[];let line="";for(const word of String(s).trim().split(/\s+/)){const next=(line+" "+word).trim();if(estimate(next,size)>maxPx&&line){out.push(line);line=word;}else line=next;if(estimate(line,size)>maxPx)throw Error("Unbreakable overwide text: "+word);}if(line)out.push(line);return out;};
 const txtLines=(arr,x,y,size,gap,fill="#fff",weight=500)=>arr.map((line,i)=>text(line,x,y+i*gap,size,fill,weight)).join("");
 const assertComplete=x=>{for(const s of [x.body,...(x.blocks||[]).flatMap(b=>[b.title,b.text])].filter(Boolean))if(/…|\.{3}\s*$/.test(s))throw Error("Truncated text rejected on "+x.id);};
-const contentBox={top:470,bottom:1170,left:76,right:1004,pad:27};
+const contentBox={top:440,bottom:1202,left:76,right:1004,pad:27};
 function buildProse(x){
   assertComplete(x);
   const blocks=x.body?[{title:"",text:x.body}]:(x.blocks||[]);
@@ -75,6 +75,7 @@ for(let i=0;i<8;i++){
   const x=d.cards[i],bg=path.join(bgDir,"background_"+String(x.background).padStart(2,"0")+".png");
   const title=wrap(x.title,960,64);
   if(title.length>2)throw Error("Title overflow on slide "+(i+1));
+  contentBox.top=title.length>1?550:440;
   const content=x.id==="highlights"?buildHighlights(x):buildProse(x);
   renderedFonts.push(content.font);
   const titleSvg=title.map((q,j)=>text(q,76,255+j*74,64,j?"#67e8f9":"white",900)).join("");
