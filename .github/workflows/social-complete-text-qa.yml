@@ -1,0 +1,61 @@
+name: PrimeSphere Social Complete Text QA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/generate-social-edition.mjs
+      - scripts/render-instagram-cards.mjs
+      - .github/workflows/social-complete-text-qa.yml
+permissions:
+  contents: read
+jobs:
+  visual-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-save --package-lock=false sharp
+      - name: Generate complete social edition
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=$(find src/react-app/editions -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{6}\.json' -printf '%f\n' | sort | tail -1)
+          test -n "$file"
+          code="${file%.json}"
+          edition="20${code:0:2}-${code:2:2}-${code:4:2}"
+          mkdir -p .social-qa/backgrounds .social-qa/cards
+          node scripts/generate-social-edition.mjs "src/react-app/editions/$file" ".social-qa/$edition.json"
+          echo "EDITION=$edition" >> "$GITHUB_ENV"
+      - name: Make local visual backgrounds
+        run: |
+          node --input-type=module <<'NODE'
+          import sharp from "sharp";
+          for(let i=29;i<=36;i++){
+            await sharp({create:{width:1080,height:1350,channels:3,background:{r:16,g:32,b:51}}}).png().toFile(".social-qa/backgrounds/background_"+String(i).padStart(2,"0")+".png");
+          }
+          NODE
+      - name: Render cards and enforce full-text QA
+        run: |
+          node scripts/render-instagram-cards.mjs ".social-qa/$EDITION.json" .social-qa/backgrounds .social-qa/cards
+          python3 - <<'PY'
+          import json,glob,struct,os
+          d=json.load(open(".social-qa/"+os.environ["EDITION"]+".json"))
+          qa=json.load(open(".social-qa/cards/qa.json"))
+          assert qa["passed"] and qa["completeText"] and qa["noEllipses"]
+          assert qa["minBodyFont"]>=28 and len(glob.glob(".social-qa/cards/card_*.png"))==8
+          assert all("…" not in json.dumps(c,ensure_ascii=False) for c in d["cards"])
+          for fn in sorted(glob.glob(".social-qa/cards/card_*.png")):
+            b=open(fn,"rb").read(24)
+            assert b[:8]==bytes.fromhex("89504e470d0a1a0a")
+            assert struct.unpack(">II",b[16:24])==(1080,1350)
+          print("PASS: 8 complete cards; no publishing")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: social-complete-text-preview
+          path: .social-qa/cards/card_*.png
+          retention-days: 7
