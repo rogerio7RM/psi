@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 2,
+  "date": "261112",
+  "kind": "morning",
+  "label": "Morning Brief · 12/11/2026",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "2026-11-12T09:58:44.220Z",
+  "summary": "Às 09h56 UTC, os futuros de S&P 500, Nasdaq-100, Dow Jones e Russell 2000 negociavam em alta, com AMD, Broadcom e CoreWeave entre os destaques do pré-mercado. O movimento convivia com o Treasury de 10 anos em 5,01%, após a inflação de outubro superar as expectativas e reforçar a precificação de uma alta de 25 pontos-base pelo Fed em dezembro. Para investidores brasileiros, o USD/BRL estava praticamente estável, enquanto Petrobras acumulava oito sessões consecutivas de queda até quarta-feira.",
+  "markets": [
+    {
+      "name": "S&P 500 FUTUROS",
+      "value": "+1,31%"
+    },
+    {
+      "name": "NASDAQ-100 FUTUROS",
+      "value": "+2,28%"
+    },
+    {
+      "name": "DOW JONES FUTUROS",
+      "value": "+0,49%"
+    },
+    {
+      "name": "RUSSELL 2000 FUTUROS",
+      "value": "+0,88%"
+    },
+    {
+      "name": "CBOE VIX",
+      "value": "+3,95%"
+    },
+    {
+      "name": "US TREASURY DE 10 ANOS",
+      "value": "+2,00%"
+    },
+    {
+      "name": "WTI",
+      "value": "-0,44%"
+    },
+    {
+      "name": "OURO À VISTA",
+      "value": "-1,32%"
+    },
+    {
+      "name": "BITCOIN",
+      "value": "-0,79%"
+    },
+    {
+      "name": "USD/BRL",
+      "value": "+0,03%"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "Inflação e reprecificação do Fed",
+      "number": "Destaque 1",
+      "reason": "Inflação e reprecificação do Fed",
+      "impact": "O CPI de outubro avançou 0,4% na comparação mensal, acima das expectativas, levando o mercado a precificar integralmente uma alta de 25 pontos-base em dezembro e conduzindo o rendimento do Treasury de 10 anos de volta à região de 5%."
+    },
+    {
+      "title": "Infraestrutura de inteligência artificial e risco de liderança",
+      "number": "Destaque 2",
+      "reason": "Infraestrutura de inteligência artificial e risco de liderança",
+      "impact": "O crescimento de 168% da receita da CoreWeave sustentava o interesse por empresas ligadas à inteligência artificial, enquanto relatos sobre uma possível saída do CEO da Nvidia adicionavam volatilidade ao pré-mercado."
+    },
+    {
+      "title": "Incerteza regulatória após as eleições legislativas",
+      "number": "Destaque 3",
+      "reason": "Incerteza regulatória após as eleições legislativas",
+      "impact": "A vitória democrata no Congresso deslocou a atenção para possíveis riscos regulatórios aos data centers de inteligência artificial, incluindo plataformas ambientais estaduais capazes de desacelerar a expansão da infraestrutura."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "Às 09h56 UTC de 12/11/2026, os futuros do S&P 500 subiam 1,31%, os do Nasdaq-100 avançavam 2,28%, os do Dow Jones ganhavam 0,49% e os do Russell 2000 tinham alta de 0,88%.",
+        "Apesar do viés positivo dos futuros, o CBOE VIX avançava 3,95%, para 18,18 pontos, e o rendimento do Treasury de 10 anos subia 2 pontos-base, para 5,01%.",
+        "Entre os demais ativos, WTI recuava 0,44%, ouro à vista perdia 1,32%, Bitcoin caía 0,79% e USD/BRL avançava 0,03%."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "CoreWeave avançava 24,7% após superar as expectativas de receita e elevar sua projeção para o ano.",
+        "AMD ganhava 7,3% e Broadcom subia 4,0%, em um movimento de retorno das compras em semicondutores.",
+        "Na direção oposta, Alibaba recuava 5,0% no pré-mercado dos Estados Unidos.",
+        "Royal Gold caía 4% e AngloGold Ashanti perdia 3%, acompanhando a pressão sobre o ouro e a perda do suporte técnico de US$ 3.930 citada no recorte."
+      ]
+    },
+    {
+      "title": "Earnings Radar",
+      "items": [
+        "Flowers Foods (FLO) tinha comentários preparados previstos para 12h00 UTC de 12/11/2026, ainda futuros no horário do recorte.",
+        "Applied Materials (AMAT) e Cisco (CSCO) estavam listadas para divulgação futura em 12/11/2026, com atenção aos pedidos de equipamentos e à demanda por redes de inteligência artificial; o horário não foi informado.",
+        "DLocal (DLO) e Afya (AFYA) também estavam listadas para divulgação futura em 12/11/2026, com estimativas de lucro por ação de 0,2091 e 0,3701, respectivamente; o horário não foi informado."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "Semicondutores e infraestrutura de inteligência artificial concentravam a atenção antes da abertura.",
+        "O desempenho da CoreWeave reforçava a tese de expansão da demanda por capacidade computacional, enquanto AMD e Broadcom recuperavam parte das perdas recentes.",
+        "Ao mesmo tempo, a possível mudança de liderança na Nvidia e o debate regulatório sobre data centers introduziam riscos específicos ao setor.",
+        "Juros longos próximos de 5% permaneciam como contraponto para ativos de crescimento e empresas com avaliações mais sensíveis às taxas de desconto."
+      ]
+    },
+    {
+      "title": "Brasil → EUA",
+      "items": [
+        "A ADR da Petrobras (PBR) caiu 2,52% na quarta-feira, completando oito sessões consecutivas de baixa.",
+        "Segundo o material, os papéis negociavam com desconto de 40% em relação a pares globais, associado a riscos políticos brasileiros sobre dividendos e preços dos combustíveis.",
+        "O Ibovespa acumulava queda de 16,8% em 20 sessões, enquanto investidores acompanhavam o IPCA brasileiro para avaliar a perspectiva de manutenção da Selic em 13,75% em dezembro, cenário ao qual era atribuída probabilidade de 90,5%.",
+        "A Corteva (CTVA) também destacou condições mais fracas no Brasil e juros elevados como fatores para a normalização dos estoques nos canais de distribuição."
+      ]
+    },
+    {
+      "title": "O que observar hoje",
+      "items": [
+        "A agenda dos Estados Unidos começa às 08h30 em Nova York, com pedidos iniciais e pedidos continuados de seguro-desemprego.",
+        "Às 10h00, serão divulgadas as vendas de moradias usadas de outubro; às 12h00, saem os estoques de petróleo da EIA.",
+        "Além dos indicadores, investidores devem acompanhar se a recuperação dos semicondutores persiste diante do Treasury de 10 anos em torno de 5%, bem como a reação de empresas ligadas ao ouro e ao petróleo."
+      ]
+    }
+  ],
+  "agenda": [
+    {
+      "officialDate": "2026-11-12",
+      "name": "Pedidos iniciais de seguro-desemprego",
+      "timeNewYork": "08:30 EST",
+      "timeMadrid": "14:30 CET",
+      "status": "FUTURO",
+      "consensus": "195.0K",
+      "previous": "189K",
+      "result": "Ainda não divulgado"
+    },
+    {
+      "officialDate": "2026-11-12",
+      "name": "Pedidos continuados de seguro-desemprego",
+      "timeNewYork": "08:30 EST",
+      "timeMadrid": "14:30 CET",
+      "status": "FUTURO",
+      "consensus": "1.72M",
+      "previous": "1.72M",
+      "result": "Ainda não divulgado"
+    },
+    {
+      "officialDate": "2026-11-12",
+      "name": "Vendas de moradias usadas de outubro",
+      "timeNewYork": "10:00 EST",
+      "timeMadrid": "16:00 CET",
+      "status": "FUTURO",
+      "consensus": "3.85M",
+      "previous": "3.99M",
+      "result": "Ainda não divulgado"
+    },
+    {
+      "officialDate": "2026-11-12",
+      "name": "Variação dos estoques de petróleo da EIA",
+      "timeNewYork": "12:00 EST",
+      "timeMadrid": "18:00 CET",
+      "status": "FUTURO",
+      "consensus": "-1.1M",
+      "previous": "-0.86M",
+      "result": "Ainda não divulgado"
+    }
+  ],
+  "sources": [
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "Country Tearsheet — US — https://www.fxstreet.com",
+    "Treasury yields rise as investors await inflation and housing data — https://www.cnbc.com/2026/11/12/us-treasurys-bonds-yields.html"
+  ]
+}
