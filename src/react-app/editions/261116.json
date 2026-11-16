@@ -5,7 +5,7 @@
   "label": "Morning Brief · 16/11/2026",
   "title": "WALL STREET ANTES DA ABERTURA",
   "updatedAtMadrid": "2026-11-16T10:33:06.503Z",
-  "summary": "Às 10h31 UTC, os futuros do Nasdaq-100 caíam 0,77%, enquanto os do S&P 500 recuavam 0,37%, em meio à crise no conselho da Nvidia e à reprecificação mais dura para os juros dos EUA. O PPI de outubro em 6,5% na comparação anual elevou para cerca de 90% a expectativa indicada de alta dos juros em dezembro, pressionando ações de crescimento e ouro. No pré-mercado, a Embraer (ERJ) destoava com avanço de 49,1%, enquanto TSMC ADR e Intel acompanhavam a fraqueza dos semicondutores.",
+  "summary": "Às 10h31 UTC, os futuros do Nasdaq-100 caíam 0,77%, enquanto os do S&P 500 recuavam 0,37%, em meio à crise no conselho da Nvidia e à reprecificação mais dura para os juros dos EUA. O PPI de outubro em 6,5% na comparação anual elevou para cerca de 90% a expectativa indicada de alta dos juros em dezembro, pressionando ações de crescimento e ouro. No pré-mercado, TSMC ADR e Intel acompanhavam a fraqueza dos semicondutores.",
   "markets": [
     {
       "name": "S&P 500 FUTUROS",
@@ -81,7 +81,6 @@
     {
       "title": "Premarket Movers",
       "items": [
-        "A Embraer (ERJ) liderava os movimentos informados, com alta de 49,1%, a US$ 29,50.",
         "A Take-Two (TTWO) avançava 4,0%, para US$ 237,18, após as pré-vendas de GTA VI superarem 12 milhões de unidades e o JPMorgan elevar o preço-alvo para US$ 310.",
         "Na ponta negativa, a PepGen (PEPG) caía 13,5%, a US$ 4,36; a TSMC ADR (TSM) recuava 4,6% sob escrutínio regulatório e pressão sobre chips; e a Intel (INTC) perdia 4,5% com a volatilidade do setor."
       ]
@@ -104,7 +103,6 @@
     {
       "title": "Brasil → EUA",
       "items": [
-        "A Embraer era o principal destaque brasileiro no pré-mercado americano, com o ADR ERJ avançando 49,1%, para US$ 29,50.",
         "O USD/BRL estava estável em R$ 5,67, em um ambiente de rendimento de 5,15% no Treasury de dez anos.",
         "Após o fechamento, a atenção doméstica se volta à divulgação futura do terceiro trimestre da XP Inc. (XP), com estimativa de EPS de 0,54."
       ]
