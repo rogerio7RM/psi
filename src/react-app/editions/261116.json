@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 2,
+  "date": "261116",
+  "kind": "morning",
+  "label": "Morning Brief · 16/11/2026",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "2026-11-16T10:33:06.503Z",
+  "summary": "Às 10h31 UTC, os futuros do Nasdaq-100 caíam 0,77%, enquanto os do S&P 500 recuavam 0,37%, em meio à crise no conselho da Nvidia e à reprecificação mais dura para os juros dos EUA. O PPI de outubro em 6,5% na comparação anual elevou para cerca de 90% a expectativa indicada de alta dos juros em dezembro, pressionando ações de crescimento e ouro. No pré-mercado, a Embraer (ERJ) destoava com avanço de 49,1%, enquanto TSMC ADR e Intel acompanhavam a fraqueza dos semicondutores.",
+  "markets": [
+    {
+      "name": "S&P 500 FUTUROS",
+      "value": "-0,37%"
+    },
+    {
+      "name": "NASDAQ-100 FUTUROS",
+      "value": "-0,77%"
+    },
+    {
+      "name": "DOW JONES FUTUROS",
+      "value": "-0,20%"
+    },
+    {
+      "name": "RUSSELL 2000 FUTUROS",
+      "value": "-0,42%"
+    },
+    {
+      "name": "VIX",
+      "value": "+3,78%"
+    },
+    {
+      "name": "TREASURY DOS EUA DE 10 ANOS",
+      "value": "5,15"
+    },
+    {
+      "name": "WTI",
+      "value": "+0,15%"
+    },
+    {
+      "name": "OURO",
+      "value": "-0,54%"
+    },
+    {
+      "name": "BITCOIN",
+      "value": "-1,19%"
+    },
+    {
+      "name": "USD/BRL",
+      "value": "+0,00%"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "Crise no conselho da Nvidia após a renúncia de Jensen Huang e a c",
+      "number": "Destaque 1",
+      "reason": "Crise no conselho da Nvidia após a renúncia de Jensen Huang e a cobrança do secretário do Tesouro, Scott Bessent, por uma reformulação ampla, diante de preocupações com conformidade nas exportações para a China.",
+      "impact": "O episódio amplia a pressão sobre semicondutores, o índice SOX e empresas de tecnologia ligadas à inteligência artificial."
+    },
+    {
+      "title": "O PPI de outubro atingiu 6,5% na comparação anual, maior nível em",
+      "number": "Destaque 2",
+      "reason": "O PPI de outubro atingiu 6,5% na comparação anual, maior nível em quatro anos, levando a expectativa indicada de alta dos juros em dezembro para cerca de 90%.",
+      "impact": "A reprecificação mais restritiva pressiona ações de crescimento com múltiplos elevados e contribui para a fraqueza do ouro."
+    },
+    {
+      "title": "A chegada de um terceiro porta-aviões dos Estados Unidos e relato",
+      "number": "Destaque 3",
+      "reason": "A chegada de um terceiro porta-aviões dos Estados Unidos e relatos sobre possíveis ataques ao Irã elevaram a tensão no Oriente Médio.",
+      "impact": "O risco geopolítico sustenta a volatilidade do petróleo e a procura defensiva pelo dólar, apesar dos dados de excesso de oferta global."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "Às 10h31 UTC, todos os principais futuros acionários informados operavam em queda: Nasdaq-100, -0,77%; Russell 2000, -0,42%; S&P 500, -0,37%; e Dow Jones, -0,20%.",
+        "O VIX avançava 3,78%, para 20,03 pontos, enquanto o rendimento do Treasury de dez anos estava em 5,15%.",
+        "Entre as commodities, o WTI subia 0,15%, a US$ 88,69, e o ouro caía 0,54%, a US$ 3.865,30.",
+        "O USD/BRL permanecia estável em R$ 5,67."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "A Embraer (ERJ) liderava os movimentos informados, com alta de 49,1%, a US$ 29,50.",
+        "A Take-Two (TTWO) avançava 4,0%, para US$ 237,18, após as pré-vendas de GTA VI superarem 12 milhões de unidades e o JPMorgan elevar o preço-alvo para US$ 310.",
+        "Na ponta negativa, a PepGen (PEPG) caía 13,5%, a US$ 4,36; a TSMC ADR (TSM) recuava 4,6% sob escrutínio regulatório e pressão sobre chips; e a Intel (INTC) perdia 4,5% com a volatilidade do setor."
+      ]
+    },
+    {
+      "title": "Earnings Radar",
+      "items": [
+        "Para 16/11/2026, estavam previstas antes da abertura as divulgações futuras do terceiro trimestre de KE Holdings (BEKE), com estimativa de EPS de 0,68; XPeng (XPEV), com -0,79; H World Group (1179), com 0,65; e iQiyi (IQ), com -0,01.",
+        "A XP Inc. (XP) tinha divulgação futura prevista para após o fechamento de 16/11/2026, com estimativa de EPS de 0,54."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "A volatilidade dos semicondutores concentra as atenções após a crise de liderança na Nvidia e as preocupações com auditorias de conformidade das exportações para a China.",
+        "TSMC ADR e Intel apareciam entre as quedas do pré-mercado, enquanto a pressão inflacionária reforçava o risco para empresas de tecnologia com avaliações elevadas.",
+        "No setor de energia, as tensões envolvendo o Irã ofereciam sustentação ao petróleo, apesar dos sinais de excesso de oferta global."
+      ]
+    },
+    {
+      "title": "Brasil → EUA",
+      "items": [
+        "A Embraer era o principal destaque brasileiro no pré-mercado americano, com o ADR ERJ avançando 49,1%, para US$ 29,50.",
+        "O USD/BRL estava estável em R$ 5,67, em um ambiente de rendimento de 5,15% no Treasury de dez anos.",
+        "Após o fechamento, a atenção doméstica se volta à divulgação futura do terceiro trimestre da XP Inc. (XP), com estimativa de EPS de 0,54."
+      ]
+    },
+    {
+      "title": "O que observar hoje",
+      "items": [
+        "O Índice Empire State de atividade industrial de Nova York está agendado para 08h30 em Nova York e 14h30 em Madri, com consenso de 18.0 e leitura anterior de 25.5.",
+        "Também estão previstos discursos de Williams, do Fed, às 09h05 em Nova York, e do presidente do Fed, Warsh, às 12h00.",
+        "Às 15h30 em Nova York, o calendário inclui as posições líquidas da CFTC em ouro e S&P 500.",
+        "No ambiente corporativo, investidores acompanham os balanços previstos antes da abertura e a divulgação futura da XP Inc. após o fechamento."
+      ]
+    }
+  ],
+  "agenda": [
+    {
+      "officialDate": "2026-11-16",
+      "name": "Índice Empire State de atividade industrial de Nova York — novembro",
+      "timeNewYork": "08:30 EST (UTC-5)",
+      "timeMadrid": "14:30 CET (UTC+1)",
+      "status": "FUTURO",
+      "consensus": "18.0",
+      "previous": "25.5",
+      "result": "Ainda não divulgado"
+    },
+    {
+      "officialDate": "2026-11-16",
+      "name": "Discurso de Williams, do Fed",
+      "timeNewYork": "09:05 EST (UTC-5)",
+      "timeMadrid": "15:05 CET (UTC+1)",
+      "status": "FUTURO",
+      "consensus": "Não disponível",
+      "previous": "Não disponível",
+      "result": "Ainda não divulgado"
+    },
+    {
+      "officialDate": "2026-11-16",
+      "name": "Discurso do presidente do Fed, Warsh",
+      "timeNewYork": "12:00 EST (UTC-5)",
+      "timeMadrid": "18:00 CET (UTC+1)",
+      "status": "FUTURO",
+      "consensus": "Não disponível",
+      "previous": "Não disponível",
+      "result": "Ainda não divulgado"
+    },
+    {
+      "officialDate": "2026-11-16",
+      "name": "Posições líquidas da CFTC em ouro",
+      "timeNewYork": "15:30 EST (UTC-5)",
+      "timeMadrid": "21:30 CET (UTC+1)",
+      "status": "FUTURO",
+      "consensus": "Não disponível",
+      "previous": "179.5",
+      "result": "Ainda não divulgado"
+    },
+    {
+      "officialDate": "2026-11-16",
+      "name": "Posições líquidas da CFTC no S&P 500",
+      "timeNewYork": "15:30 EST (UTC-5)",
+      "timeMadrid": "21:30 CET (UTC+1)",
+      "status": "FUTURO",
+      "consensus": "Não disponível",
+      "previous": "-129.4",
+      "result": "Ainda não divulgado"
+    }
+  ],
+  "sources": [
+    "US Pre-market / Chip stocks fall! TSMC ADR, AMD, and Intel drop over 4% — https://news.tvbs.com.tw/money/4051470",
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "Stock Market: Will S&P 500 Open Up or Down Today? — https://www.benzinga.com/node/63279199?utm_campaign=partner_feed&utm_medium=feed&utm_source=ravenpack",
+    "Country Tearsheet — US — https://www.fxstreet.com"
+  ]
+}
