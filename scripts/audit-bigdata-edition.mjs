@@ -19,11 +19,23 @@ const section=name=>{for(let i=1;i<parts.length;i+=2)if(normalize(parts[i]).incl
 const snapshot=section('US Market Snapshot');
 if(!snapshot) console.warn('Bigdata audit warning: structured US Market Snapshot not found; market figures cannot be independently cross-checked');
 const assets=[];
+const cellsOf=line=>line.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(s=>s.replace(/\*\*/g,'').trim());
+const parseNumber=s=>{
+ const t=String(s??'').trim().replace(/^[~≈]\s*/,'').replace(/^[+$]/,'').replace(/%$/,'').replace(/,/g,'').trim();
+ return /^-?\d+(?:\.\d+)?$/.test(t)?Number(t):NaN;
+};
+let columns=null;
 for(const line of snapshot.split('\n')){
- if(!line.startsWith('|')||/^\|\s*(Asset|---)/i.test(line))continue;
- const cells=line.split('|').slice(1,-1).map(s=>s.replace(/\*\*/g,'').trim());
- if(cells.length<4||!Number.isFinite(number(cells[2])))continue;
- assets.push({name:cells[0],value:number(cells[1]),change:number(cells[2]),status:cells[3]});
+ if(!line.trim().startsWith('|'))continue;
+ const cells=cellsOf(line), h=cells.map(normalize);
+ if(h.every(v=>/^:?-+:?$/.test(v)))continue;
+ const name=h.findIndex(v=>/^(asset|instrument|index|market|ticker|symbol)(\b|$)/.test(v));
+ const change=h.findIndex(v=>/(change|variation|return|chg|variacao|performance)/.test(v)&&!/(absolute|points|bps|basis points)/.test(v));
+ const value=h.findIndex(v=>/(price|value|level|quote|yield|last|close|cotacao)/.test(v)&&!/(change|variation|return|chg|variacao|performance|previous|prior)/.test(v));
+ if(name>=0&&(change>=0||value>=0)){columns={name,change,value};continue;}
+ if(!columns)continue;
+ const a={name:cells[columns.name],value:parseNumber(cells[columns.value]),change:parseNumber(cells[columns.change])};
+ if(a.name&&(Number.isFinite(a.value)||Number.isFinite(a.change)))assets.push(a);
 }
 const key=name=>{
  const n=normalize(name);
@@ -43,8 +55,10 @@ for(const [i,m] of (x.markets||[]).entries()){
  const instrument=key(m.name),future=/futur/i.test(normalize(m.name));
  const a=assets.find(v=>key(v.name)===instrument&&/futur/i.test(v.name)===future);
  if(!a){console.warn('Bigdata audit warning: markets['+i+'] instrument not matched in structured snapshot: '+m.name);continue;}
- if(typeof m.change==='number'&&Math.abs(m.change-a.change)>0.011)fail('markets['+i+'] '+m.name+' change '+m.change+' vs Bigdata '+a.change);
- if(typeof m.value==='number'&&Math.abs(m.value-a.value)>Math.max(0.02,Math.abs(a.value)*0.00015))fail('markets['+i+'] '+m.name+' value '+m.value+' vs Bigdata '+a.value);
+ if(typeof m.change==='number'&&!Number.isFinite(a.change))fail('markets['+i+'] '+m.name+' percentage change unavailable in source table');
+ if(typeof m.value==='number'&&!Number.isFinite(a.value))fail('markets['+i+'] '+m.name+' quote unavailable in source table');
+ if(typeof m.change==='number'&&Number.isFinite(a.change)&&Math.abs(m.change-a.change)>0.011)fail('markets['+i+'] '+m.name+' change '+m.change+' vs Bigdata '+a.change);
+ if(typeof m.value==='number'&&Number.isFinite(a.value)&&Math.abs(m.value-a.value)>Math.max(0.02,Math.abs(a.value)*0.00015))fail('markets['+i+'] '+m.name+' value '+m.value+' vs Bigdata '+a.value);
 }
 const prose=[x.summary,...(x.sections||[]).map(s=>s.content),...(x.drivers||[]).map(d=>d.impact)].join('\n');
 for(const [label,instrument,pattern] of [
@@ -53,7 +67,7 @@ for(const [label,instrument,pattern] of [
  ['bitcoin','bitcoin',/\bbitcoin\b/gi]
 ]){
  const a=assets.find(v=>key(v.name)===instrument&&!/futur/i.test(v.name))||assets.find(v=>key(v.name)===instrument);
- if(!a)continue;
+ if(!a||!Number.isFinite(a.change))continue;
  const re=label==='ouro'?/\bouro\b.{0,55}\b(?:caiu|caindo|recuou|recuando|queda|baixa|subiu|subindo|avan[cç]ou|alta)\b/gi:label==='petróleo'?/\bpetr[oó]leo\b.{0,55}\b(?:caiu|caindo|recuou|recuando|queda|baixa|subiu|subindo|avan[cç]ou|alta)\b/gi:/\bbitcoin\b.{0,55}\b(?:caiu|caindo|recuou|recuando|queda|baixa|subiu|subindo|avan[cç]ou|alta)\b/gi;
  for(const match of prose.matchAll(re)){
   const phrase=normalize(match[0]);
