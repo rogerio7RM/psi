@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 2,
+  "date": "261124",
+  "kind": "morning",
+  "label": "Morning Brief · 24/11/2026",
+  "title": "WALL STREET ANTES DA ABERTURA",
+  "updatedAtMadrid": "2026-11-24T21:08:19.685Z",
+  "summary": "Resultados divulgados antes da abertura colocam Kohl's, Analog Devices e Best Buy no radar, enquanto Dell Technologies e HP Inc. ainda têm balanços previstos para depois do fechamento. Depois da alta recorde de 31% da Nvidia na segunda-feira, a possibilidade de realização mantém semicondutores sob atenção. Em saúde, a aquisição da Insmed pela Sanofi por US$ 41 bilhões oferece um contraponto às pressões sobre tecnologia e empresas sensíveis ao comércio com a China.",
+  "markets": [
+    {
+      "name": "S&P 500 FUTUROS",
+      "value": "—"
+    },
+    {
+      "name": "NASDAQ-100 FUTUROS",
+      "value": "—"
+    },
+    {
+      "name": "DOW JONES FUTUROS",
+      "value": "—"
+    },
+    {
+      "name": "RUSSELL 2000 FUTUROS",
+      "value": "—"
+    }
+  ],
+  "drivers": [
+    {
+      "title": "Realização em inteligência artificial após a alta recorde de 31% ",
+      "number": "Destaque 1",
+      "reason": "Realização em inteligência artificial após a alta recorde de 31% da Nvidia na segunda-feira.",
+      "impact": "Aumenta a sensibilidade de fabricantes de chips e outras ações de tecnologia a movimentos de redução de posições."
+    },
+    {
+      "title": "A Sanofi anunciou a aquisição da Insmed por US$ 41 bilhões em din",
+      "number": "Destaque 2",
+      "reason": "A Sanofi anunciou a aquisição da Insmed por US$ 41 bilhões em dinheiro.",
+      "impact": "Reforça o interesse por saúde e biotecnologia, oferecendo contraponto ao risco concentrado em tecnologia."
+    },
+    {
+      "title": "Relatos de preparação de uma nova rodada de tarifas dos Estados U",
+      "number": "Destaque 3",
+      "reason": "Relatos de preparação de uma nova rodada de tarifas dos Estados Unidos contra a China.",
+      "impact": "Elevam a incerteza para semicondutores e companhias com cadeias produtivas ou receitas expostas ao comércio bilateral."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Market Pulse",
+      "items": [
+        "Não há cotações confirmadas dos futuros dos principais índices norte-americanos para o pré-mercado de 24/11/2026, o que impede uma leitura quantitativa segura da direção antes do sino.",
+        "O foco está nos catalisadores corporativos, especialmente balanços do varejo e de semicondutores, além das notícias envolvendo inteligência artificial, saúde e tarifas."
+      ]
+    },
+    {
+      "title": "Premarket Movers",
+      "items": [
+        "Kohl's (KSS) está entre os principais nomes a acompanhar após superar estimativas e apresentar orientação futura robusta.",
+        "Analog Devices (ADI) divulgou lucro ajustado e receita abaixo das projeções, enquanto Best Buy (BBY) apresentou sua atualização trimestral e registrou reação positiva.",
+        "Os percentuais informados para esses papéis não têm um recorte de pré-mercado confirmado e, por isso, não são tratados como cotações antes da abertura."
+      ]
+    },
+    {
+      "title": "Earnings Radar",
+      "items": [
+        "Analog Devices (ADI), em 24/11/2026: resultado já divulgado antes da abertura, com lucro ajustado e receita abaixo das estimativas.",
+        "Kohl's (KSS), em 24/11/2026: resultado já divulgado antes da abertura, com números acima das projeções e orientação futura robusta.",
+        "Best Buy (BBY), em 24/11/2026: atualização trimestral já divulgada antes da abertura, acompanhada de reação positiva.",
+        "Dell Technologies (DELL), em 24/11/2026: divulgação futura prevista para depois do fechamento, com atenção à demanda por servidores de inteligência artificial.",
+        "HP Inc. (HPQ), em 24/11/2026: divulgação futura prevista para depois do fechamento, com foco na recuperação do mercado de computadores pessoais."
+      ]
+    },
+    {
+      "title": "Market Themes",
+      "items": [
+        "A correção potencial em ações ligadas à inteligência artificial mantém tecnologia e semicondutores como áreas de maior volatilidade após a forte valorização anterior da Nvidia.",
+        "Em sentido oposto, a compra da Insmed pela Sanofi sustenta o interesse por saúde e biotecnologia.",
+        "O risco tarifário adiciona uma camada de incerteza para empresas dependentes da China e para cadeias globais de componentes eletrônicos."
+      ]
+    },
+    {
+      "title": "Brasil → EUA",
+      "items": [
+        "A aprovação do plano fiscal Moretti pela Câmara dos Deputados tornou-se uma referência doméstica relevante depois de o USD/BRL ter tocado R$ 6,00 no início da semana.",
+        "Para brasileiros expostos a ativos norte-americanos, a trajetória do câmbio continua importante porque pode ampliar ou reduzir, em reais, o impacto das oscilações de ações, títulos e commodities dos Estados Unidos."
+      ]
+    },
+    {
+      "title": "O que observar hoje",
+      "items": [
+        "Os indicadores de 24/11/2026 já divulgados incluem Redbook anual de 11.30%, índice mensal de preços de imóveis de 0.00%, Case-Shiller anual de 2.60% e índice industrial do Fed de Richmond em 3.",
+        "O leilão de títulos do Tesouro de cinco anos registrou 4.72%.",
+        "No campo corporativo, a atenção se desloca para os balanços ainda previstos de Dell Technologies e HP Inc. depois do fechamento."
+      ]
+    }
+  ],
+  "agenda": [
+    {
+      "officialDate": "2026-11-24",
+      "name": "Índice Redbook anual",
+      "timeNewYork": "08:55 EST",
+      "timeMadrid": "14:55 CET",
+      "status": "JÁ DIVULGADO",
+      "consensus": "Não disponível",
+      "previous": "9.50%",
+      "result": "11.30%"
+    },
+    {
+      "officialDate": "2026-11-24",
+      "name": "Índice mensal de preços de imóveis de setembro",
+      "timeNewYork": "09:00 EST",
+      "timeMadrid": "15:00 CET",
+      "status": "JÁ DIVULGADO",
+      "consensus": "0.20%",
+      "previous": "0.20%",
+      "result": "0.00%"
+    },
+    {
+      "officialDate": "2026-11-24",
+      "name": "Índice Case-Shiller de preços de imóveis anual",
+      "timeNewYork": "09:00 EST",
+      "timeMadrid": "15:00 CET",
+      "status": "JÁ DIVULGADO",
+      "consensus": "2.70%",
+      "previous": "2.60%",
+      "result": "2.60%"
+    },
+    {
+      "officialDate": "2026-11-24",
+      "name": "Índice industrial do Fed de Richmond",
+      "timeNewYork": "10:00 EST",
+      "timeMadrid": "16:00 CET",
+      "status": "JÁ DIVULGADO",
+      "consensus": "2",
+      "previous": "-2",
+      "result": "3"
+    },
+    {
+      "officialDate": "2026-11-24",
+      "name": "Leilão de títulos do Tesouro de cinco anos",
+      "timeNewYork": "13:00 EST",
+      "timeMadrid": "19:00 CET",
+      "status": "JÁ DIVULGADO",
+      "consensus": "Não disponível",
+      "previous": "4.84%",
+      "result": "4.72%"
+    }
+  ],
+  "sources": [
+    "Country Tearsheet — US — https://www.fxstreet.com",
+    "Market Tearsheet — https://site.financialmodelingprep.com",
+    "US stocks slide as Nvidia rally fizzles out, dollar falls | live — https://live.euronext.com/en/financial-news/us-stocks-slide-nvidia-rally-fizzles-out-dollar-falls",
+    "Nasdaq, S&P 500 fall as Nvidia-driven AI rally unwinds By Reuters — https://www.investing.com/news/economy-news/wall-st-futures-dip-as-chip-stocks-cool-after-nvidiafueled-rally-5047567",
+    "Sector Update: Healthcare Stocks Gain Late Afternoon"
+  ]
+}
